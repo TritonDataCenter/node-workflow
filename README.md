@@ -1,15 +1,3 @@
----
-title: Workflow system
-logo-color: red
-logo-font-family: google:Aldrich, Verdana, sans-serif
-header-font-family: google:Aldrich, Verdana, sans-serif
----
-
-<div id="indextagline">
-Task orchestration creation and running
-</div>
-
-
 # Overview
 
 So a workflow is effectively an orchestration.
