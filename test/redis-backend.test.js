@@ -180,10 +180,13 @@ test('create job', function(t) {
   }, function(err, job) {
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
-    console.log(util.inspect(job, false, 8));
     t.ok(job.exec_after);
     t.equal(job.status, 'queued');
     t.ok(job.uuid);
+    t.equal(typeof job.chain, 'string');
+    t.equal(typeof job.onerror, 'string');
+    t.equal(typeof JSON.parse(job.chain), 'object');
+    t.equal(typeof JSON.parse(job.onerror), 'object');
     t.end();
   });
 });
