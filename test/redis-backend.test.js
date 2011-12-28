@@ -133,6 +133,28 @@ test('update workflow', function(t) {
   });
 });
 
+
+test('remove task from workflow', function(t) {
+  factory.removeWorkflowTask(aWorkflow, anotherTask, function(err, workflow) {
+    t.ifError(err, 'remove task error');
+    t.ok(workflow, 'remove task workflow');
+    aWorkflow = workflow;
+    t.equal(aWorkflow.chain.length, 1);
+    t.end();
+  });
+});
+
+
+test('add task to workflow', function(t) {
+  factory.addWorkflowTask(aWorkflow, anotherTask, function(err, workflow) {
+    t.ifError(err, 'add task error');
+    t.ok(workflow, 'add task workflow');
+    aWorkflow = workflow;
+    t.equal(workflow.chain[1], anotherTask.uuid);
+    t.end();
+  });
+});
+
 test('teardown', function(t) {
   backend.deleteWorkflow(aWorkflow, function(err, result) {
     t.ifError(err, 'delete workflow error');
