@@ -10,6 +10,9 @@ var backend, factory;
 
 var aTask, aWorkflow, aJob, anotherTask, fallbackTask;
 
+// A DB for testing, flushed before and right after we're done with tests
+var TEST_DB_NUM = 15;
+
 test('setup', function(t) {
   backend = new WorkflowRedisBackend({
     port: 6379,
@@ -17,6 +20,18 @@ test('setup', function(t) {
   });
   t.ok(backend, 'backend ok');
   backend.init(function() {
+    backend.client.select(TEST_DB_NUM, function(err, res) {
+      t.ifError(err, 'select db error');
+      t.equal('OK', res, 'select db ok');
+    });
+    backend.client.flushdb(function(err, res) {
+      t.ifError(err, 'flush db error');
+      t.equal('OK', res, 'flush db ok');
+    });
+    backend.client.dbsize(function(err, res) {
+      t.ifError(err, 'db size error');
+      t.equal(0, res, 'db size ok');
+    });
     factory = Factory(backend);
     t.ok(factory, 'factory ok');
     // wtf?
@@ -155,7 +170,45 @@ test('add task to workflow', function(t) {
   });
 });
 
+test('create job', function(t) {
+  factory.job(aWorkflow, {
+    target: '/foo/bar',
+    params: {
+      a: '1',
+      b: '2'
+    }
+  }, function(err, job) {
+    t.ifError(err, 'create job error');
+    t.ok(job, 'create job ok');
+    console.log(util.inspect(job, false, 8));
+    t.ok(job.exec_after);
+    t.equal(job.status, 'queued');
+    t.ok(job.uuid);
+    t.end();
+  });
+});
+
+test('duplicated job target', function(t) {
+  factory.job(aWorkflow, {
+    target: '/foo/bar',
+    params: {
+      a: '1',
+      b: '2'
+    }
+  }, function(err, job) {
+    t.ok(err, 'duplicated job error');
+    t.end();
+  });
+});
+
 test('teardown', function(t) {
+  // None of the deleteWorkflow/deleteTask calls are needed since we are
+  // flushing the test db before we get started again.
+  // Better we remove once we are done with tests for those, specially:
+  // - What happens if a task is deleted and there is a workflow pointing
+  //   to such task?. This seems to reveal we need to keep a per task index
+  //   of where that task has been used (workflows uuids) and, in case we
+  //   delete it, we remove it from every one of those workflows?
   backend.deleteWorkflow(aWorkflow, function(err, result) {
     t.ifError(err, 'delete workflow error');
     backend.deleteTask(aTask, function(err, result) {

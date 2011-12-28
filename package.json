@@ -1,0 +1,29 @@
+{
+  "name": "workflow",
+  "description": "Task orchestration creation and running",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kusor/node-workflow.git"
+  },
+  "author": "Pedro P. Candel <kusorbox@gmail.com> (http://www.joyent.com)",
+  "main": "lib/workflow.js",
+  "dependencies": {
+    "node-uuid": "1.2.0",
+    "log4js": "0.3.9",
+    "redis": "0.7.1",
+    "async": "0.1.15"
+  },
+  "scripts": {
+    "pretest": "which gjslint; if [[ \"$?\" = 0 ]] ; then  gjslint --nojsdoc -r lib -r test; else echo \"Missing gjslint. Skipping lint\"; fi; jshint lib test",
+    "test": "./node_modules/.bin/tap ./test"
+  },
+  "devDependencies": {
+    "jshint": "0.2.3",
+    "tap": "0.1.2"
+  },
+  "engines": {
+    "node": ">=0.4"
+  }
+}
+
