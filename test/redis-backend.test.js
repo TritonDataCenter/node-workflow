@@ -187,6 +187,7 @@ test('create job', function(t) {
     t.equal(typeof job.onerror, 'string');
     t.equal(typeof JSON.parse(job.chain), 'object');
     t.equal(typeof JSON.parse(job.onerror), 'object');
+    aJob = job;
     t.end();
   });
 });
@@ -201,6 +202,50 @@ test('duplicated job target', function(t) {
   }, function(err, job) {
     t.ok(err, 'duplicated job error');
     t.end();
+  });
+});
+
+
+test('job with different params', function(t) {
+  factory.job(aWorkflow, {
+    target: '/foo/bar',
+    params: {
+      a: '2',
+      b: '1'
+    }
+  }, function(err, job) {
+    t.ifError(err, 'create job error');
+    t.ok(job, 'create job ok');
+    t.ok(job.exec_after);
+    t.equal(job.status, 'queued');
+    t.ok(job.uuid);
+    t.equal(typeof job.chain, 'string');
+    t.equal(typeof job.onerror, 'string');
+    t.equal(typeof JSON.parse(job.chain), 'object');
+    t.equal(typeof JSON.parse(job.onerror), 'object');
+    t.end();
+  });
+});
+
+
+test('next queued job', function(t) {
+  var idx = 0;
+  backend.nextJob(function(err, job) {
+    t.ifError(err, 'next job error' + idx);
+    idx += 1;
+    t.ok(job, 'first queued job OK');
+    t.equal(aJob.uuid, job.uuid);
+    backend.nextJob(idx, function(err, job) {
+      t.ifError(err, 'next job error: ' + idx);
+      idx += 1;
+      t.ok(job, '2nd queued job OK');
+      t.notEqual(aJob.uuid, job.uuid);
+      backend.nextJob(idx, function(err, job) {
+        t.ifError(err, 'next job error: ' + idx);
+        t.equal(job, null, 'no more queued jobs');
+        t.end();
+      });
+    });
   });
 });
 
