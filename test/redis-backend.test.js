@@ -291,6 +291,26 @@ test('finish job', function(t) {
 });
 
 
+test('re queue job', function(t) {
+  backend.runJob(anotherJob.uuid, runnerId, function(err) {
+    t.ifError(err, 're queue job run job error');
+    anotherJob.results = JSON.stringify([
+      {success: true, error: ''}
+    ]);
+    backend.queueJob(anotherJob, function(err) {
+      t.ifError(err, 're queue job error');
+      backend.getJob(anotherJob.uuid, function(err, job) {
+        t.ifError(err, 're queue job getJob');
+        t.ok(!job.runner, 're queue job runner');
+        t.equal(job.status, 'queued', 're queue job status');
+        anotherJob = job;
+        t.end();
+      });
+    });
+  });
+});
+
+
 test('teardown', function(t) {
   // None of the deleteWorkflow/deleteTask calls are needed since we are
   // flushing the test db before we get started again.
