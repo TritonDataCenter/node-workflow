@@ -8,7 +8,7 @@ var test = require('tap').test,
 
 var backend, factory;
 
-var aTask, aWorkflow, aJob, anotherTask, fallbackTask;
+var aTask, aWorkflow, aJob, anotherTask, fallbackTask, anotherJob;
 
 var runnerId = uuid();
 
@@ -225,6 +225,7 @@ test('job with different params', function(t) {
     t.equal(typeof job.onerror, 'string');
     t.equal(typeof JSON.parse(job.chain), 'object');
     t.equal(typeof JSON.parse(job.onerror), 'object');
+    anotherJob = job;
     t.end();
   });
 });
@@ -258,14 +259,33 @@ test('run job', function(t) {
     // If the job is running, it shouldn't be available for nextJob:
     backend.nextJob(function(err, job) {
       t.ifError(err, 'run job next error');
-      t.notEqual(aJob.uuid, job.uuid);
+      t.notEqual(aJob.uuid, job.uuid, 'run job next job');
       backend.getJob(aJob.uuid, function(err, job) {
         t.ifError(err, 'run job getJob');
-        t.equal(job.runner, runnerId);
-        t.equal(job.status, 'running');
+        t.equal(job.runner, runnerId, 'run job runner');
+        t.equal(job.status, 'running', 'run job status');
         aJob = job;
         t.end();
       });
+    });
+  });
+});
+
+
+test('finish job', function(t) {
+  aJob.results = JSON.stringify([
+    {success: true, error: ''},
+    {success: true, error: ''}
+  ]);
+
+  backend.finishJob(aJob, function(err) {
+    t.ifError(err, 'finish job error');
+    backend.getJob(aJob.uuid, function(err, job) {
+      t.ifError(err, 'finish job getJob error');
+      t.equal(job.results, aJob.results, 'finish job results');
+      t.ok(!job.runner);
+      t.equal(job.status, 'finished', 'finished job status');
+      t.end();
     });
   });
 });
