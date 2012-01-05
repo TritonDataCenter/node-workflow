@@ -187,7 +187,6 @@ test('a task which time out and succeeds "onerror"', function(t) {
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(job.the_err, 'timeout error');
-    console.log(util.inspect(aWorkflow.results, false, 8));
     t.equal(aWorkflow.results.length, 7);
     var res = aWorkflow.results[6];
     t.equal(res.error, '');
