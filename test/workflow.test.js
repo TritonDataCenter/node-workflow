@@ -172,12 +172,12 @@ test('a task which time out and succeeds "onerror"', function(t) {
   var task = {
     "uuid": uuid(),
     "name": 'A name',
-    "timeout": 2,
+    "timeout": 1,
     "body": function(job, cb) {
       setTimeout(function() {
         // Should not be called:
         return cb('Error within timeout');
-      }, 2050);
+      }, 1050);
     }.toString(),
     "onerror": function(err, job, cb) {
       job.the_err = err;
@@ -194,6 +194,37 @@ test('a task which time out and succeeds "onerror"', function(t) {
     t.end();
   });
 });
+
+test('a task which time out and succeeds on 2nd retry', function(t) {
+  var task = {
+    "uuid": uuid(),
+    "name": 'A name',
+    "timeout": 1,
+    "retry": 2,
+    "body": function(job, cb) {
+      if (!job.timer) {
+        job.timer = 'Timeout set';
+        setTimeout(function() {
+          // Should not be called:
+          job.timer = 'Within timeout';
+          return cb('Error within timeout');
+        }, 1050);
+      } else {
+        return cb(null);
+      }
+    }.toString()
+  }
+  aWorkflow.runTask(task, function(err) {
+    t.ifError(err, 'task error');
+    t.equal(job.timer, 'Timeout set');
+    t.equal(aWorkflow.results.length, 8);
+    var res = aWorkflow.results[7];
+    t.equal(res.error, '');
+    t.equal(res.result, 'OK');
+    t.end();
+  });
+});
+
 
 test('a workflow which suceeds', function(t) {
   // body...
