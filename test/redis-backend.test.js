@@ -273,7 +273,7 @@ test('run job', function(t) {
 
 
 test('finish job', function(t) {
-  aJob.results = JSON.stringify([
+  aJob.chain_results = JSON.stringify([
     {success: true, error: ''},
     {success: true, error: ''}
   ]);
@@ -282,7 +282,7 @@ test('finish job', function(t) {
     t.ifError(err, 'finish job error');
     backend.getJob(aJob.uuid, function(err, job) {
       t.ifError(err, 'finish job getJob error');
-      t.equal(job.results, aJob.results, 'finish job results');
+      t.equal(job.chain_results, aJob.chain_results, 'finish job results');
       t.ok(!job.runner);
       t.equal(job.status, 'finished', 'finished job status');
       t.end();
@@ -294,7 +294,7 @@ test('finish job', function(t) {
 test('re queue job', function(t) {
   backend.runJob(anotherJob.uuid, runnerId, function(err) {
     t.ifError(err, 're queue job run job error');
-    anotherJob.results = JSON.stringify([
+    anotherJob.chain_results = JSON.stringify([
       {success: true, error: ''}
     ]);
     backend.queueJob(anotherJob, function(err) {
