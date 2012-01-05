@@ -10,8 +10,8 @@ var job = {
   name: 'A workflow name',
   exec_after: '2012-01-03T12:54:05.788Z',
   params: {
-    "a": "1",
-    "b": "2"
+    'a': '1',
+    'b': '2'
   },
   uuid: 'fb4c202d-19ed-4ed9-afda-8255aa7f38ad',
   target: '/foo/bar',
@@ -34,12 +34,12 @@ test('setup', function(t) {
 
 test('a task which succeeds on 1st retry', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
       return cb(null);
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(aWorkflow.results.length, 1);
@@ -48,22 +48,22 @@ test('a task which succeeds on 1st retry', function(t) {
     t.equal(res.result, 'OK');
     t.end();
   });
-  
 });
+
 
 test('a task which succeeds on 2nd retry', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "retry": 2,
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'retry': 2,
+    'body': function(job, cb) {
       if (!job.foo) {
         job.foo = true;
         return cb('Foo was not defined');
       }
       return cb(null);
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(aWorkflow.results.length, 2);
@@ -77,17 +77,17 @@ test('a task which succeeds on 2nd retry', function(t) {
 
 test('a task which fails and succeeds "onerror"', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "retry": 2,
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'retry': 2,
+    'body': function(job, cb) {
       return cb('Task body error');
     }.toString(),
-    "onerror": function(err, job, cb) {
+    'onerror': function(err, job, cb) {
       job.the_err = err;
       return cb(null);
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(aWorkflow.results.length, 3);
@@ -102,12 +102,12 @@ test('a task which fails and succeeds "onerror"', function(t) {
 
 test('a task which fails and has no "onerror"', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
       return cb('Task body error');
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ok(err, 'task error');
     t.equal(aWorkflow.results.length, 4);
@@ -120,15 +120,15 @@ test('a task which fails and has no "onerror"', function(t) {
 
 test('a task which fails and "onerror" fails too', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
       return cb('Task body error');
     }.toString(),
-    "onerror": function(err, job, cb) {
+    'onerror': function(err, job, cb) {
       return cb('OnError error');
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ok(err, 'task error');
     t.equal(aWorkflow.results.length, 5);
@@ -141,21 +141,21 @@ test('a task which fails and "onerror" fails too', function(t) {
 
 test('a task which fails after two retries and has no "onerror"', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "retry": 2,
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'retry': 2,
+    'body': function(job, cb) {
       if (!job.bar) {
         job.bar = true;
         return cb('Bar was not defined');
-      } else if (!job.baz){
+      } else if (!job.baz) {
         job.baz = true;
         return cb('Baz was not defined');
       }
       // Should not be called
       return cb(null);
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ok(err, 'task error');
     t.equal(aWorkflow.results.length, 6);
@@ -170,20 +170,20 @@ test('a task which fails after two retries and has no "onerror"', function(t) {
 
 test('a task which time out and succeeds "onerror"', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "timeout": 1,
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'timeout': 1,
+    'body': function(job, cb) {
       setTimeout(function() {
         // Should not be called:
         return cb('Error within timeout');
       }, 1050);
     }.toString(),
-    "onerror": function(err, job, cb) {
+    'onerror': function(err, job, cb) {
       job.the_err = err;
       return cb(null);
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(job.the_err, 'timeout error');
@@ -197,11 +197,11 @@ test('a task which time out and succeeds "onerror"', function(t) {
 
 test('a task which time out and succeeds on 2nd retry', function(t) {
   var task = {
-    "uuid": uuid(),
-    "name": 'A name',
-    "timeout": 1,
-    "retry": 2,
-    "body": function(job, cb) {
+    'uuid': uuid(),
+    'name': 'A name',
+    'timeout': 1,
+    'retry': 2,
+    'body': function(job, cb) {
       if (!job.timer) {
         job.timer = 'Timeout set';
         setTimeout(function() {
@@ -213,7 +213,7 @@ test('a task which time out and succeeds on 2nd retry', function(t) {
         return cb(null);
       }
     }.toString()
-  }
+  };
   aWorkflow.runTask(task, function(err) {
     t.ifError(err, 'task error');
     t.equal(job.timer, 'Timeout set');
