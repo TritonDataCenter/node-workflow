@@ -227,8 +227,37 @@ test('a task which time out and succeeds on 2nd retry', function(t) {
 
 
 test('a workflow which suceeds', function(t) {
-  // body...
-  t.end();
+  var aJob = {
+    timeout: 3,
+    exec_after: '2012-01-03T12:54:05.788Z',
+    status: 'running',
+    chain_results: [],
+    chain: [],
+    onerror: []
+  },
+  task = {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
+      return cb(null);
+    }.toString()
+  },
+  theWorkflow;
+
+  aJob.chain.push(task);
+  theWorkflow = new Workflow(aJob);
+  t.ok(theWorkflow, 'the workflow ok');
+
+  theWorkflow.run(function(err) {
+    t.ifError(err, 'workflow error');
+    t.equal(theWorkflow.chain_results.length, 1);
+    t.equal(theWorkflow.chain_results, theWorkflow.job.chain_results);
+    var res = theWorkflow.chain_results[0];
+    t.equal(res.error, '');
+    t.equal(res.result, 'OK');
+    t.equal(theWorkflow.job.status, 'finished');
+    t.end();
+  });
 });
 
 
