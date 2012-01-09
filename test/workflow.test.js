@@ -261,6 +261,68 @@ test('a workflow which suceeds', function(t) {
 });
 
 
+test('a failed workflow without "onerror"', function(t) {
+  var aJob = {
+    timeout: 3,
+    exec_after: '2012-01-03T12:54:05.788Z',
+    status: 'running',
+    chain_results: [],
+    chain: [],
+    onerror: []
+  },
+  task = {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
+      return cb('This will fail');
+    }.toString()
+  },
+  theWorkflow;
+
+  aJob.chain.push(task);
+  theWorkflow = new Workflow(aJob);
+  t.ok(theWorkflow, 'the workflow ok');
+
+  theWorkflow.run(function(err) {
+    t.equal(err, 'This will fail');
+    t.equal(theWorkflow.job.chain_results[0].error, 'This will fail');
+    t.end();
+  });
+
+});
+
+
+test('a workflow which time out without "onerror"', function(t) {
+  var aJob = {
+    timeout: 0.05,
+    exec_after: '2012-01-03T12:54:05.788Z',
+    status: 'running',
+    chain_results: [],
+    chain: [],
+    onerror: []
+  },
+  task = {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
+      setTimeout(function() {
+        // Should not be called:
+        return cb('Error within timeout');
+      }, 3050);
+    }.toString()
+  },
+  theWorkflow;
+
+  aJob.chain.push(task);
+  theWorkflow = new Workflow(aJob);
+  t.ok(theWorkflow, 'the workflow ok');
+
+  theWorkflow.run(function(err) {
+    t.equal(err, 'workflow timeout');
+    t.equal(theWorkflow.job.chain_results[0].error, 'workflow timeout');
+    t.end();
+  });
+});
 
 test('teardown', function(t) {
   // body...
