@@ -29,6 +29,9 @@ all:: test doc
 
 node_modules/.npm.installed:
 	$(NPM) install --dev
+	rm -rf node_modules/hydracp \
+		&& git clone git://github.com/orlandov/node-hydracp.git \
+		node_modules/hydracp
 	if [[ ! -d node_modules/.restdown ]]; then \
 		git clone git://github.com/trentm/restdown.git node_modules/.restdown; \
 	else \
