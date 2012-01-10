@@ -3,21 +3,6 @@ var util = require('util'),
     uuid = require('node-uuid'),
     fork = require('hydracp').fork;
 
-//var child = fork(__dirname + '/../lib/runner-child.js', ['some', 'args']);
-
-//child.on('message', function(msg) {
-//});
-
-//child.send({
-//  job: ''
-//});
-
-test('setup', function(t) {
-  // body...
-  t.end();
-});
-
-
 test('message without job', function(t) {
   var child = fork(__dirname + '/../lib/runner-child.js', ['some', 'args']);
 
@@ -149,6 +134,3 @@ test('message with job queued', function(t) {
   });
 });
 
-test('teardown', function(t) {
-  t.end();
-});
