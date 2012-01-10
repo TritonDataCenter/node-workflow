@@ -145,6 +145,10 @@ care of that once we find the example.
 - number of retries, when proceed
 - a fall-back task to be executed when the task fails.
 
+Note that a task's timeout shouldn't be bigger than the workflow timeout, but
+it really doesn't matter. If a task execution exceeds the workflow timeout it
+will be failed with 'workflow timeout' error.
+
 ## Workflow properties:
 
 - A name.

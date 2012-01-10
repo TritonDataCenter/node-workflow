@@ -231,6 +231,17 @@ test('job with different params', function(t) {
 });
 
 
+test('next jobs', function(t) {
+  backend.nextJobs(0, 1, function(err, jobs) {
+    t.ifError(err, 'next jobs error');
+    t.equal(jobs.length, 2);
+    t.equal(jobs[0].uuid, aJob.uuid);
+    t.equal(jobs[1].uuid, anotherJob.uuid);
+    t.end();
+  });
+});
+
+
 test('next queued job', function(t) {
   var idx = 0;
   backend.nextJob(function(err, job) {
