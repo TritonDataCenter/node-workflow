@@ -235,8 +235,8 @@ test('next jobs', function(t) {
   backend.nextJobs(0, 1, function(err, jobs) {
     t.ifError(err, 'next jobs error');
     t.equal(jobs.length, 2);
-    t.equal(jobs[0].uuid, aJob.uuid);
-    t.equal(jobs[1].uuid, anotherJob.uuid);
+    t.equal(jobs[0], aJob.uuid);
+    t.equal(jobs[1], anotherJob.uuid);
     t.end();
   });
 });
