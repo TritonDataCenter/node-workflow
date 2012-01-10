@@ -24,6 +24,9 @@ test('message without job', function(t) {
   child.on('message', function(msg) {
     t.equal(msg.job, '');
     t.equal(msg.error, 'msg.job not present');
+  });
+
+  child.on('exit', function(code) {
     t.end();
   });
 
@@ -60,6 +63,9 @@ test('message with job error', function(t) {
     t.ok(msg.job);
     t.equal(msg.job.status, 'finished');
     t.equal(msg.job.chain_results[0].error, 'This will fail');
+  });
+
+  child.on('exit', function(code) {
     t.end();
   });
 
@@ -94,6 +100,9 @@ test('message with job success', function(t) {
     t.ok(msg.job);
     t.equal(msg.job.status, 'finished');
     t.equal(msg.job.chain_results[0].result, 'OK');
+  });
+
+  child.on('exit', function(code) {
     t.end();
   });
 
@@ -129,13 +138,15 @@ test('message with job queued', function(t) {
     t.ifError(msg.error);
     t.ok(msg.job);
     t.equal(msg.job.status, 'queued');
+  });
+
+  child.on('exit', function(code) {
     t.end();
   });
 
   child.send({
     job: aJob
   });
-
 });
 
 test('teardown', function(t) {
