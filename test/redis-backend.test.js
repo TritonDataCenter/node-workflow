@@ -322,28 +322,36 @@ test('re queue job', function(t) {
 });
 
 
+test('register runner', function(t) {
+  var d = new Date();
+  backend.registerRunner(runnerId, function(err) {
+    t.ifError(err, 'register runner error');
+    backend.client.hget('wf_runners', runnerId, function(err, res) {
+      t.ifError(err, 'get runner error');
+      t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
+      t.end();
+    })
+  });
+});
+
+
+test('runner active', function(t) {
+  var d = new Date();
+  backend.runnerActive(runnerId, function(err) {
+    t.ifError(err, 'runner active error');
+    backend.client.hget('wf_runners', runnerId, function(err, res) {
+      t.ifError(err, 'get runner error');
+      t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
+      t.end();
+    })
+  });
+});
+
+
+
 test('teardown', function(t) {
-  // None of the deleteWorkflow/deleteTask calls are needed since we are
-  // flushing the test db before we get started again.
-  // Better we remove once we are done with tests for those, specially:
-  // - What happens if a task is deleted and there is a workflow pointing
-  //   to such task?. This seems to reveal we need to keep a per task index
-  //   of where that task has been used (workflows uuids) and, in case we
-  //   delete it, we remove it from every one of those workflows?
-  backend.deleteWorkflow(aWorkflow, function(err, result) {
-    t.ifError(err, 'delete workflow error');
-    backend.deleteTask(aTask, function(err, result) {
-      t.ifError(err, 'delete aTask error');
-      backend.deleteTask(anotherTask, function(err, result) {
-        t.ifError(err, 'delete anotherTask error');
-        backend.deleteTask(fallbackTask, function(err, result) {
-          t.ifError(err, 'delete fallbackTask error');
-          backend.quit(function() {
-            t.end();
-          });
-        });
-      });
-    });
+  backend.quit(function() {
+    t.end();
   });
 });
 
