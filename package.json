@@ -7,12 +7,14 @@
     "url": "git://github.com/kusor/node-workflow.git"
   },
   "author": "Pedro P. Candel <kusorbox@gmail.com> (http://www.joyent.com)",
-  "main": "lib/workflow.js",
+  "main": "lib/index.js",
   "dependencies": {
     "node-uuid": "1.2.0",
     "log4js": "0.3.9",
     "redis": "0.7.1",
-    "async": "0.1.15"
+    "async": "0.1.15",
+    "ldapjs-riak": "0.2.5",
+    "restify": "1.0.0"
   },
   "scripts": {
     "pretest": "which gjslint; if [[ \"$?\" = 0 ]] ; then  gjslint --nojsdoc -r lib -r test; else echo \"Missing gjslint. Skipping lint\"; fi; jshint lib test",
