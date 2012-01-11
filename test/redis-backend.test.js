@@ -330,7 +330,7 @@ test('register runner', function(t) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();
-    })
+    });
   });
 });
 
@@ -343,7 +343,7 @@ test('runner active', function(t) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();
-    })
+    });
   });
 });
 

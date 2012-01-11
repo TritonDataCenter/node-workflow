@@ -1,0 +1,178 @@
+var util = require('util'),
+    path = require('path'),
+    fs = require('fs'),
+    test = require('tap').test,
+    uuid = require('node-uuid'),
+    WorkflowRunner = require('../lib/runner'),
+    WorkflowRedisBackend = require('../lib/workflow-redis-backend'),
+    Factory = require('../lib/index').Factory;
+
+// A DB for testing, flushed before and right after we're done with tests
+var TEST_DB_NUM = 15;
+
+var backend, identifier, runner, factory;
+
+var okTask, failTask, okWf, failWf;
+
+test('setup', function(t) {
+  identifier = uuid();
+  backend = new WorkflowRedisBackend({
+    port: 6379,
+    host: '127.0.0.1'
+  });
+  t.ok(backend, 'backend ok');
+  backend.init(function() {
+    backend.client.select(TEST_DB_NUM, function(err, res) {
+      t.ifError(err, 'select db error');
+      t.equal('OK', res, 'select db ok');
+    });
+    backend.client.flushdb(function(err, res) {
+      t.ifError(err, 'flush db error');
+      t.equal('OK', res, 'flush db ok');
+    });
+    backend.client.dbsize(function(err, res) {
+      t.ifError(err, 'db size error');
+      t.equal(0, res, 'db size ok');
+    });
+    runner = new WorkflowRunner(backend, {
+      identifier: identifier,
+      forks: 2,
+      run_interval: 0.1
+    });
+    t.ok(runner);
+    factory = Factory(backend);
+    t.ok(factory);
+
+    // okTask:
+    factory.task('OK Task', {retry: 1}, function(job, cb) {
+      return cb(null);
+    }, function(err, task) {
+      t.ifError(err, 'OK Task error');
+      t.ok(task, 'OK task ok');
+      okTask = task;
+      // failTask:
+      factory.task('Fail Task', {retry: 1}, function(job, cb) {
+        return cb('Fail task error');
+      }, function(err, task) {
+        t.ifError(err, 'Fail Task error');
+        t.ok(task, 'Fail task OK');
+        failTask = task;
+        // okWf:
+        factory.workflow('OK wf', {
+          chain: [okTask],
+          timeout: 1
+        }, function(err, wf) {
+          t.ifError(err, 'ok wf error');
+          t.ok(wf, 'OK wf OK');
+          okWf = wf;
+          // failWf:
+          factory.workflow('Fail wf', {
+            chain: [failTask],
+            timeout: 1
+          }, function(err, wf) {
+            t.ifError(err, 'Fail wf error');
+            t.ok(wf, 'Fail wf OK');
+            failWf = wf;
+            t.end();
+          });
+        });
+      });
+    });
+
+  });
+});
+
+
+test('runner identifier', function(t) {
+  var runner = new WorkflowRunner(backend),
+      identifier;
+  t.ifError(runner.identifier);
+  // run getIdentifier twice, one to create the file,
+  // another to just read it:
+  runner.getIdentifier(function(err, id) {
+    t.ifError(err);
+    t.ok(id);
+    identifier = id;
+    runner.getIdentifier(function(err, id) {
+      t.ifError(err);
+      t.equal(id, identifier);
+      t.end();
+    });
+  });
+});
+
+
+test('runner run job now', function(t) {
+  var d = new Date();
+  t.ok(runner.runNow({exec_after: d.toISOString()}));
+  // Set to the future, so it shouldn't run:
+  d.setTime(d.getTime() + 10000);
+  t.ok(!runner.runNow({exec_after: d.toISOString()}));
+  t.end();
+});
+
+
+test('run job', function(t) {
+  var aJob;
+  factory.job(okWf, {
+    exec_after: '2012-01-03T12:54:05.788Z'
+  }, function(err, job) {
+    t.ifError(err, 'job error');
+    t.ok(job);
+    aJob = job;
+    runner.run();
+    setTimeout(function() {
+      runner.quit(function() {
+        backend.getJob(aJob.uuid, function(err, job) {
+          t.ifError(err);
+          t.equal(job.status, 'finished');
+          t.equal(JSON.parse(job.chain_results)[0].result, 'OK');
+          t.end();
+        });
+      });
+    }, 10000);
+  });
+
+});
+
+
+test('run job which fails', function(t) {
+  var aJob;
+  factory.job(failWf, {
+    exec_after: '2012-01-03T12:54:05.788Z'
+  }, function(err, job) {
+    t.ifError(err, 'job error');
+    t.ok(job);
+    aJob = job;
+    runner.run();
+    setTimeout(function() {
+      runner.quit(function() {
+        backend.getJob(aJob.uuid, function(err, job) {
+          t.ifError(err);
+          t.equal(job.status, 'finished');
+          t.equal(JSON.parse(job.chain_results)[0].error, 'Fail task error');
+          t.end();
+        });
+      });
+    }, 10000);
+  });
+
+});
+
+
+test('teardown', function(t) {
+  var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
+  backend.quit(function() {
+    path.exists(cfg_file, function(exist) {
+      if (exist) {
+        fs.unlink(cfg_file, function(err) {
+          t.ifError(err);
+          t.end();
+        });
+      } else {
+        t.end();
+      }
+    });
+  });
+});
+
