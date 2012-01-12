@@ -44,15 +44,23 @@ test('setup', function(t) {
     t.ok(factory);
 
     // okTask:
-    factory.task('OK Task', {retry: 1}, function(job, cb) {
-      return cb(null);
+    factory.task({
+      name: 'OK Task',
+      retry: 1,
+      body: function(job, cb) {
+        return cb(null);
+      }
     }, function(err, task) {
       t.ifError(err, 'OK Task error');
       t.ok(task, 'OK task ok');
       okTask = task;
       // failTask:
-      factory.task('Fail Task', {retry: 1}, function(job, cb) {
-        return cb('Fail task error');
+      factory.task({
+        retry: 1,
+        name: 'Fail Task',
+        body: function(job, cb) {
+          return cb('Fail task error');
+        }
       }, function(err, task) {
         t.ifError(err, 'Fail Task error');
         t.ok(task, 'Fail task OK');

@@ -36,21 +36,19 @@ test('setup', function(t) {
     });
     factory = Factory(backend);
     t.ok(factory, 'factory ok');
-    // wtf?
-    // t.ok(backend.connected, 'backend connected');
     t.end();
   });
 });
 
 
 test('add a task', function(t) {
-  factory.task('A Task', {
+  factory.task({
+    name: 'A Task',
     timeout: 30,
-    retry: 3
-  }, function(job) {
-    var self = this;
-    job.foo = 1;
-    this.emit('end');
+    retry: 3,
+    body: function(job, cb) {
+      return cb(null);
+    }
   }, function(err, task) {
     t.ifError(err, 'task error');
     t.ok(task, 'task ok');
@@ -67,10 +65,12 @@ test('add a task', function(t) {
 });
 
 test('task name must be unique', function(t) {
-  factory.task('A Task', {
-    retry: 0
-  }, function(job) {
-    return 1;
+  factory.task({
+    name: 'A Task',
+    retry: 0,
+    body: function(job, cb) {
+      return cb(null);
+    }
   }, function(err, task) {
     t.ok(err, 'duplicated task name error');
     t.end();
@@ -96,14 +96,20 @@ test('update a task', function(t) {
 
 test('add more tasks', function(t) {
   // We need more than one task for the workflow stuff:
-  factory.task('Another task', {}, function(job) {
-    return 1;
+  factory.task({
+    name: 'Another task',
+    body: function(job, cb) {
+      return cb(null);
+    }
   }, function(err, task) {
     t.ifError(err, 'another task error');
     t.ok(task, 'another task ok');
     anotherTask = task;
-    factory.task('Fallback task', {}, function(job) {
-      console.log('Workflow error');
+    factory.task({
+      name: 'Fallback task',
+      body: function(job, cb) {
+        return cb('Workflow error');
+      }
     }, function(err, task) {
       t.ifError(err, 'fallback task error');
       t.ok(task, 'fallback task ok');
