@@ -132,7 +132,6 @@ test('run job', function(t) {
       });
     }, 10000);
   });
-
 });
 
 
@@ -156,7 +155,19 @@ test('run job which fails', function(t) {
       });
     }, 10000);
   });
+});
 
+
+test('runner init', function(t) {
+  runner.init(function(err) {
+    t.ifError(err, 'runner init error');
+    runner.backend.getRunners(function(err, runners) {
+      t.ifError(err, 'get runners error');
+      t.ok(runners[identifier], 'runner id ok');
+      t.ok(new Date(runners[identifier]), 'runner timestamp ok');
+      t.end();
+    });
+  });
 });
 
 
