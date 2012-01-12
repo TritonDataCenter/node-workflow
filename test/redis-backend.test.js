@@ -348,6 +348,17 @@ test('runner active', function(t) {
 });
 
 
+test('get all runners', function(t) {
+  backend.getRunners(function(err, runners) {
+    t.ifError(err, 'get runners error');
+    t.ok(runners, 'runners ok');
+    t.ok(runners[runnerId], 'runner id ok');
+    t.ok(new Date(runners[runnerId]), 'runner timestamp ok');
+    t.end();
+  });
+
+});
+
 
 test('teardown', function(t) {
   backend.quit(function() {
