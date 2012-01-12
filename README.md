@@ -148,6 +148,26 @@ care of that once we find the example.
 - number of retries, when proceed
 - a fall-back task to be executed when the task fails.
 
+
+        factory.task({
+          name: 'A Task',
+          timeout: 30,
+          retry: 2,
+          body: function(job, cb) {
+            if (!job.foo) {
+              job.foo = true;
+              return cb('Foo was not defined');
+            }
+            return cb(null);
+          }
+        }, function(err, task) {
+          if (err) {
+            throw(err);
+          }
+          return task;
+        });
+
+
 Note that a task's timeout shouldn't be bigger than the workflow timeout, but
 it really doesn't matter. If a task execution exceeds the workflow timeout it
 will be failed with 'workflow timeout' error.
@@ -159,6 +179,20 @@ will be failed with 'workflow timeout' error.
 - A global timeout.
 - Alternate error branch.
 - Optionally, another workflow to execute right after the current one is completed.
+
+
+        factory.workflow({
+          name: 'Sample Workflow',
+          chain: [aTask, anotherTask, aTaskWhichWillFail],
+          timeout: 3,
+          onError: [aFallbackTask]
+        }, function(err, workflow) {
+          if (err) {
+            throw(err);
+          }
+          return workflow;
+        });
+
 
 ## Job properties:
 
@@ -175,6 +209,20 @@ Same than the workflow plus:
 - Any additional property a task may want to save with the job to be used by
   a subsequent task.
 
+
+
+        factory.job({
+          workflow: aWorkflow,
+          exec_after: '2012-01-03T12:54:05.788Z'
+        }, function(err, job) {
+          if (err) {
+            callback(err);
+          }
+          aJob = job;
+          callback(null, job);
+        });
+
+
 Some questions about other jobs options:
 
 - Do we want to be able to "abort" a job?.
@@ -183,36 +231,7 @@ Some questions about other jobs options:
   branch?, (note I'm beginning to think that `onerror` should be called
   `revert` sometimes, or maybe it's just an extra branch ...).
 
-
-        workflow.create('the Workflow Name', {
-            chain: [aTask, anotherTask],
-            timeout: 5m,
-            onError: 'some Other Branch',
-            next: 'another workflow'
-        });
-        // Instantiates a new Workflow object, sets properties and
-        // stores it on the backend
-
-        workflow.task('aTask', {
-            timeout: 30s,
-            retry: 3,
-            onError: 'some other task'
-        }, function(job) {
-            // ... do stuff here
-            return next();
-        });
-        // Instantiates a new Task object, sets properties and
-        // stores it on the backend
-
-        // A position? or allow specify "right before/after task with name 'Foo'?"
-        workflow.addTask('the Workflow Name', 'a New Task' [, position?]);
-        workflow.removeTask('the Workflow Name', 'a Task');
-
-        // Instantiates a new Job object and stores it on the backend
-        job.create('the Workflow Name' [, target [, {parameters}]]);
-        // Note that, while a workflow may have references to the backend
-        // for tasks, the job will contain a complete definition of each task
-        // instead of just a pointer to them
-        runner.run([job]); // Runners should pick pending jobs by themselves
+See `example.js` for a detailed description on how to create Tasks, Workflows
+and Jobs using NodeJS through the **factory** component.
 
 
