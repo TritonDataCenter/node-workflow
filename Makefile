@@ -32,6 +32,9 @@ node_modules/.npm.installed:
 	rm -rf node_modules/hydracp \
 		&& git clone git://github.com/orlandov/node-hydracp.git \
 		node_modules/hydracp
+	rm -rf node_modules/restify \
+		&& git clone git://github.com/mcavage/node-restify.git \
+		node_modules/restify
 	if [[ ! -d node_modules/.restdown ]]; then \
 		git clone git://github.com/trentm/restdown.git node_modules/.restdown; \
 	else \
