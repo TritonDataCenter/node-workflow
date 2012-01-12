@@ -58,7 +58,8 @@ test('setup', function(t) {
         t.ok(task, 'Fail task OK');
         failTask = task;
         // okWf:
-        factory.workflow('OK wf', {
+        factory.workflow({
+          name: 'OK wf',
           chain: [okTask],
           timeout: 1
         }, function(err, wf) {
@@ -66,7 +67,8 @@ test('setup', function(t) {
           t.ok(wf, 'OK wf OK');
           okWf = wf;
           // failWf:
-          factory.workflow('Fail wf', {
+          factory.workflow({
+            name: 'Fail wf',
             chain: [failTask],
             timeout: 1
           }, function(err, wf) {
