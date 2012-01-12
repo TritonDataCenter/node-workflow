@@ -37,7 +37,10 @@ The system itself may also fail due to any unexpected reason.
 ## System components
 
 - A workflow and task **factory**, where you can create tasks, workflows and queue
-  jobs.
+  jobs, using NodeJS.
+- Alongside the **factory**, **Workflow API** will allow creation of tasks,
+  workflows and jobs through a REST API using any other language, with JSON as
+  the payload.
 - An **Status API**, where you can check the status of a given job, get information
   about failures, ...
 - **Job runners**. You can have as many runners as you want. Runners can live
