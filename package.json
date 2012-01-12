@@ -13,8 +13,7 @@
     "log4js": "0.3.9",
     "redis": "0.7.1",
     "async": "0.1.15",
-    "ldapjs-riak": "0.2.5",
-    "restify": "1.0.0"
+    "ldapjs-riak": "0.2.5" 
   },
   "scripts": {
     "pretest": "which gjslint; if [[ \"$?\" = 0 ]] ; then  gjslint --nojsdoc -r lib -r test; else echo \"Missing gjslint. Skipping lint\"; fi; jshint lib test",
