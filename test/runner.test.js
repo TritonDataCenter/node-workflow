@@ -124,7 +124,8 @@ test('runner run job now', function(t) {
 
 test('run job', function(t) {
   var aJob;
-  factory.job(okWf, {
+  factory.job({
+    workflow: okWf,
     exec_after: '2012-01-03T12:54:05.788Z'
   }, function(err, job) {
     t.ifError(err, 'job error');
@@ -147,7 +148,8 @@ test('run job', function(t) {
 
 test('run job which fails', function(t) {
   var aJob;
-  factory.job(failWf, {
+  factory.job({
+    workflow: failWf,
     exec_after: '2012-01-03T12:54:05.788Z'
   }, function(err, job) {
     t.ifError(err, 'job error');
