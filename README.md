@@ -234,4 +234,121 @@ Some questions about other jobs options:
 See `example.js` for a detailed description on how to create Tasks, Workflows
 and Jobs using NodeJS through the **factory** component.
 
+## Workflow Runners
 
+The system design requires that we can have workflow runners everywhere. As
+many as needed, and all of them reporting health periodically. Also, it would
+be desirable that runners could implement a `ping` method to provide immediate
+information about their status.
+
+All runners will periodically query the backend for information about other
+runners and, in case they detect one of those runners has been inactive for a
+configurable period of time, they will check for stale jobs associated with
+the inactive runner and either fail those jobs or run the associated `onerror`
+branch.
+
+The first thing a runner does when it boots, is to register itself on the
+backend, (which is the same as report its health). At a configurable interval
+a runner will try to pick queued jobs and execute them. Runners will report
+activity at this same interval.
+
+Every runner must have an unique identifier, which can be passed at runner's
+initialization, (or it will be auto-generated the first time the runner is
+created and saved for future runs).
+
+Runners will spawn child processes, one process per job. Max number of child
+processes is also configurable.
+
+### How runners pick and execute jobs
+
+A runner will query the backend for queued jobs, (exactly the same number of
+them than available child processes to spawn). Once the runner gets a set of
+these queued jobs, it will try to obtain an exclusive lock on each job before
+processing it. When a job is locked by a runner, it will not be found by other
+runners searching for queued jobs.
+
+Once the runner has the exclusive lock over the job, it'll change job status
+from _queued_ to _running_, and begin executing the associated tasks.
+
+In order to execute the job, the runner will spawn a child process, and pass
+it all the information about the job. (Child processes don't have access to
+the backend, just to the job, which must be a JSON object).
+
+Note that everything must be executed within the acceptable amount of time
+provided for the job. If this time expires, the job execution will fail and
+the `onerror` branch will be executed when given.
+
+### Task execution:
+
+Workflow runner will then try to execute the `job` chain of tasks, in order.
+For every task, the runner will try to execute the task `body`, using NodeJS
+VM API. Every task will get as arguments the job and a callback. A task should
+call the callback once it's completed.
+
+
+    // A task body:
+    function(job, cb) {
+      // Task stuff here:
+      cb(null);
+    }
+
+
+If a task succeeds, it will call the callback without `error`:
+
+    cb(null);
+
+Otherwise, the task should call the callback with an error message:
+
+    cb('whatever the error reason');
+
+These error messages will be available for the task's `onerror` function, in
+order to allow a task's fallback to decide if it can recover the task from a
+failure.
+
+It's also possible to set an specific timeout for every task execution.
+
+Either if a task fails, or if the task timeout is reached, the runner will
+check if we've exceeded the number of retries for the task and, if that's not
+the case, it'll try to execute the task again.
+
+Once the max number of retries for a task has been reached, the runner will
+check if the task has an `onerror` fallback and, when that's the case, it'll
+call it with the error which caused the failure, as follows:
+
+    task.onerror(error, job, cb);
+
+The same logic than for tasks bodies can be applied to `onerror` fallbacks.
+
+Note that __tasks run sandboxed__. Only the node modules we specify to the
+runner at initialization time, alongside with `setTimeout`, `clearTimeout`,
+`setInterval` and `clearInterval` global functions will be available for
+task `body` and `onerror` functions. (This will be configurable).
+
+All the tasks results will be saved sorted at the job's property
+`chain_results`. For every task, the results will be something like:
+
+    {
+      error: '',
+      results: 'OK'
+    }
+
+or, for a task which failed:
+
+    {
+      error: 'Whatever the error reason',
+      results: ''
+    }
+
+If the task fails because its `onerror` fallback failed, or because the task
+doesn't has such fallback, the job's `onerror` chain will be invoked if
+present.
+
+The logic to execute the job's `onerror` chain is exactly the same than we've
+described here for the main `chain` of tasks.
+
+Once the job is finished, either successfully or right after a failure, or even
+in the case a task tells the runner to _re-queue_ the job, due to whatever the
+reason, the child process running the job will communicate the runner the
+results, and the runner will save back those results into the backend, either
+finishing the job, or re-queueing it for another runner which may fetch it in
+order to continue its execution at a later time.

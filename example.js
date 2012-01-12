@@ -28,8 +28,9 @@ var series = [
       body: function(job, cb) {
         // Some task failed and, as a consequence, this task is being executed
         if (job.error) {
-          console.error(job.error);
+          // Do something here ...
         }
+        cb(null);
       }
     }, function(err, task) {
       if (err) {
