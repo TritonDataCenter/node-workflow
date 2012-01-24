@@ -192,7 +192,7 @@ test('create job', function(t) {
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
     t.ok(job.exec_after);
-    t.equal(job.status, 'queued');
+    t.equal(job.execution, 'queued');
     t.ok(job.uuid);
     t.equal(typeof job.chain, 'string');
     t.equal(typeof job.onerror, 'string');
@@ -230,7 +230,7 @@ test('job with different params', function(t) {
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
     t.ok(job.exec_after);
-    t.equal(job.status, 'queued');
+    t.equal(job.execution, 'queued');
     t.ok(job.uuid);
     t.equal(typeof job.chain, 'string');
     t.equal(typeof job.onerror, 'string');
@@ -285,7 +285,7 @@ test('run job', function(t) {
       backend.getJob(aJob.uuid, function(err, job) {
         t.ifError(err, 'run job getJob');
         t.equal(job.runner, runnerId, 'run job runner');
-        t.equal(job.status, 'running', 'run job status');
+        t.equal(job.execution, 'running', 'run job status');
         aJob = job;
         t.end();
       });
@@ -306,7 +306,7 @@ test('finish job', function(t) {
       t.ifError(err, 'finish job getJob error');
       t.equal(job.chain_results, aJob.chain_results, 'finish job results');
       t.ok(!job.runner);
-      t.equal(job.status, 'finished', 'finished job status');
+      t.equal(job.execution, 'finished', 'finished job status');
       t.end();
     });
   });
@@ -324,7 +324,7 @@ test('re queue job', function(t) {
       backend.getJob(anotherJob.uuid, function(err, job) {
         t.ifError(err, 're queue job getJob');
         t.ok(!job.runner, 're queue job runner');
-        t.equal(job.status, 'queued', 're queue job status');
+        t.equal(job.execution, 'queued', 're queue job status');
         anotherJob = job;
         t.end();
       });

@@ -15,7 +15,7 @@ var job = {
   },
   uuid: 'fb4c202d-19ed-4ed9-afda-8255aa7f38ad',
   target: '/foo/bar',
-  status: 'running',
+  execution: 'running',
   chain_results: [],
   chain: [],
   onerror: []
@@ -230,7 +230,7 @@ test('a workflow which suceeds', function(t) {
   var aJob = {
     timeout: 3,
     exec_after: '2012-01-03T12:54:05.788Z',
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []
@@ -255,7 +255,7 @@ test('a workflow which suceeds', function(t) {
     var res = theWorkflow.chain_results[0];
     t.equal(res.error, '');
     t.equal(res.result, 'OK');
-    t.equal(theWorkflow.job.status, 'finished');
+    t.equal(theWorkflow.job.execution, 'finished');
     t.end();
   });
 });
@@ -265,7 +265,7 @@ test('a failed workflow without "onerror"', function(t) {
   var aJob = {
     timeout: 3,
     exec_after: '2012-01-03T12:54:05.788Z',
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []
@@ -296,7 +296,7 @@ test('a workflow which time out without "onerror"', function(t) {
   var aJob = {
     timeout: 0.05,
     exec_after: '2012-01-03T12:54:05.788Z',
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []

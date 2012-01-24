@@ -27,7 +27,7 @@ test('message with job error', function(t) {
   var aJob = {
     timeout: 3,
     exec_after: '2012-01-03T12:54:05.788Z',
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []
@@ -47,7 +47,7 @@ test('message with job error', function(t) {
     t.ok(msg.error);
     t.equal(msg.error, 'This will fail');
     t.ok(msg.job);
-    t.equal(msg.job.status, 'finished');
+    t.equal(msg.job.execution, 'finished');
     t.equal(msg.job.chain_results[0].error, 'This will fail');
   });
 
@@ -65,7 +65,7 @@ test('message with job success', function(t) {
   var aJob = {
     timeout: 3,
     exec_after: '2012-01-03T12:54:05.788Z',
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []
@@ -84,7 +84,7 @@ test('message with job success', function(t) {
   child.on('message', function(msg) {
     t.ifError(msg.error);
     t.ok(msg.job);
-    t.equal(msg.job.status, 'finished');
+    t.equal(msg.job.execution, 'finished');
     t.equal(msg.job.chain_results[0].result, 'OK');
   });
 
@@ -102,7 +102,7 @@ test('message with job queued', function(t) {
   var future = new Date(),
   aJob = {
     timeout: 3,
-    status: 'running',
+    execution: 'running',
     chain_results: [],
     chain: [],
     onerror: []
@@ -123,7 +123,7 @@ test('message with job queued', function(t) {
   child.on('message', function(msg) {
     t.ifError(msg.error);
     t.ok(msg.job);
-    t.equal(msg.job.status, 'queued');
+    t.equal(msg.job.execution, 'queued');
   });
 
   child.on('exit', function(code) {
