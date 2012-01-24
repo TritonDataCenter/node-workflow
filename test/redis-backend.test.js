@@ -294,10 +294,33 @@ test('run job', function(t) {
 });
 
 
+test('update job', function(t) {
+  aJob.chain_results = JSON.stringify([
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''}
+  ]);
+
+  backend.updateJob(aJob, function(err) {
+    t.ifError(err, 'update job error');
+    backend.getJob(aJob.uuid, function(err, job) {
+      t.ifError(err, 'update job getJob');
+      t.equal(job.runner, runnerId, 'update job runner');
+      t.equal(job.execution, 'running', 'update job status');
+      t.equal(2, JSON.parse(job.chain_results).length);
+      aJob = job;
+      t.end();
+    });
+
+  });
+});
+
+
 test('finish job', function(t) {
   aJob.chain_results = JSON.stringify([
-    {success: true, error: ''},
-    {success: true, error: ''}
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''}
   ]);
 
   backend.finishJob(aJob, function(err) {
