@@ -255,7 +255,7 @@ test('a workflow which suceeds', function(t) {
     var res = theWorkflow.chain_results[0];
     t.equal(res.error, '');
     t.equal(res.result, 'OK');
-    t.equal(theWorkflow.job.execution, 'finished');
+    t.equal(theWorkflow.job.execution, 'succeeded');
     t.end();
   });
 });
@@ -286,6 +286,7 @@ test('a failed workflow without "onerror"', function(t) {
   theWorkflow.run(function(err) {
     t.equal(err, 'This will fail');
     t.equal(theWorkflow.job.chain_results[0].error, 'This will fail');
+    t.equal(theWorkflow.job.execution, 'failed');
     t.end();
   });
 
@@ -320,6 +321,7 @@ test('a workflow which time out without "onerror"', function(t) {
   theWorkflow.run(function(err) {
     t.equal(err, 'workflow timeout');
     t.equal(theWorkflow.job.chain_results[0].error, 'workflow timeout');
+    t.equal(theWorkflow.job.execution, 'failed');
     t.end();
   });
 });

@@ -47,7 +47,7 @@ test('message with job error', function(t) {
     t.ok(msg.error);
     t.equal(msg.error, 'This will fail');
     t.ok(msg.job);
-    t.equal(msg.job.execution, 'finished');
+    t.equal(msg.job.execution, 'failed');
     t.equal(msg.job.chain_results[0].error, 'This will fail');
   });
 
@@ -84,7 +84,7 @@ test('message with job success', function(t) {
   child.on('message', function(msg) {
     t.ifError(msg.error);
     t.ok(msg.job);
-    t.equal(msg.job.execution, 'finished');
+    t.equal(msg.job.execution, 'succeeded');
     t.equal(msg.job.chain_results[0].result, 'OK');
   });
 

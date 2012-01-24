@@ -306,7 +306,7 @@ test('finish job', function(t) {
       t.ifError(err, 'finish job getJob error');
       t.equal(job.chain_results, aJob.chain_results, 'finish job results');
       t.ok(!job.runner);
-      t.equal(job.execution, 'finished', 'finished job status');
+      t.equal(job.execution, 'succeeded', 'finished job status');
       t.end();
     });
   });

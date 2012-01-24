@@ -136,7 +136,7 @@ test('run job', function(t) {
       runner.quit(function() {
         backend.getJob(aJob.uuid, function(err, job) {
           t.ifError(err);
-          t.equal(job.execution, 'finished');
+          t.equal(job.execution, 'succeeded');
           t.equal(JSON.parse(job.chain_results)[0].result, 'OK');
           t.end();
         });
@@ -160,7 +160,7 @@ test('run job which fails', function(t) {
       runner.quit(function() {
         backend.getJob(aJob.uuid, function(err, job) {
           t.ifError(err);
-          t.equal(job.execution, 'finished');
+          t.equal(job.execution, 'failed');
           t.equal(JSON.parse(job.chain_results)[0].error, 'Fail task error');
           t.end();
         });
