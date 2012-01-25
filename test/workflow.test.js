@@ -26,6 +26,11 @@ var aWorkflow;
 test('setup', function(t) {
   // body...
   aWorkflow = new Workflow(job);
+  // Need to overload for runTask/runChain, since it's added from the runner on
+  // the call to run().
+  aWorkflow.notifier = function(job) {
+    t.equal(job.execution, 'running');
+  };
   t.ok(aWorkflow, 'workflow ok');
   t.equal(aWorkflow.exec_after.toISOString(), job.exec_after);
   t.equal(aWorkflow.chain_results.length, 0);
@@ -248,7 +253,9 @@ test('a workflow which suceeds', function(t) {
   theWorkflow = new Workflow(aJob);
   t.ok(theWorkflow, 'the workflow ok');
 
-  theWorkflow.run(function(err) {
+  theWorkflow.run(function(job) {
+    t.equal(job.execution, 'running');
+  }, function(err) {
     t.ifError(err, 'workflow error');
     t.equal(theWorkflow.chain_results.length, 1);
     t.equal(theWorkflow.chain_results, theWorkflow.job.chain_results);
@@ -283,7 +290,9 @@ test('a failed workflow without "onerror"', function(t) {
   theWorkflow = new Workflow(aJob);
   t.ok(theWorkflow, 'the workflow ok');
 
-  theWorkflow.run(function(err) {
+  theWorkflow.run(function(job) {
+    t.equal(job.execution, 'running');
+  }, function(err) {
     t.equal(err, 'This will fail');
     t.equal(theWorkflow.job.chain_results[0].error, 'This will fail');
     t.equal(theWorkflow.job.execution, 'failed');
@@ -318,7 +327,9 @@ test('a workflow which time out without "onerror"', function(t) {
   theWorkflow = new Workflow(aJob);
   t.ok(theWorkflow, 'the workflow ok');
 
-  theWorkflow.run(function(err) {
+  theWorkflow.run(function(job) {
+    t.equal(job.execution, 'running');
+  }, function(err) {
     t.equal(err, 'workflow timeout');
     t.equal(theWorkflow.job.chain_results[0].error, 'workflow timeout');
     t.equal(theWorkflow.job.execution, 'failed');
@@ -327,6 +338,5 @@ test('a workflow which time out without "onerror"', function(t) {
 });
 
 test('teardown', function(t) {
-  // body...
   t.end();
 });

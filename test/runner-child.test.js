@@ -44,11 +44,20 @@ test('message with job error', function(t) {
   aJob.chain.push(task);
 
   child.on('message', function(msg) {
-    t.ok(msg.error);
-    t.equal(msg.error, 'This will fail');
-    t.ok(msg.job);
-    t.equal(msg.job.execution, 'failed');
-    t.equal(msg.job.chain_results[0].error, 'This will fail');
+    if (msg.job.execution === 'running') {
+      // this is task info
+      t.ifError(msg.err);
+      t.ok(msg.job);
+      t.equal(msg.job.execution, 'running');
+      t.equal(msg.job.chain_results[0].error, 'This will fail');
+    } else {
+      // Final job message sent before child process exited
+      t.ok(msg.error);
+      t.equal(msg.error, 'This will fail');
+      t.ok(msg.job);
+      t.equal(msg.job.execution, 'failed');
+      t.equal(msg.job.chain_results[0].error, 'This will fail');
+    }
   });
 
   child.on('exit', function(code) {
@@ -82,10 +91,19 @@ test('message with job success', function(t) {
   aJob.chain.push(task);
 
   child.on('message', function(msg) {
-    t.ifError(msg.error);
-    t.ok(msg.job);
-    t.equal(msg.job.execution, 'succeeded');
-    t.equal(msg.job.chain_results[0].result, 'OK');
+    if (msg.job.execution === 'running') {
+      // This is task info:
+      t.ifError(msg.error);
+      t.ok(msg.job);
+      t.equal(msg.job.execution, 'running');
+      t.equal(msg.job.chain_results[0].result, 'OK');
+    } else {
+      // final message sent before child process exit
+      t.ifError(msg.error);
+      t.ok(msg.job);
+      t.equal(msg.job.execution, 'succeeded');
+      t.equal(msg.job.chain_results[0].result, 'OK');
+    }
   });
 
   child.on('exit', function(code) {

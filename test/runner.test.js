@@ -129,14 +129,14 @@ test('run job', function(t) {
     exec_after: '2012-01-03T12:54:05.788Z'
   }, function(err, job) {
     t.ifError(err, 'job error');
-    t.ok(job);
+    t.ok(job, 'run job ok');
     aJob = job;
     runner.run();
     setTimeout(function() {
       runner.quit(function() {
         backend.getJob(aJob.uuid, function(err, job) {
-          t.ifError(err);
-          t.equal(job.execution, 'succeeded');
+          t.ifError(err, 'run job get job error');
+          t.equal(job.execution, 'succeeded', 'job execution');
           t.equal(JSON.parse(job.chain_results)[0].result, 'OK');
           t.end();
         });
@@ -153,14 +153,14 @@ test('run job which fails', function(t) {
     exec_after: '2012-01-03T12:54:05.788Z'
   }, function(err, job) {
     t.ifError(err, 'job error');
-    t.ok(job);
+    t.ok(job, 'job ok');
     aJob = job;
     runner.run();
     setTimeout(function() {
       runner.quit(function() {
         backend.getJob(aJob.uuid, function(err, job) {
-          t.ifError(err);
-          t.equal(job.execution, 'failed');
+          t.ifError(err, 'get job error');
+          t.equal(job.execution, 'failed', 'job execution');
           t.equal(JSON.parse(job.chain_results)[0].error, 'Fail task error');
           t.end();
         });
