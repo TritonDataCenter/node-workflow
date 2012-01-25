@@ -64,15 +64,15 @@ var series = [
   },
 
   function(callback) {
-    // This task will fail, but it will succeed when the task's onerror function
+    // This task will fail, but it will succeed when the task's fallback function
     // is called:
     factory.task({
       name: 'Another task',
       body: function(job, cb) {
         return cb('Task body error');
       },
-      // Note that the `onerror` function takes the error as its first argument:
-      onerror: function(err, job, cb) {
+      // Note that the `fallback` function takes the error as its first argument:
+      fallback: function(err, job, cb) {
         job.the_err = err;
         return cb(null);
       }
@@ -86,7 +86,7 @@ var series = [
   },
 
   function(callback) {
-    // This task will fail and, given there isn't an onerror callback,
+    // This task will fail and, given there isn't an fallback callback,
     // the workflow will call the `onerror` chain:
     factory.task({
       name: 'A task which will fail',

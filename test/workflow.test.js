@@ -80,7 +80,7 @@ test('a task which succeeds on 2nd retry', function(t) {
   });
 });
 
-test('a task which fails and succeeds "onerror"', function(t) {
+test('a task which fails and succeeds "fallback"', function(t) {
   var task = {
     'uuid': uuid(),
     'name': 'A name',
@@ -88,7 +88,7 @@ test('a task which fails and succeeds "onerror"', function(t) {
     'body': function(job, cb) {
       return cb('Task body error');
     }.toString(),
-    'onerror': function(err, job, cb) {
+    'fallback': function(err, job, cb) {
       job.the_err = err;
       return cb(null);
     }.toString()
@@ -105,7 +105,7 @@ test('a task which fails and succeeds "onerror"', function(t) {
 });
 
 
-test('a task which fails and has no "onerror"', function(t) {
+test('a task which fails and has no "fallback"', function(t) {
   var task = {
     'uuid': uuid(),
     'name': 'A name',
@@ -123,28 +123,28 @@ test('a task which fails and has no "onerror"', function(t) {
   });
 });
 
-test('a task which fails and "onerror" fails too', function(t) {
+test('a task which fails and "fallback" fails too', function(t) {
   var task = {
     'uuid': uuid(),
     'name': 'A name',
     'body': function(job, cb) {
       return cb('Task body error');
     }.toString(),
-    'onerror': function(err, job, cb) {
-      return cb('OnError error');
+    'fallback': function(err, job, cb) {
+      return cb('fallback error');
     }.toString()
   };
   aWorkflow.runTask(task, function(err) {
     t.ok(err, 'task error');
     t.equal(aWorkflow.chain_results.length, 5);
     var res = aWorkflow.chain_results[4];
-    t.equal(res.error, 'OnError error');
+    t.equal(res.error, 'fallback error');
     t.equal(res.result, '');
     t.end();
   });
 });
 
-test('a task which fails after two retries and has no "onerror"', function(t) {
+test('a task which fails after two retries and has no "fallback"', function(t) {
   var task = {
     'uuid': uuid(),
     'name': 'A name',
@@ -173,7 +173,7 @@ test('a task which fails after two retries and has no "onerror"', function(t) {
   });
 });
 
-test('a task which time out and succeeds "onerror"', function(t) {
+test('a task which time out and succeeds "fallback"', function(t) {
   var task = {
     'uuid': uuid(),
     'name': 'A name',
@@ -184,7 +184,7 @@ test('a task which time out and succeeds "onerror"', function(t) {
         return cb('Error within timeout');
       }, 1050);
     }.toString(),
-    'onerror': function(err, job, cb) {
+    'fallback': function(err, job, cb) {
       job.the_err = err;
       return cb(null);
     }.toString()
