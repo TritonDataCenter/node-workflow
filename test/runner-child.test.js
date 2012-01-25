@@ -25,7 +25,7 @@ test('message without job', function(t) {
 
 test('message with job error', function(t) {
   var aJob = {
-    timeout: 3,
+    timeout: 180,
     exec_after: '2012-01-03T12:54:05.788Z',
     execution: 'running',
     chain_results: [],
@@ -72,7 +72,7 @@ test('message with job error', function(t) {
 
 test('message with job success', function(t) {
   var aJob = {
-    timeout: 3,
+    timeout: 180,
     exec_after: '2012-01-03T12:54:05.788Z',
     execution: 'running',
     chain_results: [],
@@ -119,7 +119,7 @@ test('message with job success', function(t) {
 test('message with job queued', function(t) {
   var future = new Date(),
   aJob = {
-    timeout: 3,
+    timeout: 180,
     execution: 'running',
     chain_results: [],
     chain: [],

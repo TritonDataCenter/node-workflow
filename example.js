@@ -108,7 +108,7 @@ var series = [
     factory.workflow({
       name: 'Sample Workflow',
       chain: [aTask, anotherTask, aTaskWhichWillFail],
-      timeout: 3,
+      timeout: 180,
       onError: [aFallbackTask]
     }, function(err, workflow) {
       if (err) {

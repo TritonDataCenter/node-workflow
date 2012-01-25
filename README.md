@@ -184,7 +184,7 @@ will be failed with 'workflow timeout' error.
         factory.workflow({
           name: 'Sample Workflow',
           chain: [aTask, anotherTask, aTaskWhichWillFail],
-          timeout: 3,
+          timeout: 300,
           onError: [aFallbackTask]
         }, function(err, workflow) {
           if (err) {

@@ -5,7 +5,7 @@ var util = require('util'),
     Workflow = require('../lib/workflow');
 
 var job = {
-  timeout: 3,
+  timeout: 180,
   workflow_uuid: 'bdfa0821-5071-4682-b965-88293149a8d2',
   name: 'A workflow name',
   exec_after: '2012-01-03T12:54:05.788Z',
@@ -233,7 +233,7 @@ test('a task which time out and succeeds on 2nd retry', function(t) {
 
 test('a workflow which suceeds', function(t) {
   var aJob = {
-    timeout: 3,
+    timeout: 180,
     exec_after: '2012-01-03T12:54:05.788Z',
     execution: 'running',
     chain_results: [],
@@ -270,7 +270,7 @@ test('a workflow which suceeds', function(t) {
 
 test('a failed workflow without "onerror"', function(t) {
   var aJob = {
-    timeout: 3,
+    timeout: 180,
     exec_after: '2012-01-03T12:54:05.788Z',
     execution: 'running',
     chain_results: [],
@@ -304,7 +304,7 @@ test('a failed workflow without "onerror"', function(t) {
 
 test('a workflow which time out without "onerror"', function(t) {
   var aJob = {
-    timeout: 0.05,
+    timeout: 3,
     exec_after: '2012-01-03T12:54:05.788Z',
     execution: 'running',
     chain_results: [],

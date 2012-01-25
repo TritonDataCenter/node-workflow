@@ -123,7 +123,7 @@ test('add a workflow', function(t) {
   factory.workflow({
     name: 'A workflow',
     chain: [aTask],
-    timeout: 3,
+    timeout: 180,
     onError: [fallbackTask]
   }, function(err, workflow) {
     t.ifError(err, 'add workflow error');
@@ -139,7 +139,7 @@ test('workflow name must be unique', function(t) {
   factory.workflow({
     name: 'A workflow',
     chain: [aTask],
-    timeout: 3,
+    timeout: 180,
     onError: [fallbackTask]
   }, function(err, workflow) {
     t.ok(err, 'duplicated workflow name err');
