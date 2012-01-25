@@ -12,20 +12,16 @@ The API is composed by the following end-points:
 - `/workflows`
 - `/tasks`
 - `/jobs`
-- `/jobs/:uuid/status`
-- `/failed_jobs`
+- `/jobs/:uuid/info`
 
 Both, `/workflows` and `/tasks` accept any of the HTTP verbs for the usual CRUD
 but `/jobs` will not accept `PUT`, given the only way to modify a Job once it
 has been created is through execution.
 
-For the same reason, `/jobs/:uuid/status` will not accept neither `POST`
+For the same reason, `/jobs/:uuid/info` will not accept neither `POST`
 requests, since the staus information for a Job is created when the Job itself
 is created, neither `DELETE`, given the status information for a job will be
 removed only if the job is removed.
-
-Finally, the end-point `/failed_jobs` is merely a filter for `/jobs`, which
-just return only the list of jobs whose execution failed.
 
 ## GET /workflows
 
@@ -52,10 +48,13 @@ Create a new workflow.
 
 - `name`: The workflow name. Required.
 - `chain[]`: UUIDs for tasks to add to the workflow. Optional. Multiple values
-  allowed.
+  allowed. Additionally, complete tasks object can be given instead of UUIDs
+  and the tasks will be created (see Tasks section for information on task
+  object expected members).
 - `onerror[]`: UUIDs for tasks to add to the workflow fallback. Optional.
-  Multiple values allowed.
-- `timeout`: Optional timeout, in minutes, for the workflow execution.
+  Multiple values allowed. Additionally, complete tasks objects can be given
+  instead of UUIDs and the tasks will be created.
+- `timeout`: Optional timeout, in seconds, for the workflow execution.
 
 ### Status Codes
 
@@ -74,7 +73,7 @@ Create a new workflow.
       name: 'The workflow name',
       chain: [:task_uuid, :task_uuid, ...],
       onerror: [:task_uuid, :task_uuid, ...],
-      timeout: 60m
+      timeout: 3600(secs)
     }
 
 ## GET /workflows/:wf_uuid
@@ -152,14 +151,14 @@ Create a new task.
   callback to be called by the function when its execution is finished, either
   without any arguments, (_task succeed_), or with an error message, (_task
   failed_).
-- `onerror`: Optional. A string enclosing a JavaScript function definition.
+- `fallback`: Optional. A string enclosing a JavaScript function definition.
   The function __must__ take the parameters `err`, `job` and `cb`, where `cb`
   is a callback to be called by the function when its execution is finished,
   either without any arguments, (_task succeed_), or with an error message, 
   (_task failed_). `err` is the error message returned by task `body`.
 - `retry`: Optional. Number of times to retry the task's body execution
-  before either fail the task or call the `onerror` function, when given.
-- `timeout`: Optional timeout, in minutes, for the task execution.
+  before either fail the task or call the `fallback` function, when given.
+- `timeout`: Optional timeout, in seconds, for the task execution.
 
 ### Status Codes
 
@@ -183,7 +182,7 @@ Create a new task.
           return cb('Uh, oh!, no foo.');
         }
       }",
-      onerror: "function(err, job, cb) {
+      fallback: "function(err, job, cb) {
         if (err === 'Uh, oh!, no foo.') {
           job.foo = 'bar';
           return cb(null);
@@ -191,7 +190,7 @@ Create a new task.
           return cb('Arise chicken, arise!');
         }
       }",
-      timeout: 6m
+      timeout: 360(secs)
     }
 
 
@@ -244,15 +243,17 @@ Same than for `POST /tasks`.
 
 ## GET /jobs
 
-Retrieve a list of all the existing jobs.
+Retrieve a list of jobs. Without `execution` HTTP parameter all the existing
+jobs will be retrieved. If `execution` is given, only the jobs on the given
+execution status are retrieved.
 
 ### HTTP Parameters.
 
-None.
+- `execution`: Optional, one of `suceeded`, `failed`, `running` or `queued`.
 
 ### Status Codes
 
-- `204 No Content`: No jobs created yet.
+- `204 No Content`: No jobs created or on the given status yet.
 - `200 OK`: A list of existing jobs is returned.
 
 ## POST /jobs
@@ -283,11 +284,11 @@ None.
 
     {
       uuid: UUID,
-      worflow_uuid: wf_uuid,
+      workflow_uuid: wf_uuid,
       name: 'The workflow name',
       chain: ['task object', 'task object', ...],
       onerror: ['task object', 'task object', ...],
-      timeout: 60m,
+      timeout: 3600,
       exec_after: new Date().toISOString(),
       target: '/some/uri',
       params: {
@@ -328,21 +329,21 @@ Response with status code `405 Method Not Allowed`.
 
 __TBD__. Response with status code `405 Method Not Allowed`.
 
-## GET /jobs/:job_uuid/status
+## GET /jobs/:job_uuid/info
 
-Detailed status information for the given job. A task may result into a 3rd
+Detailed information for the given job. A task may result into a 3rd
 party application executing a process which may require some time/steps to
 finish. While our task is running and waiting for the finalization of such
 process, those 3rd party applications can publish information about progress
-using `POST|PUT /jobs/:job_uuid/status`; this information could then being used
+using `POST|PUT /jobs/:job_uuid/info`; this information could then being used
 by other applications interested on job results using
-`GET /jobs/:job_uuid/status`.
+`GET /jobs/:job_uuid/info`.
 
-This `status` information will consist into an arbitrary length array, where
+This information will consist into an arbitrary length array, where
 every `POST|PUT` request will result in a new member being appended.
 
-In order to save HTTP requests to API consumers, the whole `job` + the `status`
-information will be retrieved on `GET` requests to this URI.
+In order to save HTTP requests to API consumers, the whole `job` + the `info`
+will be retrieved on `GET` requests to this URI.
 
 ### HTTP Parameters.
 
@@ -357,7 +358,7 @@ Same than for `GET /jobs/:job_uuid`.
 Same than for `POST /jobs`, plus the detailed information provided by 3rd party
 applications executing task's requests.
 
-## POST | PUT /jobs/:job_uuid/status
+## POST | PUT /jobs/:job_uuid/info
 
 ### HTTP Parameters.
 
@@ -371,21 +372,8 @@ Same than for `GET /jobs/:job_uuid`.
 
 None.
 
-## DELETE /jobs/:job_uuid/status
+## DELETE /jobs/:job_uuid/info
 
 Response with status code `405 Method Not Allowed`.
 
-## GET /failed_jobs
-
-__TBD__. Maybe just `GET /jobs?execution=failed`?.
-Retrieve a list of all the failed jobs.
-
-### HTTP Parameters.
-
-None.
-
-### Status Codes
-
-- `204 No Content`: No jobs created yet.
-- `200 OK`: A list of existing failed jobs is returned.
 
