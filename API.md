@@ -153,9 +153,8 @@ Create a new task.
   failed_).
 - `fallback`: Optional. A string enclosing a JavaScript function definition.
   The function __must__ take the parameters `err`, `job` and `cb`, where `cb`
-  is a callback to be called by the function when its execution is finished,
-  either without any arguments, (_task succeed_), or with an error message, 
-  (_task failed_). `err` is the error message returned by task `body`.
+  is a callback to be called by the function when its execution fails;
+  `err` is the error message returned by task `body`.
 - `retry`: Optional. Number of times to retry the task's body execution
   before either fail the task or call the `fallback` function, when given.
 - `timeout`: Optional timeout, in seconds, for the task execution.
