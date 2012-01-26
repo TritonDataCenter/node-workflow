@@ -1,8 +1,11 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('node-uuid'),
-    fork = require('hydracp').fork;
+    uuid = require('node-uuid');
+
+var fork = (process.version.split('.')[1] < 5) ?
+           require('hydracp').fork :
+           require('child_process').fork;
 
 test('message without job', function(t) {
   var child = fork(__dirname + '/../lib/runner-child.js', ['some', 'args']);

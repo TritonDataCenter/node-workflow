@@ -184,9 +184,10 @@ test('runner init', function(t) {
 
 
 test('teardown', function(t) {
-  var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
+  var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier'),
+  exists = (process.version.split('.')[1] < 5) ? path.exists : fs.exists;
   backend.quit(function() {
-    path.exists(cfg_file, function(exist) {
+    exists(cfg_file, function(exist) {
       if (exist) {
         fs.unlink(cfg_file, function(err) {
           t.ifError(err);
