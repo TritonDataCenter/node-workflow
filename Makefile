@@ -62,9 +62,9 @@ endif
 doc: dep
 	@rm -rf ${DOCPKGDIR}
 	@mkdir -p ${DOCPKGDIR}
-	${RESTDOWN} ./README.md
+	${RESTDOWN} ./README.md ./docs/API.md
 	@mv README.html docs/readme.html
-	@rm README.json
+	@rm README.json docs/API.json
 	mv docs/*.html ${DOCPKGDIR}
 	(cd ${DOCPKGDIR} && $(TAR) -czf ${SRC}/${NAME}-docs-`git log -1 --pretty='format:%h'`.tar.gz *)
 
