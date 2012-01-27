@@ -142,14 +142,11 @@ function main() {
 
   backend = new WorkflowRedisBackend({
     port: 6379,
-    host: '127.0.0.1'
+    host: '127.0.0.1',
+    db: TEST_DB_NUM
   });
 
   backend.init(function() {
-    backend.client.select(TEST_DB_NUM, function(err, res) {
-      assert.ifError(err);
-      assert.equal('OK', res);
-    });
 
     backend.client.flushdb(function(err, res) {
       assert.ifError(err);

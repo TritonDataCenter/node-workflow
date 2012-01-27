@@ -18,14 +18,11 @@ test('setup', function(t) {
   identifier = uuid();
   backend = new WorkflowRedisBackend({
     port: 6379,
-    host: '127.0.0.1'
+    host: '127.0.0.1',
+    db: TEST_DB_NUM
   });
   t.ok(backend, 'backend ok');
   backend.init(function() {
-    backend.client.select(TEST_DB_NUM, function(err, res) {
-      t.ifError(err, 'select db error');
-      t.equal('OK', res, 'select db ok');
-    });
     backend.client.flushdb(function(err, res) {
       t.ifError(err, 'flush db error');
       t.equal('OK', res, 'flush db ok');
