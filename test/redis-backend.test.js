@@ -391,6 +391,60 @@ test('get all runners', function(t) {
 });
 
 
+test('get workflows', function(t) {
+  backend.getWorkflows(function(err, workflows) {
+    t.ifError(err, 'get workflows error');
+    t.ok(workflows, 'workflows ok');
+    t.equal(workflows[0].uuid, aWorkflow.uuid, 'workflow uuid ok');
+    t.ok(workflows[0].chain, 'workflow chain ok');
+    t.end();
+  });
+});
+
+
+test('get tasks', function(t) {
+  backend.getTasks(function(err, tasks) {
+    t.ifError(err, 'get tasks error');
+    t.ok(tasks, 'tasks ok');
+    t.ok(tasks[0].uuid, 'task uuid ok');
+    t.ok(tasks[0].body, 'task body ok');
+    t.end();
+  });
+});
+
+
+test('get all jobs', function(t) {
+  backend.getJobs(function(err, jobs) {
+    t.ifError(err, 'get all jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.equal(jobs.length, 2);
+    t.end();
+  });
+});
+
+
+test('get succeeded jobs', function(t) {
+  backend.getJobs('succeeded', function(err, jobs) {
+    t.ifError(err, 'get succeeded jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.equal(jobs.length, 1);
+    t.equal(jobs[0].execution, 'succeeded');
+    t.end();
+  });
+});
+
+
+test('get queued jobs', function(t) {
+  backend.getJobs('queued', function(err, jobs) {
+    t.ifError(err, 'get queued jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.equal(jobs.length, 1);
+    t.equal(jobs[0].execution, 'queued');
+    t.end();
+  });
+});
+
+
 test('teardown', function(t) {
   backend.quit(function() {
     t.end();
