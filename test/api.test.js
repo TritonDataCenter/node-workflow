@@ -104,11 +104,8 @@ test('setup', function(t) {
 test('GET /workflows empty', function(t) {
   client.get('/workflows', function(err, req, res, obj) {
     t.ifError(err);
-    //console.log(res);
-    t.equal(res.statusCode, 204);
-    // If I call 'return next();' got a nice '{}' response.
-    // Do I want that?
-    console.log(util.inspect(obj, false, 8));
+    t.equal(res.statusCode, 200);
+    t.equivalent([], obj);
     t.end();
   });
 });
@@ -133,8 +130,11 @@ test('POST /workflows', function(t) {
       }.toString()
     }]
   }, function(err, req, res, obj) {
-    console.log(err);
-    console.log(util.inspect(obj, false, 8));
+    t.ifError(err);
+    t.ok(obj.uuid);
+    t.ok(util.isArray(obj.chain));
+    t.ok(util.isArray(obj.onerror));
+    t.equal(res.headers.location, '/workflows/' + obj.uuid);
     t.end();
   });
 });

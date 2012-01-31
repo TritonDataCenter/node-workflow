@@ -149,7 +149,7 @@ care of that once we find the example.
 - a fall-back task to be executed when the task fails.
 
 
-        factory.task({
+        {
           name: 'A Task',
           timeout: 30,
           retry: 2,
@@ -160,12 +160,7 @@ care of that once we find the example.
             }
             return cb(null);
           }
-        }, function(err, task) {
-          if (err) {
-            throw(err);
-          }
-          return task;
-        });
+        }
 
 
 Note that a task's timeout shouldn't be bigger than the workflow timeout, but

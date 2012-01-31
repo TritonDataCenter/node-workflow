@@ -10,11 +10,10 @@ __This API speaks only JSON__.
 The API is composed by the following end-points:
 
 - `/workflows`
-- `/tasks`
 - `/jobs`
 - `/jobs/:uuid/info`
 
-Both, `/workflows` and `/tasks` accept any of the HTTP verbs for the usual CRUD
+`/workflows` accept any of the HTTP verbs for the usual CRUD
 but `/jobs` will not accept `PUT`, given the only way to modify a Job once it
 has been created is through execution.
 
@@ -33,8 +32,8 @@ None.
 
 ### Status Codes
 
-- `204 No Content`: No workflows created yet.
-- `200 OK`: A list of existing workflows is returned.
+- `200 OK`: A list of existing workflows is returned, even if there isn't
+            any workflow, which will result on an empty array.
 
 ### Response Body
 
@@ -47,14 +46,27 @@ Create a new workflow.
 ### HTTP Parameters
 
 - `name`: The workflow name. Required.
-- `chain[]`: UUIDs for tasks to add to the workflow. Optional. Multiple values
-  allowed. Additionally, complete tasks object can be given instead of UUIDs
-  and the tasks will be created (see Tasks section for information on task
-  object expected members).
-- `onerror[]`: UUIDs for tasks to add to the workflow fallback. Optional.
-  Multiple values allowed. Additionally, complete tasks objects can be given
-  instead of UUIDs and the tasks will be created.
+- `chain[]`: The tasks to add to the workflow. Optional. Multiple values
+  allowed.
+- `onerror[]`: The tasks to add to the workflow fallback. Optional.
+  Multiple values allowed. 
 - `timeout`: Optional timeout, in seconds, for the workflow execution.
+
+### Every `task` may be composed of:
+
+- `name`: The task name. Optional.
+- `body`: Required. A string enclosing a JavaScript function definition.
+  The function __must__ take the parameters `job` and `cb`, where `cb` is a
+  callback to be called by the function when its execution is finished, either
+  without any arguments, (_task succeed_), or with an error message, (_task
+  failed_).
+- `fallback`: Optional. A string enclosing a JavaScript function definition.
+  The function __must__ take the parameters `err`, `job` and `cb`, where `cb`
+  is a callback to be called by the function when its execution fails;
+  `err` is the error message returned by task `body`.
+- `retry`: Optional. Number of times to retry the task's body execution
+  before either fail the task or call the `fallback` function, when given.
+- `timeout`: Optional timeout, in seconds, for the task execution.
 
 ### Status Codes
 
@@ -71,9 +83,32 @@ Create a new workflow.
     {
       uuid: UUID,
       name: 'The workflow name',
-      chain: [:task_uuid, :task_uuid, ...],
-      onerror: [:task_uuid, :task_uuid, ...],
+      chain: [:task, :task, ...],
+      onerror: [:task, :task, ...],
       timeout: 3600(secs)
+    }
+
+#### Sample task on the response:
+
+    {
+      uuid: UUID,
+      name: 'The task name',
+      body: "function(job, cb) {
+        if (job.foo) {
+          return cb(null);
+        } else {
+          return cb('Uh, oh!, no foo.');
+        }
+      }",
+      fallback: "function(err, job, cb) {
+        if (err === 'Uh, oh!, no foo.') {
+          job.foo = 'bar';
+          return cb(null);
+        } else {
+          return cb('Arise chicken, arise!');
+        }
+      }",
+      timeout: 360(secs)
     }
 
 ## GET /workflows/:wf_uuid
@@ -121,124 +156,6 @@ Same than for `POST /workflows`.
 ### Status Codes
 
 - `200 OK`: Workflow successfully destroyed.
-
-## GET /tasks
-
-Retrieve a list of existing tasks.
-
-### HTTP Parameters.
-
-None.
-
-### Status Codes
-
-- `204 No Content`: No tasks created yet.
-- `200 OK`: A list of existing tasks is returned.
-
-### Response Body
-
-An array of task objects, (see `POST /tasks`).
-
-## POST /tasks
-
-Create a new task.
-
-### HTTP Parameters
-
-- `name`: The task name. Required.
-- `body`: Required. A string enclosing a JavaScript function definition.
-  The function __must__ take the parameters `job` and `cb`, where `cb` is a
-  callback to be called by the function when its execution is finished, either
-  without any arguments, (_task succeed_), or with an error message, (_task
-  failed_).
-- `fallback`: Optional. A string enclosing a JavaScript function definition.
-  The function __must__ take the parameters `err`, `job` and `cb`, where `cb`
-  is a callback to be called by the function when its execution fails;
-  `err` is the error message returned by task `body`.
-- `retry`: Optional. Number of times to retry the task's body execution
-  before either fail the task or call the `fallback` function, when given.
-- `timeout`: Optional timeout, in seconds, for the task execution.
-
-### Status Codes
-
-- `409 Conflict`: One of the required parameters is either missing or incorrect
-  Information about the missing/incorrect parameter will be included into
-  response body.
-- `201 Created`: Successful creation of the task. The task's JSON
-  representation will be included into the response body, together with a
-  `Location` header for the new resource. Generated task's `uuid` will be
-  part of this `Location` and a member of the returned task JSON object.
-
-#### Response Body:
-
-    {
-      uuid: UUID,
-      name: 'The task name',
-      body: "function(job, cb) {
-        if (job.foo) {
-          return cb(null);
-        } else {
-          return cb('Uh, oh!, no foo.');
-        }
-      }",
-      fallback: "function(err, job, cb) {
-        if (err === 'Uh, oh!, no foo.') {
-          job.foo = 'bar';
-          return cb(null);
-        } else {
-          return cb('Arise chicken, arise!');
-        }
-      }",
-      timeout: 360(secs)
-    }
-
-
-## GET /tasks/:task_uuid
-
-### HTTP Parameters:
-
-- `task_uuid`: The task UUID.
-
-### Status Codes:
-
-- `404 Not Found`: There's no task with the provided `task_uuid`.
-- `200 OK`: The task with the provided `task_uuid` has been found and is
-  returned as response body.
-
-Note this API will not keep track of _destroyed_ tasks, therefore, when a
-request for such tasks is made, the HTTP Status code will be `404 Not Found`
-instead of `410 Gone`.
-
-### Response body
-
-Same than for `POST /task` + `task_uuid`.
-
-## PUT /tasks/:task_uuid
-
-### HTTP Parameters
-
-Same than for `POST /tasks`.
-
-### Status Codes
-
-Same than for `POST /tasks` with the addition of:
-
-- `404 Not Found`, when the provided `task_uuid` cannot be found on the backend.
-
-### Response body
-
-Same than for `POST /tasks`.
-
-
-## DELETE /tasks/:task_uuid
-
-### HTTP Parameters:
-
-- `task_uuid`: The task UUID.
-
-### Status Codes
-
-- `200 OK`: Task successfully destroyed.
 
 ## GET /jobs
 

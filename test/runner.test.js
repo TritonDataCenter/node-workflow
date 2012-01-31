@@ -12,7 +12,21 @@ var TEST_DB_NUM = 15;
 
 var backend, identifier, runner, factory;
 
-var okTask, failTask, okWf, failWf;
+var okTask = {
+      name: 'OK Task',
+      retry: 1,
+      body: function(job, cb) {
+        return cb(null);
+      }
+    },
+    failTask = {
+      retry: 1,
+      name: 'Fail Task',
+      body: function(job, cb) {
+        return cb('Fail task error');
+      }
+    },
+    okWf, failWf;
 
 test('setup', function(t) {
   identifier = uuid();
@@ -40,52 +54,27 @@ test('setup', function(t) {
     factory = Factory(backend);
     t.ok(factory);
 
-    // okTask:
-    factory.task({
-      name: 'OK Task',
-      retry: 1,
-      body: function(job, cb) {
-        return cb(null);
-      }
-    }, function(err, task) {
-      t.ifError(err, 'OK Task error');
-      t.ok(task, 'OK task ok');
-      okTask = task;
-      // failTask:
-      factory.task({
-        retry: 1,
-        name: 'Fail Task',
-        body: function(job, cb) {
-          return cb('Fail task error');
-        }
-      }, function(err, task) {
-        t.ifError(err, 'Fail Task error');
-        t.ok(task, 'Fail task OK');
-        failTask = task;
-        // okWf:
-        factory.workflow({
-          name: 'OK wf',
-          chain: [okTask],
-          timeout: 60
-        }, function(err, wf) {
-          t.ifError(err, 'ok wf error');
-          t.ok(wf, 'OK wf OK');
-          okWf = wf;
-          // failWf:
-          factory.workflow({
-            name: 'Fail wf',
-            chain: [failTask],
-            timeout: 60
-          }, function(err, wf) {
-            t.ifError(err, 'Fail wf error');
-            t.ok(wf, 'Fail wf OK');
-            failWf = wf;
-            t.end();
-          });
-        });
+    // okWf:
+    factory.workflow({
+      name: 'OK wf',
+      chain: [okTask],
+      timeout: 60
+    }, function(err, wf) {
+      t.ifError(err, 'ok wf error');
+      t.ok(wf, 'OK wf OK');
+      okWf = wf;
+      // failWf:
+      factory.workflow({
+        name: 'Fail wf',
+        chain: [failTask],
+        timeout: 60
+      }, function(err, wf) {
+        t.ifError(err, 'Fail wf error');
+        t.ok(wf, 'Fail wf OK');
+        failWf = wf;
+        t.end();
       });
     });
-
   });
 });
 
@@ -134,7 +123,7 @@ test('run job', function(t) {
         backend.getJob(aJob.uuid, function(err, job) {
           t.ifError(err, 'run job get job error');
           t.equal(job.execution, 'succeeded', 'job execution');
-          t.equal(JSON.parse(job.chain_results)[0].result, 'OK');
+          t.equal(job.chain_results[0].result, 'OK');
           t.end();
         });
       });
@@ -158,7 +147,7 @@ test('run job which fails', function(t) {
         backend.getJob(aJob.uuid, function(err, job) {
           t.ifError(err, 'get job error');
           t.equal(job.execution, 'failed', 'job execution');
-          t.equal(JSON.parse(job.chain_results)[0].error, 'Fail task error');
+          t.equal(job.chain_results[0].error, 'Fail task error');
           t.end();
         });
       });
