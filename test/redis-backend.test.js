@@ -110,7 +110,7 @@ test('update workflow', function(t) {
 
 test('create job', function(t) {
   factory.job({
-    workflow: aWorkflow,
+    workflow: aWorkflow.uuid,
     target: '/foo/bar',
     params: {
       a: '1',
@@ -135,7 +135,7 @@ test('create job', function(t) {
 
 test('duplicated job target', function(t) {
   factory.job({
-    workflow: aWorkflow,
+    workflow: aWorkflow.uuid,
     target: '/foo/bar',
     params: {
       a: '1',
@@ -150,7 +150,7 @@ test('duplicated job target', function(t) {
 
 test('job with different params', function(t) {
   factory.job({
-    workflow: aWorkflow,
+    workflow: aWorkflow.uuid,
     target: '/foo/bar',
     params: {
       a: '2',
