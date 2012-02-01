@@ -9,7 +9,7 @@ var test = require('tap').test,
 
 
 ///--- Globals
-var api, server, client, backend, wf_uuid;
+var api, server, client, backend, wf_uuid, job_uuid;
 
 var PORT = process.env.UNIT_TEST_PORT || 12345;
 var TEST_DB_NUM = 15;
@@ -433,6 +433,7 @@ test('POST /jobs', function(t) {
       t.equivalent(obj.params, {foo: 'bar'});
       t.equal(obj.target, '/foo/bar');
       t.equal(res.headers.location, '/jobs/' + obj.uuid);
+      job_uuid = obj.uuid;
       t.end();
     });
   });
@@ -455,11 +456,66 @@ test('POST /jobs', function(t) {
 });
 
 
+test('GET /jobs not empty', function(t) {
+
+  t.test('without execution filter', function(t) {
+    client.get('/jobs', function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.ok(obj.length);
+      t.equal(obj.length, 1);
+      t.equal(obj[0].uuid, job_uuid);
+      t.end();
+    });
+  });
+
+  t.test('with execution filter', function(t) {
+    client.get('/jobs?execution=queued', function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.ok(obj.length);
+      t.equal(obj.length, 1);
+      t.equal(obj[0].uuid, job_uuid);
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
+test('GET /jobs/:uuid', function(t) {
+
+  t.test('job ok', function(t) {
+    client.get('/jobs/' + job_uuid, function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.equal(obj.uuid, job_uuid);
+      t.end();
+    });
+  });
+
+  t.test('job not found', function(t) {
+    client.get('/jobs/' + uuid(), function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 404);
+      t.equal(err.name, 'RestError');
+      t.equal(obj.code, 'ResourceNotFound');
+      t.ok(obj.message);
+      t.ok(obj.message.match(/not found/gi));
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
 test('DELETE /workflows/:uuid', function(t) {
   client.del('/workflows/' + wf_uuid,
     function(err, req, res, obj) {
       t.ifError(err);
-      t.equal(res.statusCode, 204);
+      t.equal(res.statusCode, 204, '# TODO: need mcavage/node-restify#63');
       console.log(util.inspect(obj, false, 8));
       t.end();
     });
