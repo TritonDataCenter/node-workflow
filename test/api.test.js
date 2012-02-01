@@ -9,7 +9,7 @@ var test = require('tap').test,
 
 
 ///--- Globals
-var api, server, client, backend;
+var api, server, client, backend, wf_uuid;
 
 var PORT = process.env.UNIT_TEST_PORT || 12345;
 var TEST_DB_NUM = 15;
@@ -27,7 +27,7 @@ var config = {
 
 var Backend = require(config.backend.module);
 
-log4js.setGlobalLogLevel('TRACE');
+log4js.setGlobalLogLevel('DEBUG');
 
 //--- Tests
 
@@ -135,10 +135,253 @@ test('POST /workflows', function(t) {
     t.ok(util.isArray(obj.chain));
     t.ok(util.isArray(obj.onerror));
     t.equal(res.headers.location, '/workflows/' + obj.uuid);
+    wf_uuid = obj.uuid;
     t.end();
   });
 });
 
+
+test('POST /workflows duplicated wf name', function(t) {
+  client.post('/workflows', {
+    name: 'A workflow',
+    chain: [{
+      name: 'A Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }],
+    timeout: 180,
+    onerror: [{
+      name: 'Another task',
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }]
+  }, function(err, req, res, obj) {
+    t.ok(err);
+    t.equal(err.statusCode, 409);
+    t.equal(err.name, 'ConflictError');
+    t.ok(obj.message);
+    t.ok(obj.message.match(/Workflow\.name/g));
+    t.end();
+  });
+});
+
+
+test('POST /workflows task missing body', function(t) {
+  client.post('/workflows', {
+    name: 'A workflow',
+    chain: [{
+      name: 'A Task',
+      timeout: 30,
+      retry: 3
+    }],
+    timeout: 180,
+    onerror: [{
+      name: 'Another task',
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }]
+  }, function(err, req, res, obj) {
+    t.ok(err);
+    t.equal(err.statusCode, 409);
+    t.equal(err.name, 'ConflictError');
+    t.ok(obj.message);
+    t.equal(obj.message, 'Task body is required');
+    t.end();
+  });
+});
+
+
+test('GET /workflows not empty', function(t) {
+  client.get('/workflows', function(err, req, res, obj) {
+    t.ifError(err);
+    t.equal(res.statusCode, 200);
+    t.equal(obj.length, 1);
+    t.ok(obj[0].uuid);
+    t.ok(util.isArray(obj[0].chain));
+    t.ok(util.isArray(obj[0].onerror));
+    t.end();
+  });
+});
+
+
+test('GET /workflows/:uuid', function(t) {
+  client.get(
+    '/workflows/' + wf_uuid,
+    function(err, req, res, obj) {
+      t.ifError(err);
+      t.ok(obj.uuid);
+      t.ok(util.isArray(obj.chain));
+      t.ok(util.isArray(obj.onerror));
+      t.end();
+    });
+});
+
+
+test('GET /workflows/:uuid 404', function(t) {
+  var a_uuid = uuid();
+  client.get(
+    '/workflows/' + a_uuid,
+    function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 404);
+      t.equal(err.name, 'RestError');
+      t.equal(obj.code, 'ResourceNotFound');
+      t.ok(obj.message);
+      t.equal(
+        obj.message,
+        'Workflow ' + a_uuid + ' not found'
+      );
+      t.end();
+    });
+});
+
+
+test('PUT /workflows/:uuid', function(t) {
+  client.put('/workflows/' + wf_uuid, {
+    name: 'A workflow',
+    chain: [{
+      name: 'A Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    },
+    {
+      name: 'One more Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }],
+    timeout: 180,
+    onerror: [{
+      name: 'Another task',
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }]
+  }, function(err, req, res, obj) {
+    t.ifError(err);
+    t.ok(obj.uuid);
+    t.ok(util.isArray(obj.chain));
+    t.equal(obj.chain.length, 2);
+    t.ok(util.isArray(obj.onerror));
+    t.end();
+  });
+});
+
+
+test('PUT /workflows/:uuid 404', function(t) {
+  var a_uuid = uuid();
+  client.put('/workflows/' + a_uuid, {
+    name: 'A workflow',
+    chain: [{
+      name: 'A Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    },
+    {
+      name: 'One more Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }],
+    timeout: 180,
+    onerror: [{
+      name: 'Another task',
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }]
+  }, function(err, req, res, obj) {
+    t.ok(err);
+    t.equal(err.statusCode, 404);
+    t.equal(err.name, 'RestError');
+    t.equal(obj.code, 'ResourceNotFound');
+    t.ok(obj.message);
+    t.equal(
+      obj.message,
+      'Workflow ' + a_uuid + ' not found'
+    );
+    t.end();
+  });
+});
+
+
+test('PUT /workflows/:uuid missing task body', function(t) {
+  client.put('/workflows/' + wf_uuid, {
+    name: 'A workflow',
+    chain: [{
+      name: 'A Task',
+      timeout: 30,
+      retry: 3,
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    },
+    {
+      name: 'One more Task',
+      timeout: 30,
+      retry: 3
+    }],
+    timeout: 180,
+    onerror: [{
+      name: 'Another task',
+      body: function(job, cb) {
+        return cb(null);
+      }.toString()
+    }]
+  }, function(err, req, res, obj) {
+    t.ok(err);
+    t.equal(err.statusCode, 409);
+    t.equal(err.name, 'ConflictError');
+    t.ok(obj.message);
+    t.equal(obj.message, 'Task body is required');
+    t.end();
+  });
+
+});
+
+
+test('DELETE /workflows/:uuid', function(t) {
+  client.del('/workflows/' + wf_uuid,
+    function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 204);
+      console.log(util.inspect(obj, false, 8));
+      t.end();
+    });
+});
+
+
+test('DELETE /workflows/:uuid 404', function(t) {
+  var a_uuid = uuid();
+  client.del('/workflows/' + a_uuid,
+    function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 404);
+      t.equal(err.name, 'RestError');
+      t.equal(obj.code, 'ResourceNotFound');
+      t.ok(obj.message);
+      t.equal(
+        obj.message,
+        'Workflow ' + a_uuid + ' not found'
+      );
+      t.end();
+    });
+});
 
 test('teardown', function(t) {
   server.close(function() {
