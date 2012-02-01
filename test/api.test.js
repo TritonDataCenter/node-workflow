@@ -355,6 +355,106 @@ test('PUT /workflows/:uuid missing task body', function(t) {
 });
 
 
+test('GET /jobs empty', function(t) {
+
+  t.test('without execution filter', function(t) {
+    client.get('/jobs', function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.equivalent([], obj);
+      t.end();
+    });
+  });
+
+  t.test('with execution filter', function(t) {
+    client.get('/jobs?execution=queued', function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.equivalent([], obj);
+      t.end();
+    });
+  });
+
+  t.test('with wrong execution filter', function(t) {
+    client.get('/jobs?execution=sleepy', function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 409);
+      t.equal(err.name, 'ConflictError');
+      t.ok(obj.message);
+      t.ok(obj.message.match(/execution/gi));
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
+test('POST /jobs', function(t) {
+  var aJob = {
+    target: '/foo/bar',
+    foo: 'bar'
+  };
+
+  t.test('without worfklow uuid', function(t) {
+    client.post('/jobs', aJob, function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 409);
+      t.equal(err.name, 'ConflictError');
+      t.ok(obj.message);
+      t.ok(obj.message.match(/opts\.workflow/gi));
+      t.end();
+    });
+  });
+
+  t.test('with unexisting workflow uuid', function(t) {
+    aJob.workflow = uuid();
+    client.post('/jobs', aJob, function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 409);
+      t.equal(err.name, 'ConflictError');
+      t.ok(obj.message);
+      t.ok(obj.message.match(/unexisting workflow/gi));
+      t.end();
+    });
+  });
+
+  t.test('job ok', function(t) {
+    aJob.workflow = wf_uuid;
+    client.post('/jobs', aJob, function(err, req, res, obj) {
+      t.ifError(err);
+      t.ok(obj);
+      t.equal(obj.execution, 'queued');
+      t.ok(obj.uuid);
+      t.ok(util.isArray(obj.chain));
+      t.ok(util.isArray(obj.chain_results));
+      t.ok(util.isArray(obj.onerror));
+      t.equal(obj.workflow_uuid, wf_uuid);
+      t.equivalent(obj.params, {foo: 'bar'});
+      t.equal(obj.target, '/foo/bar');
+      t.equal(res.headers.location, '/jobs/' + obj.uuid);
+      t.end();
+    });
+  });
+
+  t.test('with duplicated target and params', function(t) {
+    client.post('/jobs', aJob, function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 409);
+      t.equal(err.name, 'ConflictError');
+      t.ok(obj.message);
+      t.equal(
+        obj.message,
+        'Another job with the same target and params is already queued'
+      );
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
 test('DELETE /workflows/:uuid', function(t) {
   client.del('/workflows/' + wf_uuid,
     function(err, req, res, obj) {
@@ -382,6 +482,7 @@ test('DELETE /workflows/:uuid 404', function(t) {
       t.end();
     });
 });
+
 
 test('teardown', function(t) {
   server.close(function() {

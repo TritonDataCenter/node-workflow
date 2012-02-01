@@ -155,7 +155,7 @@ Same than for `POST /workflows`.
 
 ### Status Codes
 
-- `200 OK`: Workflow successfully destroyed.
+- `204 OK`: Workflow successfully destroyed.
 
 ## GET /jobs
 
@@ -169,14 +169,13 @@ execution status are retrieved.
 
 ### Status Codes
 
-- `204 No Content`: No jobs created or on the given status yet.
-- `200 OK`: A list of existing jobs is returned.
+- `200 OK`: A list of existing jobs is returned, even when it's totally empty.
 
 ## POST /jobs
 
 ### HTTP Parameters.
 
-- `workflow_uuid`: Required. UUID of the workflow from which the new job will
+- `workflow`: Required. UUID of the workflow from which the new job will
   be created.
 - `exec_after`: Optional, ISO 8601 Date. Delay job execution until the provided
   time.
