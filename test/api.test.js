@@ -511,6 +511,61 @@ test('GET /jobs/:uuid', function(t) {
 });
 
 
+test('POST /jobs/:uuid/info', function(t) {
+  t.test('with unexisting job', function(t) {
+    client.post('/jobs/' + uuid() + '/info', {
+      '10%': 'Task completed first step'
+    }, function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 404);
+      t.equal(err.name, 'RestError');
+      t.equal(obj.code, 'ResourceNotFound');
+      t.ok(obj.message);
+      t.equal(obj.message, 'Job does not exist. Cannot Update.');
+      t.end();
+    });
+  });
+
+  t.test('with existing job', function(t) {
+    client.post('/jobs/' + job_uuid + '/info', {
+      '10%': 'Task completed first step'
+    }, function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      console.log(util.inspect(obj, false, 8));
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
+test('GET /jobs/:uuid/info', function(t) {
+  t.test('with unexisting job uuid', function(t) {
+    client.get('/jobs/' + uuid() + '/info', function(err, req, res, obj) {
+      t.ok(err);
+      t.equal(err.statusCode, 404);
+      t.equal(err.name, 'RestError');
+      t.equal(obj.code, 'ResourceNotFound');
+      t.ok(obj.message);
+      t.equal(obj.message, 'Job does not exist. Cannot get info.');
+      t.end();
+    });
+  });
+
+  t.test('with existing job', function(t) {
+    client.get('/jobs/' + job_uuid + '/info', function(err, req, res, obj) {
+      t.ifError(err);
+      t.equal(res.statusCode, 200);
+      t.equivalent([{ '10%': 'Task completed first step' }], obj);
+      t.end();
+    });
+  });
+  t.end();
+});
+
+
 test('DELETE /workflows/:uuid', function(t) {
   client.del('/workflows/' + wf_uuid,
     function(err, req, res, obj) {

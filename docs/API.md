@@ -251,15 +251,12 @@ Detailed information for the given job. A task may result into a 3rd
 party application executing a process which may require some time/steps to
 finish. While our task is running and waiting for the finalization of such
 process, those 3rd party applications can publish information about progress
-using `POST|PUT /jobs/:job_uuid/info`; this information could then being used
+using `POST /jobs/:job_uuid/info`; this information could then being used
 by other applications interested on job results using
 `GET /jobs/:job_uuid/info`.
 
 This information will consist into an arbitrary length array, where
-every `POST|PUT` request will result in a new member being appended.
-
-In order to save HTTP requests to API consumers, the whole `job` + the `info`
-will be retrieved on `GET` requests to this URI.
+every `POST` request will result in a new member being appended.
 
 ### HTTP Parameters.
 
@@ -271,14 +268,20 @@ Same than for `GET /jobs/:job_uuid`.
 
 ### Response Body
 
-Same than for `POST /jobs`, plus the detailed information provided by 3rd party
-applications executing task's requests.
+    [
+      { '10%': 'Task completed step one' },
+      { '20%': 'Task completed step two' }
+    ]
 
-## POST | PUT /jobs/:job_uuid/info
+## POST /jobs/:job_uuid/info
 
 ### HTTP Parameters.
 
-- `message`: Required. String containing a message regarding operations progresses.
+- `message`: Required. Object containing a message regarding operations progresses.
+
+    { '10%': 'Task completed step one' }
+
+Note you can provide any key/value pair here.
 
 ### Status Codes
 
@@ -287,6 +290,10 @@ Same than for `GET /jobs/:job_uuid`.
 ### Response Body
 
 None.
+
+## PUT /jobs/:job_uuid/info
+
+Response with status code `405 Method Not Allowed`.
 
 ## DELETE /jobs/:job_uuid/info
 
