@@ -3,7 +3,8 @@
 This document describes the HTTP REST API for workflows and tasks, and for the
 creation of Jobs and tracking their execution progres.
 
-__This API speaks only JSON__.
+__This API speaks only JSON__. For every request. For all the HTTP methods.
+This means that any `POST` or `PUT` request `Content-Type` __must be JSON__.
 
 ## End-Points
 
@@ -238,7 +239,7 @@ Same than for `POST /jobs`.
 
 ## PUT /jobs/:job_uuid
 
-Response with status code `405 Method Not Allowed`.
+__TBD__. Response with status code `405 Method Not Allowed`.
 
 ## DELETE /jobs/:job_uuid
 

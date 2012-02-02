@@ -433,6 +433,65 @@ test('a failed workflow with a non successful "onerror"', function(t) {
   });
 });
 
+
+test('a workflow with custom sandbox', function(t) {
+  var aJob = {
+    timeout: 180,
+    exec_after: '2012-01-03T12:54:05.788Z',
+    execution: 'running',
+    chain_results: [],
+    chain: [],
+    onerror: []
+  },
+  task = {
+    'uuid': uuid(),
+    'name': 'A name',
+    'body': function(job, cb) {
+      job.uuid = uuid();
+      return cb(null);
+    }.toString()
+  },
+  theWorkflow;
+
+  aJob.chain.push(task);
+
+  t.test('without sandbox', function(t) {
+    theWorkflow = new Workflow(aJob);
+    t.ok(theWorkflow, 'the workflow ok');
+    t.throws(function() {
+      theWorkflow.run(function(job) {
+        t.equal(job.execution, 'running');
+      }, function(err) {
+        t.ifError(err, 'workflow error');
+      });
+    }, new ReferenceError('uuid is not defined'));
+    t.end();
+  });
+
+  t.test('with sandbox', function(t) {
+    theWorkflow = new Workflow(aJob, {
+      uuid: 'node-uuid'
+    });
+    t.ok(theWorkflow, 'the workflow ok');
+    theWorkflow.run(function(job) {
+      t.equal(job.execution, 'running');
+    }, function(err) {
+      t.ifError(err, 'workflow error');
+      t.equal(theWorkflow.chain_results.length, 1);
+      t.equal(theWorkflow.chain_results, theWorkflow.job.chain_results);
+      var res = theWorkflow.chain_results[0];
+      t.equal(res.error, '');
+      t.equal(res.result, 'OK');
+      t.equal(theWorkflow.job.execution, 'succeeded');
+      t.end();
+    });
+  });
+
+  t.end();
+});
+
+
+
 test('teardown', function(t) {
   t.end();
 });
