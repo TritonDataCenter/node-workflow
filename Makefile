@@ -19,7 +19,6 @@ RESTDOWN_VERSION=1.2.13
 DOCPKGDIR = ./docs/pkg
 
 RESTDOWN = ./node_modules/.restdown/bin/restdown \
-	-b ./docs/branding \
 	-m ${DOCPKGDIR} \
 	-D mediaroot=media
 
@@ -60,12 +59,9 @@ endif
 doc: dep
 	@rm -rf ${DOCPKGDIR}
 	@mkdir -p ${DOCPKGDIR}
-	${RESTDOWN} ./README.md ./docs/API.md
-	@mv README.html docs/readme.html
-	@rm README.json docs/API.json
+	${RESTDOWN} ./docs/workflow.md ./docs/API.md
+	@rm docs/*.json
 	mv docs/*.html ${DOCPKGDIR}
-	(cd ${DOCPKGDIR} && $(TAR) -czf ${SRC}/${NAME}-docs-`git log -1 --pretty='format:%h'`.tar.gz *)
-
 
 test: dep lint
 	$(NPM) test

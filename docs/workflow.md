@@ -1,0 +1,353 @@
+---
+title: Workflow
+---
+# Overview
+
+So a workflow is effectively an orchestration.
+
+You want a workflow, because it gives you a way to decompose a complex series
+of operations down to a sequence of discreet tasks with a state machine.
+
+The sequence of tasks is more complex than just a series. The tasks of course
+can fail, and so you need to deal with timeouts, retries, "stuck" flows, etc.
+
+You can define a workflow and its tasks using an arbitrarily complex language.
+Or you can keep it simple by taking some assumptions:
+
+* Code is the definition language.
+* Tasks are independent. Can be used into different workflows.
+* The only way of communication between tasks is the workflow. Tasks can add,
+  remove or modify properties of the workflow.
+* If a task requires a specific property of the workflow to be present, the
+  task can fail, or re-schedule itself within the workflow, or ...
+
+# System design
+
+System needs to be designed with failures in mind. Tasks can fail and, as a
+consequence, workflows may fail. You may want to recover from a task failure,
+or from a whole workflow failure.
+
+The system itself may also fail due to any unexpected reason.
+
+## Terminology
+
+* _Task_: A single discreet operation, such as Send Email.
+* _Workflow_: An abstract definition of a sequence of Tasks, including
+  transition conditions, and branches.
+* _Job_: An instance of a Workflow containing all the required information
+  to execute itself and, eventually, a target.
+
+## System components
+
+- A workflow and task **factory**, where you can create tasks, workflows and queue
+  jobs, using NodeJS.
+- Alongside the **factory**, **Workflow API** will allow creation of tasks,
+  workflows and jobs through a REST API using any other language, with JSON as
+  the payload.
+- An **Status API**, where you can check the status of a given job, get information
+  about failures, ...
+- **Job runners**. You can have as many runners as you want. Runners can live
+  everywhere. Once a runner "picks" a job, that job is flagged with the runner
+  identifier so no other runner attempts to execute it. One runner can be
+  composed of multiple associated processes to execute jobs.
+
+The factory talks to a __persistence layer__, and saves workflows and tasks. Also,
+once a Job is created, it's saved with all the required information, including
+the tasks code at the moment of job creation. This will __avoid any potential
+problems resulting of underlaying modifications of tasks once a Job has been
+queued__.
+
+A runner itself may go dive nuts while a job is being executed, leaving the
+job into an unappropriated _"running"_ status. When a runner starts, there
+shouldn't be any job flagged with the runner identifier and, furthermore,
+it shouldn't be on a running status. If that happens, the first thing a runner
+must do on restart is to pick any job into such invalid state and execute
+the fall-back recovery branch for such job.
+
+## Recursion and Branches
+
+Imagine you have a task and, as the fall-back for the case that task fails,
+you specify that same task. Not very useful; not too bad since the fall-back
+task will also fail and, as a consequence, the workflow will fail ...
+
+... wait!, or will call the workflow's failure branch which may also contain
+_the same task!_ which, obviously, will fail again.
+
+So, first rule: When a task is specified as part of a workflow, that same task
+can not be specified as the task itself `onerror` fall-back, neither to the
+workflow's `onerror` branch.
+
+Now, let's think about the following scenario: a job is created as the result
+of some action, for example, a GET request to a given REST URI. Then, as part
+of the workflow's tasks, another GET request is made to the same REST URI,
+which will obviously result into infinite number of jobs being created to do
+exactly the same thing.
+
+Job's target property may help us on avoiding this infinite loop problem. While
+a Workflow is something "abstract", a Job may "operate" over a concrete target.
+For example, you can use a REST URI as the target of the job, or an LDAP DN, or
+whatever you need to make sure that the same job will not be queued twice.
+
+When jobs are created and queued, they will check if another job with the same
+target (and the same parameters) exists and, if that's the case, the job creation
+will fail.
+
+Obviously, there are some cases where you may want the same job to be queued
+exactly for the same target; for example, POST to a given URI to create a new
+collection element. That's the reason job's `parameters` are also checked with
+job's `target` in order to allow or not creation and queueing of a new job.
+
+In the case a job has failed for a given target and parameters, you may want to
+create a new one after some time. This is perfectly possible since the previous
+job uniqueness checks are made only versus "running" or "queued" jobs, not versus
+"finished" jobs, whatever is their result.
+
+Finally, a note about multiple branches:
+
+In theory, one may want to specify any arbitrary number of branches to be
+executed depending on workflow's tasks results. That would bring us into a complex
+scenario where we should take decisions like: _should we allow the same task to
+be specified as part of several different branches?_.
+
+So far I haven't got a clear answer for that. In theory, only the fall-backs
+should be different than their respective tasks, and the workflow's `onerror`
+chain shouldn't contain any of the tasks specified as part of any of the other
+branches.
+
+Anyhow, can we imagine a concrete scenario where multiple branches are required?.
+I mean, with an example. If so, we can take care of things like avoiding
+recursion and infinite loops being caused there, but I'm thinking we'd rather
+care of that once we find the example.
+
+# Implementation details
+
+1. You need a way to define tasks.
+2. Need a way to define a workflow.
+3. Need a way to add tasks to a workflow. Sometimes specify the exact position
+   of a task on the workflow chain.
+4. Need a way to remove tasks from the workflow. Some tasks may be able to flag
+   themselves as no-removable.
+5. A task can fail.
+6. You need to know how many times you want to retry a task in case of failure.
+7. You need to know what to do when a task fail. Fail the workflow?, try a
+   different branch?, ...
+8. A task can be stuck.
+9. You need to know when to timeout a task.
+10. You need to know what to do when a given task timeout is over.
+11. You need to be able to instantiate a workflow in order to create a Job.
+12. A Job may have parameters.
+13. A Job may have a target.
+14. You need to run a Job.
+15. A job may have an acceptable period of time to be completed.
+16. At job end, you may want to be able to specify another job to be completed.
+17. Of course, you want to know the results of each task execution.
+18. You may want to know the workflow status at any moment.
+
+## Task properties:
+
+- A name,
+- code to be executed,
+- timeout,
+- number of retries, when proceed
+- a fall-back task to be executed when the task fails.
+
+
+        {
+          name: 'A Task',
+          timeout: 30,
+          retry: 2,
+          body: function(job, cb) {
+            if (!job.foo) {
+              job.foo = true;
+              return cb('Foo was not defined');
+            }
+            return cb(null);
+          }
+        }
+
+
+Note that a task's timeout shouldn't be bigger than the workflow timeout, but
+it really doesn't matter. If a task execution exceeds the workflow timeout it
+will be failed with 'workflow timeout' error.
+
+## Workflow properties:
+
+- A name.
+- The 'chain' of tasks to be executed.
+- A global timeout.
+- Alternate error branch.
+- Optionally, another workflow to execute right after the current one is completed.
+
+
+        factory.workflow({
+          name: 'Sample Workflow',
+          chain: [aTask, anotherTask, aTaskWhichWillFail],
+          timeout: 300,
+          onError: [aFallbackTask]
+        }, function(err, workflow) {
+          if (err) {
+            throw(err);
+          }
+          return workflow;
+        });
+
+
+## Job properties:
+
+Same than the workflow plus:
+
+- Results for each one of the tasks (we need to decide about tasks results format)
+- The job target, when given.
+- The job parameters, when necessary.
+- The job status (something like "queued", "running", "finished" may work).
+  Note that a job is running while a task is being executed. It's perfectly
+  possible to change job status to "queued" once a task has been completed, and
+  leave the job there to be picked by a runner at some later moment.
+- When to run the job. May we want to delay execution in time?.
+- Any additional property a task may want to save with the job to be used by
+  a subsequent task.
+
+
+
+        factory.job({
+          workflow: aWorkflow,
+          exec_after: '2012-01-03T12:54:05.788Z'
+        }, function(err, job) {
+          if (err) {
+            callback(err);
+          }
+          aJob = job;
+          callback(null, job);
+        });
+
+
+Some questions about other jobs options:
+
+- Do we want to be able to "abort" a job?.
+- Even if it's running?
+- And, if so, what to do when it's running and we abort?, call `onerror`
+  branch?, (note I'm beginning to think that `onerror` should be called
+  `revert` sometimes, or maybe it's just an extra branch ...).
+
+See `example.js` for a detailed description on how to create Tasks, Workflows
+and Jobs using NodeJS through the **factory** component.
+
+## Workflow Runners
+
+The system design requires that we can have workflow runners everywhere. As
+many as needed, and all of them reporting health periodically. Also, it would
+be desirable that runners could implement a `ping` method to provide immediate
+information about their status.
+
+All runners will periodically query the backend for information about other
+runners and, in case they detect one of those runners has been inactive for a
+configurable period of time, they will check for stale jobs associated with
+the inactive runner and either fail those jobs or run the associated `onerror`
+branch.
+
+The first thing a runner does when it boots, is to register itself on the
+backend, (which is the same as report its health). At a configurable interval
+a runner will try to pick queued jobs and execute them. Runners will report
+activity at this same interval.
+
+Every runner must have an unique identifier, which can be passed at runner's
+initialization, (or it will be auto-generated the first time the runner is
+created and saved for future runs).
+
+Runners will spawn child processes, one process per job. Max number of child
+processes is also configurable.
+
+### How runners pick and execute jobs
+
+A runner will query the backend for queued jobs, (exactly the same number of
+them than available child processes to spawn). Once the runner gets a set of
+these queued jobs, it will try to obtain an exclusive lock on each job before
+processing it. When a job is locked by a runner, it will not be found by other
+runners searching for queued jobs.
+
+Once the runner has the exclusive lock over the job, it'll change job status
+from _queued_ to _running_, and begin executing the associated tasks.
+
+In order to execute the job, the runner will spawn a child process, and pass
+it all the information about the job. (Child processes don't have access to
+the backend, just to the job, which must be a JSON object).
+
+Note that everything must be executed within the acceptable amount of time
+provided for the job. If this time expires, the job execution will fail and
+the `onerror` branch will be executed when given.
+
+### Task execution:
+
+Workflow runner will then try to execute the `job` chain of tasks, in order.
+For every task, the runner will try to execute the task `body`, using NodeJS
+VM API. Every task will get as arguments the job and a callback. A task should
+call the callback once it's completed.
+
+
+    // A task body:
+    function(job, cb) {
+      // Task stuff here:
+      cb(null);
+    }
+
+
+If a task succeeds, it will call the callback without `error`:
+
+    cb(null);
+
+Otherwise, the task should call the callback with an error message:
+
+    cb('whatever the error reason');
+
+These error messages will be available for the task's `onerror` function, in
+order to allow a task's fallback to decide if it can recover the task from a
+failure.
+
+It's also possible to set an specific timeout for every task execution.
+
+Either if a task fails, or if the task timeout is reached, the runner will
+check if we've exceeded the number of retries for the task and, if that's not
+the case, it'll try to execute the task again.
+
+Once the max number of retries for a task has been reached, the runner will
+check if the task has an `onerror` fallback and, when that's the case, it'll
+call it with the error which caused the failure, as follows:
+
+    task.onerror(error, job, cb);
+
+The same logic than for tasks bodies can be applied to `onerror` fallbacks.
+
+Note that __tasks run sandboxed__. Only the node modules we specify to the
+runner at initialization time, alongside with `setTimeout`, `clearTimeout`,
+`setInterval` and `clearInterval` global functions will be available for
+task `body` and `onerror` functions. (This will be configurable).
+
+All the tasks results will be saved sorted at the job's property
+`chain_results`. For every task, the results will be something like:
+
+    {
+      error: '',
+      results: 'OK'
+    }
+
+or, for a task which failed:
+
+    {
+      error: 'Whatever the error reason',
+      results: ''
+    }
+
+If the task fails because its `onerror` fallback failed, or because the task
+doesn't has such fallback, the job's `onerror` chain will be invoked if
+present.
+
+The logic to execute the job's `onerror` chain is exactly the same than we've
+described here for the main `chain` of tasks.
+
+Once the job is finished, either successfully or right after a failure, or even
+in the case a task tells the runner to _re-queue_ the job, due to whatever the
+reason, the child process running the job will communicate the runner the
+results, and the runner will save back those results into the backend, either
+finishing the job, or re-queueing it for another runner which may fetch it in
+order to continue its execution at a later time.
+

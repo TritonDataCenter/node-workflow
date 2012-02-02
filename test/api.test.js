@@ -515,8 +515,7 @@ test('DELETE /workflows/:uuid', function(t) {
   client.del('/workflows/' + wf_uuid,
     function(err, req, res, obj) {
       t.ifError(err);
-      t.equal(res.statusCode, 204, '# TODO: need mcavage/node-restify#63');
-      console.log(util.inspect(obj, false, 8));
+      t.equal(res.statusCode, 204);
       t.end();
     });
 });

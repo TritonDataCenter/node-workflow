@@ -392,6 +392,65 @@ test('get queued jobs', function(t) {
 });
 
 
+test('add job info', function(t) {
+  t.test('to unexisting job', function(t) {
+    backend.addInfo(
+      uuid(),
+      {'10%': 'Task completed step one'},
+      function(err) {
+        t.ok(err);
+        t.equal(err, 'Job does not exist. Cannot Update.');
+        t.end();
+      });
+  });
+  t.test('to existing job without previous info', function(t) {
+    backend.addInfo(
+      aJob.uuid,
+      {'10%': 'Task completed step one'},
+      function(err) {
+        t.ifError(err);
+        t.end();
+      });
+  });
+  t.test('to existing job with previous info', function(t) {
+    backend.addInfo(
+      aJob.uuid,
+      {'20%': 'Task completed step two'},
+      function(err) {
+        t.ifError(err);
+        t.end();
+      });
+  });
+  t.end();
+});
+
+
+test('get job info', function(t) {
+  t.test('from unexisting job', function(t) {
+    backend.getInfo(
+      uuid(),
+      function(err, info) {
+        t.ok(err);
+        t.equal(err, 'Job does not exist. Cannot get info.');
+        t.end();
+      });
+  });
+  t.test('from existing job', function(t) {
+    backend.getInfo(
+      aJob.uuid,
+      function(err, info) {
+        t.ifError(err);
+        t.ok(info);
+        t.ok(util.isArray(info));
+        t.equal(info.length, 2);
+        t.equivalent({'10%': 'Task completed step one'}, info[0]);
+        t.equivalent({'20%': 'Task completed step two'}, info[1]);
+        t.end();
+      });
+  });
+  t.end();
+});
+
 test('teardown', function(t) {
   backend.quit(function() {
     t.end();
