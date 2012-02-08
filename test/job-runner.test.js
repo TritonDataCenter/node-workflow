@@ -22,21 +22,7 @@ var Backend = require(config.backend.module),
     backend = new Backend(config.backend.opts),
     factory, wf_job_runner;
 
-var okTask = {
-  name: 'OK Task',
-  retry: 1,
-  body: function(job, cb) {
-    return cb(null);
-  }
-},
-failTask = {
-  retry: 1,
-  name: 'Fail Task',
-  body: function(job, cb) {
-    return cb('Fail task error');
-  }
-},
-okWf, failWf;
+var okWf, failWf, timeoutWf, reQueueWf, reQueuedJob;
 
 var FakeRunner = function() {
   this.child_processes = {};
@@ -75,7 +61,13 @@ test('setup', function(t) {
     // okWf:
     factory.workflow({
       name: 'OK wf',
-      chain: [okTask],
+      chain: [{
+        name: 'OK Task',
+        retry: 1,
+        body: function(job, cb) {
+          return cb(null);
+        }
+      }],
       timeout: 60
     }, function(err, wf) {
       t.ifError(err, 'ok wf error');
@@ -84,13 +76,62 @@ test('setup', function(t) {
       // failWf:
       factory.workflow({
         name: 'Fail wf',
-        chain: [failTask],
+        chain: [{
+          retry: 1,
+          name: 'Fail Task',
+          body: function(job, cb) {
+            return cb('Fail task error');
+          }
+        }],
         timeout: 60
       }, function(err, wf) {
         t.ifError(err, 'Fail wf error');
         t.ok(wf, 'Fail wf OK');
         failWf = wf;
-        t.end();
+        factory.workflow({
+          name: 'Timeout Wf',
+          chain: [{
+            name: 'Timeout Task',
+            body: function(job, cb) {
+              setTimeout(function() {
+                // Should not be called:
+                return cb('Error within timeout');
+              }, 3050);
+            }
+          }],
+          timeout: 3
+        }, function(err, wf) {
+          t.ifError(err, 'Timeout wf error');
+          t.ok(wf, 'Timeout wf ok');
+          timeoutWf = wf;
+          factory.workflow({
+            name: 'Re-Queue wf',
+            chain: [{
+              name: 'OK Task',
+              retry: 1,
+              body: function(job, cb) {
+                return cb(null);
+              }
+            }, {
+              name: 'Re-Queue Task',
+              body: function(job, cb) {
+                return cb('queue');
+              }
+            }, {
+              name: 'OK Task 2',
+              retry: 1,
+              body: function(job, cb) {
+                return cb(null);
+              }
+            }],
+            timeout: 60
+          }, function(err, wf) {
+            t.ifError(err, 'ReQueue wf error');
+            t.ok(wf, 'ReQueue wf ok');
+            reQueueWf = wf;
+            t.end();
+          });
+        });
       });
     });
   });
@@ -111,7 +152,7 @@ test('run job ok', function(t) {
       runner: runner,
       backend: backend,
       job: job,
-      trace: true
+      trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
     backend.runJob(job.uuid, runner.uuid, function(err) {
@@ -143,7 +184,7 @@ test('run a job which fails', function(t) {
       runner: runner,
       backend: backend,
       job: job,
-      trace: true
+      trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
     backend.runJob(job.uuid, runner.uuid, function(err) {
@@ -163,21 +204,94 @@ test('run a job which fails', function(t) {
 
 
 test('run a job which re-queues itself', function(t) {
-  // check execution status and results
-  t.end();
+  factory.job({
+    workflow: reQueueWf.uuid,
+    exec_after: '2012-01-03T12:54:05.788Z'
+  }, function(err, job) {
+    t.ifError(err, 'job error');
+    t.ok(job, 'run job ok');
+    wf_job_runner = new WorkflowJobRunner({
+      runner: runner,
+      backend: backend,
+      job: job,
+      trace: false
+    });
+    t.ok(wf_job_runner, 'wf_job_runner ok');
+    backend.runJob(job.uuid, runner.uuid, function(err) {
+      t.ifError(err, 'backend.runJob error');
+      wf_job_runner.run(function(err) {
+        t.ifError(err, 'wf_job_runner run error');
+        backend.getJob(job.uuid, function(err, job) {
+          t.ifError(err, 'backend.getJob error');
+          t.ok(job, 'job ok');
+          t.equal(job.execution, 'queued');
+          t.equal(job.chain_results.length, 2);
+          t.equal(job.chain_results[1].result, 'OK');
+          t.equal(job.chain_results[1].error, 'queue');
+          reQueuedJob = job;
+          t.end();
+        });
+      });
+
+    });
+  });
 });
 
 test('run a previously re-queued job', function(t) {
-  // Review elapsed time and smaller timeout
-  t.end();
+  wf_job_runner = new WorkflowJobRunner({
+    runner: runner,
+    backend: backend,
+    job: reQueuedJob,
+    trace: false
+  });
+  // TODO: Review elapsed time and smaller timeout
+  t.ok(wf_job_runner, 'wf_job_runner ok');
+  backend.runJob(reQueuedJob.uuid, runner.uuid, function(err) {
+    t.ifError(err, 'backend.runJob error');
+    wf_job_runner.run(function(err) {
+      t.ifError(err, 'wf_job_runner run error');
+      backend.getJob(reQueuedJob.uuid, function(err, job) {
+        t.ifError(err, 'backend.getJob error');
+        t.ok(job, 'job ok');
+        t.equal(job.execution, 'succeeded');
+        t.equal(job.chain_results.length, 3);
+        t.equal(job.chain_results[2].result, 'OK');
+        t.ifError(job.chain_results[2].error);
+        t.end();
+      });
+    });
+  });
 });
+
 
 test('run a job which time out', function(t) {
-  // body...
-  t.end();
+  factory.job({
+    workflow: timeoutWf.uuid,
+    exec_after: '2012-01-03T12:54:05.788Z'
+  }, function(err, job) {
+    t.ifError(err, 'job error');
+    t.ok(job, 'job ok');
+    wf_job_runner = new WorkflowJobRunner({
+      runner: runner,
+      backend: backend,
+      job: job,
+      trace: false
+    });
+    t.ok(wf_job_runner, 'wf_job_runner ok');
+    backend.runJob(job.uuid, runner.uuid, function(err) {
+      t.ifError(err, 'backend.runJob error');
+      wf_job_runner.run(function(err) {
+        t.ifError(err, 'wf_job_runner run error');
+        backend.getJob(job.uuid, function(err, job) {
+          t.ifError(err, 'get job error');
+          t.equal(job.execution, 'failed', 'job execution');
+          t.equal(job.chain_results[0].error, 'workflow timeout');
+          t.end();
+        });
+      });
+    });
+  });
 });
-
-
 
 
 test('teardown', function(t) {
