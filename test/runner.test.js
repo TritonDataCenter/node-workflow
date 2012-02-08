@@ -3,7 +3,7 @@ var util = require('util'),
     fs = require('fs'),
     test = require('tap').test,
     uuid = require('node-uuid'),
-    WorkflowRunner = require('../lib/runner2'),
+    WorkflowRunner = require('../lib/runner'),
     WorkflowRedisBackend = require('../lib/workflow-redis-backend'),
     Factory = require('../lib/index').Factory;
 
