@@ -3,7 +3,7 @@ var util = require('util'),
     fs = require('fs'),
     test = require('tap').test,
     uuid = require('node-uuid'),
-    WorkflowRunner = require('../lib/runner'),
+    WorkflowRunner = require('../lib/runner2'),
     WorkflowRedisBackend = require('../lib/workflow-redis-backend'),
     Factory = require('../lib/index').Factory;
 
@@ -13,20 +13,20 @@ var TEST_DB_NUM = 15;
 var backend, identifier, runner, factory;
 
 var okTask = {
-      name: 'OK Task',
-      retry: 1,
-      body: function(job, cb) {
-        return cb(null);
-      }
-    },
-    failTask = {
-      retry: 1,
-      name: 'Fail Task',
-      body: function(job, cb) {
-        return cb('Fail task error');
-      }
-    },
-    okWf, failWf;
+  name: 'OK Task',
+  retry: 1,
+  body: function(job, cb) {
+    return cb(null);
+  }
+},
+failTask = {
+  retry: 1,
+  name: 'Fail Task',
+  body: function(job, cb) {
+    return cb('Fail task error');
+  }
+},
+okWf, failWf;
 
 test('setup', function(t) {
   identifier = uuid();
@@ -127,7 +127,7 @@ test('run job', function(t) {
           t.end();
         });
       });
-    }, 10000);
+    }, 7000);
   });
 });
 
@@ -151,7 +151,7 @@ test('run job which fails', function(t) {
           t.end();
         });
       });
-    }, 10000);
+    }, 9000);
   });
 });
 
@@ -184,4 +184,5 @@ test('teardown', function(t) {
     });
   });
 });
+
 
