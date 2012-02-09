@@ -173,7 +173,7 @@ test('run job ok', function(t) {
 });
 
 
-test('run a job which fails', function(t) {
+test('run a job which fails without "onerror"', function(t) {
   factory.job({
     workflow: failWf.uuid,
     exec_after: '2012-01-03T12:54:05.788Z'
@@ -264,7 +264,7 @@ test('run a previously re-queued job', function(t) {
 });
 
 
-test('run a job which time out', function(t) {
+test('run a job which time out without "onerror"', function(t) {
   factory.job({
     workflow: timeoutWf.uuid,
     exec_after: '2012-01-03T12:54:05.788Z'
@@ -287,6 +287,65 @@ test('run a job which time out', function(t) {
           t.equal(job.execution, 'failed', 'job execution');
           t.equal(job.chain_results[0].error, 'workflow timeout');
           t.end();
+        });
+      });
+    });
+  });
+});
+
+
+test('a failed workflow with successful "onerror"', function(t) {
+  factory.workflow({
+    name: 'Failed wf with onerror ok',
+    chain: [{
+      name: 'A name',
+      body: function(job, cb) {
+        job.foo = 'This will fail';
+        return cb('This will fail');
+      }
+    }],
+    onerror: [{
+      name: 'A name',
+      body: function(job, cb) {
+        if (job.foo && job.foo === 'This will fail') {
+          job.foo = 'OK!, expected failure. Fixed.';
+          return cb();
+        } else {
+          return cb('Unknown failure');
+        }
+      }
+    }]
+  }, function(err, wf) {
+    t.ifError(err, 'wf error');
+    t.ok(wf, 'wf ok');
+    factory.job({
+      workflow: wf.uuid,
+      exec_after: '2012-01-03T12:54:05.788Z'
+    }, function(err, job) {
+      t.ifError(err, 'job error');
+      t.ok(job, 'job ok');
+      wf_job_runner = new WorkflowJobRunner({
+        runner: runner,
+        backend: backend,
+        job: job,
+        trace: false
+      });
+      t.ok(wf_job_runner, 'wf_job_runner ok');
+      backend.runJob(job.uuid, runner.uuid, function(err) {
+        t.ifError(err, 'backend.runJob error');
+        wf_job_runner.run(function(err) {
+          t.ifError(err, 'wf_job_runner run error');
+          backend.getJob(job.uuid, function(err, job) {
+            t.ifError(err, 'get job error');
+            t.equal(job.execution, 'succeeded', 'job execution');
+            t.ok(util.isArray(job.chain_results), 'chain results array');
+            t.ok(util.isArray(job.onerror_results), 'onerror results array');
+            t.equal(job.chain_results[0].error, 'This will fail');
+            t.ifError(job.onerror_results[0].error, 'onerror_results error');
+            t.ok(job.foo, 'job task added property ok');
+            t.equal(job.foo, 'OK!, expected failure. Fixed.', 'job prop ok');
+            t.end();
+          });
         });
       });
     });
