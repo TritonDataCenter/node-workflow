@@ -138,7 +138,55 @@ test('setup', function(t) {
 });
 
 
-// TODO: tests for WorkflowJobRunner wrong opts
+test('throws on missing opts', function(t) {
+  t.throws(function() {
+    return new WorkflowJobRunner();
+  }, new TypeError('opts (Object) required'));
+  t.end();
+});
+
+
+test('throws on missing opts.runner', function(t) {
+  t.throws(function() {
+    return new WorkflowJobRunner({});
+  }, new TypeError('opts.runner (Object) required'));
+  t.end();
+});
+
+
+test('throws on missing opts.backend', function(t) {
+  t.throws(function() {
+    return new WorkflowJobRunner({
+      runner: runner
+    });
+  }, new TypeError('opts.backend (Object) required'));
+  t.end();
+});
+
+
+
+test('throws on missing opts.job', function(t) {
+  t.throws(function() {
+    return new WorkflowJobRunner({
+      runner: runner,
+      backend: backend
+    });
+  }, new TypeError('opts.job (Object) required'));
+  t.end();
+});
+
+
+test('throws on incorrect opts.sandbox', function(t) {
+  t.throws(function() {
+    return new WorkflowJobRunner({
+      runner: runner,
+      backend: backend,
+      job: {},
+      sandbox: 'foo'
+    });
+  }, new TypeError('opts.sandbox must be an Object'));
+  t.end();
+});
 
 
 test('run job ok', function(t) {
@@ -246,7 +294,6 @@ test('run a previously re-queued job', function(t) {
     job: reQueuedJob,
     trace: false
   });
-  // TODO: Review elapsed time and smaller timeout
   t.ok(wf_job_runner, 'wf_job_runner ok');
   backend.runJob(reQueuedJob.uuid, runner.uuid, function(err) {
     t.ifError(err, 'backend.runJob error');
@@ -357,7 +404,6 @@ test('a failed workflow with successful "onerror"', function(t) {
             t.ok(job.chain_results[0].finished_at);
             t.ok(job.onerror_results[0].started_at);
             t.ok(job.onerror_results[0].finished_at);
-
             t.end();
           });
         });
@@ -366,6 +412,157 @@ test('a failed workflow with successful "onerror"', function(t) {
   });
 });
 
+
+test('a failed workflow with a non successful "onerror"', function(t) {
+  factory.workflow({
+    name: 'Failed wf with onerror not ok',
+    chain: [{
+      name: 'A name',
+      body: function(job, cb) {
+        job.foo = 'Something else';
+        return cb('This will fail');
+      }
+    }],
+    onerror: [{
+      name: 'A name',
+      body: function(job, cb) {
+        if (job.foo && job.foo === 'This will fail') {
+          job.foo = 'OK!, expected failure. Fixed.';
+          return cb();
+        } else {
+          return cb('Unknown failure');
+        }
+      }
+    }]
+  }, function(err, wf) {
+    t.ifError(err, 'wf error');
+    t.ok(wf, 'wf ok');
+    factory.job({
+      workflow: wf.uuid,
+      exec_after: '2012-01-03T12:54:05.788Z'
+    }, function(err, job) {
+      t.ifError(err, 'job error');
+      t.ok(job, 'job ok');
+      wf_job_runner = new WorkflowJobRunner({
+        runner: runner,
+        backend: backend,
+        job: job,
+        trace: false
+      });
+      t.ok(wf_job_runner, 'wf_job_runner ok');
+      backend.runJob(job.uuid, runner.uuid, function(err) {
+        t.ifError(err, 'backend.runJob error');
+        wf_job_runner.run(function(err) {
+          t.ifError(err, 'wf_job_runner run error');
+          backend.getJob(job.uuid, function(err, job) {
+            t.ifError(err, 'get job error');
+            t.equal(job.foo, 'Something else', 'job prop ok');
+            t.equal(job.chain_results[0].error, 'This will fail');
+            t.equal(
+              job.onerror_results[0].error,
+              'Unknown failure',
+              'onerror_results error'
+            );
+            t.end();
+          });
+        });
+      });
+    });
+  });
+});
+
+
+test('a job cannot access undefined sandbox modules', function(t) {
+  factory.workflow({
+    name: 'with undefined sandbox',
+    chain: [{
+      name: 'A name',
+      body: function(job, cb) {
+        job.uuid = uuid();
+        return cb(null);
+      }
+    }]
+  }, function(err, wf) {
+    t.ifError(err, 'wf error');
+    t.ok(wf, 'wf ok');
+    factory.job({
+      workflow: wf.uuid,
+      exec_after: '2012-01-03T12:54:05.788Z'
+    }, function(err, job) {
+      t.ifError(err, 'job error');
+      t.ok(job, 'job ok');
+      wf_job_runner = new WorkflowJobRunner({
+        runner: runner,
+        backend: backend,
+        job: job,
+        trace: false
+      });
+      t.ok(wf_job_runner, 'wf_job_runner ok');
+      backend.runJob(job.uuid, runner.uuid, function(err) {
+        t.ifError(err, 'backend.runJob error');
+        wf_job_runner.run(function(err) {
+          t.ifError(err, 'wf_job_runner run error');
+          backend.getJob(job.uuid, function(err, job) {
+            t.ifError(err);
+            t.ok(job);
+            t.equal(job.execution, 'failed');
+            t.ok(job.chain_results[0].error);
+            t.ok(job.chain_results[0].error.match(/uuid/gi));
+            t.end();
+          });
+        });
+      });
+    });
+  });
+});
+
+
+test('a job can access explicitly defined sandbox modules', function(t) {
+  factory.workflow({
+    name: 'explicitly defined sandbox',
+    chain: [{
+      name: 'A name',
+      body: function(job, cb) {
+        job.uuid = uuid();
+        return cb(null);
+      }
+    }]
+  }, function(err, wf) {
+    t.ifError(err, 'wf error');
+    t.ok(wf, 'wf ok');
+    factory.job({
+      workflow: wf.uuid,
+      exec_after: '2012-01-03T12:54:05.788Z'
+    }, function(err, job) {
+      t.ifError(err, 'job error');
+      t.ok(job, 'job ok');
+      wf_job_runner = new WorkflowJobRunner({
+        runner: runner,
+        backend: backend,
+        job: job,
+        trace: false,
+        sandbox: {
+          uuid: 'node-uuid'
+        }
+      });
+      t.ok(wf_job_runner, 'wf_job_runner ok');
+      backend.runJob(job.uuid, runner.uuid, function(err) {
+        t.ifError(err, 'backend.runJob error');
+        wf_job_runner.run(function(err) {
+          t.ifError(err, 'wf_job_runner run error');
+          backend.getJob(job.uuid, function(err, job) {
+            t.ifError(err);
+            t.ok(job);
+            t.equal(job.execution, 'succeeded');
+            t.ifError(job.chain_results[0].error);
+            t.end();
+          });
+        });
+      });
+    });
+  });
+
+});
 
 test('teardown', function(t) {
   backend.quit(function() {
