@@ -353,6 +353,11 @@ test('a failed workflow with successful "onerror"', function(t) {
             t.ifError(job.onerror_results[0].error, 'onerror_results error');
             t.ok(job.foo, 'job task added property ok');
             t.equal(job.foo, 'OK!, expected failure. Fixed.', 'job prop ok');
+            t.ok(job.chain_results[0].started_at);
+            t.ok(job.chain_results[0].finished_at);
+            t.ok(job.onerror_results[0].started_at);
+            t.ok(job.onerror_results[0].finished_at);
+
             t.end();
           });
         });
