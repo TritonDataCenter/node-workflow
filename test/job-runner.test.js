@@ -303,6 +303,7 @@ test('run a job which time out without "onerror"', function(t) {
 test('a failed workflow with successful "onerror"', function(t) {
   factory.workflow({
     name: 'Failed wf with onerror ok',
+    timeout: 0,
     chain: [{
       name: 'A name',
       body: function(job, cb) {
@@ -337,6 +338,8 @@ test('a failed workflow with successful "onerror"', function(t) {
         trace: false
       });
       t.ok(wf_job_runner, 'wf_job_runner ok');
+      t.equal(wf_job_runner.timeout, null, 'no runner timeout');
+      t.equal(typeof(job.timeout), 'undefined', 'no job timeout');
       backend.runJob(job.uuid, runner.uuid, function(err) {
         t.ifError(err, 'backend.runJob error');
         wf_job_runner.run(function(err) {
