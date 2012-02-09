@@ -22,7 +22,7 @@ var Backend = require(config.backend.module),
     backend = new Backend(config.backend.opts),
     factory, wf_job_runner;
 
-var okWf, failWf, timeoutWf, reQueueWf, reQueuedJob;
+var okWf, failWf, timeoutWf, reQueueWf, reQueuedJob, elapsed;
 
 var FakeRunner = function() {
   this.child_processes = {};
@@ -224,10 +224,12 @@ test('run a job which re-queues itself', function(t) {
         backend.getJob(job.uuid, function(err, job) {
           t.ifError(err, 'backend.getJob error');
           t.ok(job, 'job ok');
-          t.equal(job.execution, 'queued');
-          t.equal(job.chain_results.length, 2);
-          t.equal(job.chain_results[1].result, 'OK');
-          t.equal(job.chain_results[1].error, 'queue');
+          t.ok(job.elapsed, 'elapsed secs ok');
+          elapsed = job.elapsed;
+          t.equal(job.execution, 'queued', 'execution ok');
+          t.equal(job.chain_results.length, 2, 'chain results ok');
+          t.equal(job.chain_results[1].result, 'OK', 'result ok');
+          t.equal(job.chain_results[1].error, 'queue', 'error ok');
           reQueuedJob = job;
           t.end();
         });
@@ -249,6 +251,10 @@ test('run a previously re-queued job', function(t) {
   backend.runJob(reQueuedJob.uuid, runner.uuid, function(err) {
     t.ifError(err, 'backend.runJob error');
     wf_job_runner.run(function(err) {
+      t.ok(
+        wf_job_runner.timeout < (reQueuedJob.timeout * 1000),
+        'elapsed timeout'
+      );
       t.ifError(err, 'wf_job_runner run error');
       backend.getJob(reQueuedJob.uuid, function(err, job) {
         t.ifError(err, 'backend.getJob error');
