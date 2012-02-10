@@ -566,6 +566,37 @@ test('GET /jobs/:uuid/info', function(t) {
 });
 
 
+test('POST /jobs/:uuid/cancel', function(t) {
+  t.test('with unexisting job uuid', function(t) {
+    client.post(
+      '/jobs/' + uuid() + '/cancel',
+      {},
+      function(err, req, res, obj) {
+        t.ok(err);
+        t.equal(err.statusCode, 404);
+        t.equal(err.name, 'RestError');
+        t.equal(obj.code, 'ResourceNotFound');
+        t.ok(obj.message);
+        t.ok(obj.message.match(/not found/gi));
+        t.end();
+      });
+  });
+  t.test('with existing job', function(t) {
+    client.post(
+      '/jobs/' + job_uuid + '/cancel',
+      {},
+      function(err, req, res, obj) {
+        t.ifError(err);
+        t.equal(res.statusCode, 200);
+        t.equal(obj.uuid, job_uuid);
+        t.equal(obj.execution, 'canceled');
+        t.end();
+      });
+  });
+  t.end();
+});
+
+
 test('DELETE /workflows/:uuid', function(t) {
   client.del('/workflows/' + wf_uuid,
     function(err, req, res, obj) {

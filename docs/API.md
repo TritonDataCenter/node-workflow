@@ -245,6 +245,25 @@ __TBD__. Response with status code `405 Method Not Allowed`.
 
 __TBD__. Response with status code `405 Method Not Allowed`.
 
+## POST /jobs/:job_uuid/cancel
+
+Cancel a job's execution. The job should not be finished in order to be
+cancelable.
+
+### HTTP Parameters.
+
+- `job_uuid`: The job's UUID.
+
+### Status Codes
+
+- `404 Not Found`: There's no job with the provided `job_uuid`.
+- `409 Conflict`: The job is already finalized and cannot be canceled.
+- `200 OK`: Successfully canceled job.
+
+### Response Body
+
+Same than for `POST /jobs`.
+
 ## GET /jobs/:job_uuid/info
 
 Detailed information for the given job. A task may result into a 3rd
