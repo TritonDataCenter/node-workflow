@@ -129,7 +129,11 @@ test('create job', function(t) {
       'params ok'
     );
     aJob = job;
-    t.end();
+    backend.getJobProperty(aJob.uuid, 'target', function(err, val) {
+      t.ifError(err, 'get job property error');
+      t.equal(val, '/foo/bar', 'property value ok');
+      t.end();
+    });
   });
 });
 
