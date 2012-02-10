@@ -27,6 +27,28 @@ var task = {
   'body': 'Fake body'
 };
 
+
+test('unkown message', function(t) {
+  var child = fork(__dirname + '/../lib/child.js');
+
+  child.on('message', function(msg) {
+    t.ifError(msg.job);
+    t.ok(msg.error);
+    t.equal(msg.error, 'unknown message');
+  });
+
+  child.on('exit', function(code) {
+    t.equal(code, 0);
+    t.end();
+  });
+
+  child.send({
+    foo: 'bar'
+  });
+
+});
+
+
 test('message without job', function(t) {
   var child = fork(__dirname + '/../lib/child.js');
 
@@ -137,4 +159,46 @@ test('message with failed task', function(t) {
     job: job,
     task: task
   });
+});
+
+
+test('cancel message', function(t) {
+  task.body = function(job, cb) {
+    job.timer = 'Timeout set';
+    setTimeout(function() {
+      // Should not be called:
+      return cb(null);
+    }, 1550);
+  }.toString();
+  task.retry = 2;
+  task.timeout = 1;
+
+  job.chain.push(task);
+
+  var child = fork(__dirname + '/../lib/child.js');
+
+  child.on('message', function(msg) {
+    t.ok(msg.error);
+    t.equal(msg.error, 'cancel');
+    t.ifError(msg.result);
+    t.equal(msg.cmd, 'cancel');
+    t.ok(msg.job);
+  });
+
+  child.on('exit', function(code) {
+    t.equal(code, 0);
+    t.end();
+  });
+
+  setTimeout(function() {
+    child.send({
+      cmd: 'cancel'
+    });
+  }, 750);
+
+  child.send({
+    job: job,
+    task: task
+  });
+
 });
