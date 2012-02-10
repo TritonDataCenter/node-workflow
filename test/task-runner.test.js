@@ -312,7 +312,7 @@ test('a task which times out and fallback does too', function(t) {
   var wf_task_runner = new WorkflowTaskRunner({
     job: job,
     task: task,
-    trace: true
+    trace: false
   });
 
   t.ok(wf_task_runner.uuid, 'uuid ok');
@@ -356,3 +356,117 @@ test('a task which succeeds and re-queues the workflow', function(t) {
   });
 
 });
+
+
+test('a task which times out and has no fallback', function(t) {
+  task.body = function(job, cb) {
+    job.timer = 'Timeout set';
+    setTimeout(function() {
+      // Should not be called:
+      return cb(null);
+    }, 1050);
+  }.toString();
+  task.retry = 1;
+  task.fallback = null;
+  job.chain.push(task);
+
+  var wf_task_runner = new WorkflowTaskRunner({
+    job: job,
+    task: task,
+    trace: false
+  });
+
+  t.ok(wf_task_runner.uuid, 'uuid ok');
+  t.equal(typeof wf_task_runner.body, 'function', 'body ok');
+  t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
+
+  wf_task_runner.runTask(function(msg) {
+    t.ok(msg.error, 'task error');
+    t.equal(msg.error, 'task timeout error', 'task timeout error');
+    t.ifError(msg.result, 'task result');
+    t.ok(msg.job, 'job ok');
+    t.equal(msg.cmd, 'error', 'cmd ok');
+    t.end();
+  });
+
+});
+
+
+test('a task which timeout and is canceled', function(t) {
+  task.body = function(job, cb) {
+    job.timer = 'Timeout set';
+    setTimeout(function() {
+      // Should not be called:
+      return cb(null);
+    }, 1550);
+  }.toString();
+  task.retry = 2;
+  task.fallback = null;
+  job.chain.push(task);
+
+  var wf_task_runner = new WorkflowTaskRunner({
+    job: job,
+    task: task,
+    trace: false
+  });
+
+  t.ok(wf_task_runner.uuid, 'uuid ok');
+  t.equal(typeof wf_task_runner.body, 'function', 'body ok');
+  t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
+
+  setTimeout(function() {
+    wf_task_runner.canceled = true;
+  }, 750);
+
+  wf_task_runner.runTask(function(msg) {
+    t.ok(msg.error, 'task error');
+    t.equal(msg.error, 'cancel', 'task timeout error');
+    t.ifError(msg.result, 'task result');
+    t.ok(msg.job, 'job ok');
+    t.equal(msg.cmd, 'cancel', 'cmd ok');
+    t.end();
+  });
+
+});
+
+
+test('a task which fails and is canceled', function(t) {
+  task.body = function(job, cb) {
+    setTimeout(function() {
+      return cb('Task body error');
+    }, 500);
+  }.toString();
+
+  task.fallback = function(err, job, cb) {
+    job.the_err = err;
+    return cb(null);
+  }.toString();
+
+  task.retry = 1;
+
+  job.chain.push(task);
+
+  var wf_task_runner = new WorkflowTaskRunner({
+    job: job,
+    task: task
+  });
+
+  t.ok(wf_task_runner.uuid);
+  t.equal(typeof wf_task_runner.body, 'function');
+  t.equal(typeof wf_task_runner.fallback, 'function');
+
+  setTimeout(function() {
+    wf_task_runner.canceled = true;
+  }, 350);
+
+  wf_task_runner.runTask(function(msg) {
+    t.ok(msg.error, 'task error');
+    t.equal(msg.error, 'cancel', 'task timeout error');
+    t.ifError(msg.result, 'task result');
+    t.ok(msg.job, 'job ok');
+    t.equal(msg.cmd, 'cancel', 'cmd ok');
+    t.end();
+  });
+
+});
+
