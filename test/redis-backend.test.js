@@ -331,6 +331,40 @@ test('get all runners', function(t) {
 });
 
 
+test('idle runner', function(t) {
+  t.test('check runner is not idle', function(t) {
+    backend.isRunnerIdle(runnerId, function(idle) {
+      t.equal(idle, false);
+      t.end();
+    });
+  });
+  t.test('set runner as idle', function(t) {
+    backend.idleRunner(runnerId, function(err) {
+      t.ifError(err);
+      t.end();
+    });
+  });
+  t.test('check runner is idle', function(t) {
+    backend.isRunnerIdle(runnerId, function(idle) {
+      t.equal(idle, true);
+      t.end();
+    });
+  });
+  t.test('set runner as not idle', function(t) {
+    backend.wakeUpRunner(runnerId, function(err) {
+      t.ifError(err);
+      t.end();
+    });
+  });
+  t.test('check runner is not idle', function(t) {
+    backend.isRunnerIdle(runnerId, function(idle) {
+      t.equal(idle, false);
+      t.end();
+    });
+  });
+  t.end();
+});
+
 test('get workflows', function(t) {
   backend.getWorkflows(function(err, workflows) {
     t.ifError(err, 'get workflows error');
