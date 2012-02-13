@@ -26,7 +26,7 @@ failTask = {
     return cb('Fail task error');
   }
 },
-okWf, failWf;
+okWf, failWf, theJob;
 
 test('setup', function(t) {
   identifier = uuid();
@@ -108,19 +108,41 @@ test('runner run job now', function(t) {
 });
 
 
-test('run job', function(t) {
-  var aJob;
+test('idle runner', function(t) {
   factory.job({
     workflow: okWf.uuid,
     exec_after: '2012-01-03T12:54:05.788Z'
   }, function(err, job) {
     t.ifError(err, 'job error');
     t.ok(job, 'run job ok');
-    aJob = job;
+    theJob = job;
+    // The job is queued. Now we'll idle the runner and verify it will not
+    // touch the job
+    backend.idleRunner(runner.identifier, function(err) {
+      t.ifError(err, 'idle runner error');
+      runner.run();
+      setTimeout(function() {
+        runner.quit(function() {
+          backend.getJob(theJob.uuid, function(err, job) {
+            t.ifError(err, 'run job get job error');
+            t.equal(job.execution, 'queued', 'job execution');
+            t.end();
+          });
+        });
+      }, 7000);
+    });
+  });
+});
+
+
+test('run job', function(t) {
+  // Let's remove the idleness of the runner so it will pick the job
+  backend.wakeUpRunner(runner.identifier, function(err) {
+    t.ifError(err, 'wake up runner error');
     runner.run();
     setTimeout(function() {
       runner.quit(function() {
-        backend.getJob(aJob.uuid, function(err, job) {
+        backend.getJob(theJob.uuid, function(err, job) {
           t.ifError(err, 'run job get job error');
           t.equal(job.execution, 'succeeded', 'job execution');
           t.equal(job.chain_results[0].result, 'OK');
