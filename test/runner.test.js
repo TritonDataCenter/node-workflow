@@ -191,6 +191,45 @@ test('runner init', function(t) {
 });
 
 
+test('inactive runners', function(t) {
+  // Add another runner, which we'll set as inactive
+  var theUUID = uuid(),
+  anotherRunner = new WorkflowRunner(backend, {
+    identifier: theUUID,
+    forks: 2,
+    run_interval: 0.1
+  });
+  t.ok(anotherRunner, 'another runner ok');
+  // Init the new runner, then update it to make inactive
+  anotherRunner.init(function(err) {
+    t.ifError(err, 'another runner init error');
+    // Now we quit the new runner, and outdate it:
+    anotherRunner.quit(function() {
+      runner.inactiveRunners(function(err, runners) {
+        t.ifError(err, 'inactive runners error');
+        t.ok(util.isArray(runners), 'runners is array');
+        t.equal(runners.length, 0, 'runners length');
+        // TODO: This is Redis specific, should add backend method:
+        backend.client.hset(
+          'wf_runners',
+          anotherRunner.identifier,
+          '2012-01-03T12:54:05.788Z',
+          function(err, res) {
+            t.ifError(err, 'set runner timestamp error');
+            runner.inactiveRunners(function(err, runners) {
+              t.ifError(err, 'inactive runners error');
+              t.ok(util.isArray(runners), 'runners is array');
+              t.equal(runners.length, 1, 'runners length');
+              t.equal(runners[0], theUUID, 'runner uuid error');
+              t.end();
+            });
+          });
+      });
+    });
+  });
+});
+
+
 test('teardown', function(t) {
   var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
   backend.quit(function() {
