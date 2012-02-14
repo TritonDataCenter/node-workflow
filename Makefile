@@ -28,10 +28,6 @@ all:: test doc
 
 node_modules/.npm.installed:
 	$(NPM) install
-	rm -rf node_modules/restify \
-		&& git clone git://github.com/mcavage/node-restify.git \
-		node_modules/restify
-	@(cd ./node_modules/restify && $(NPM) install)
 	if [[ ! -d node_modules/.restdown ]]; then \
 		git clone git://github.com/trentm/restdown.git node_modules/.restdown; \
 	else \

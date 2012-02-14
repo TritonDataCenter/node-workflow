@@ -3,8 +3,9 @@ var test = require('tap').test,
     uuid = require('node-uuid'),
     SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
+    path = require('path'),
+    Logger = require('bunyan'),
     restify = require('restify'),
-    log4js = require('log4js'),
     API = require('../lib/api');
 
 
@@ -27,7 +28,22 @@ var config = {
 
 var Backend = require(config.backend.module);
 
-log4js.setGlobalLogLevel('DEBUG');
+var log = new Logger({
+  name: 'workflow-api',
+  streams: [{
+    level: 'info',
+    stream: process.stdout
+  }, {
+    level: 'trace',
+    path: path.resolve(__dirname, '../logs/test.api.log')
+  }],
+  serializers: {
+    err: Logger.stdSerializers.err,
+    req: Logger.stdSerializers.req,
+    res: restify.bunyan.serializers.response
+  }
+});
+
 
 //--- Tests
 
@@ -47,19 +63,19 @@ test('throws on missing backend', function(t) {
 });
 
 
-test('throws on missing opts.log4js', function(t) {
+test('throws on missing opts.logger', function(t) {
   backend = new Backend(config.backend.opts);
   t.ok(backend, 'backend ok');
 
   t.throws(function() {
     return new API(config, backend);
-  }, new TypeError('opts.log4js (Object) required'));
+  }, new TypeError('opts.logger (Object) required'));
   t.end();
 });
 
 
 test('throws on missing opts.api', function(t) {
-  config.log4js = log4js;
+  config.logger = log;
   t.throws(function() {
     return new API(config, backend);
   }, new TypeError('opts.api (Object) required'));
@@ -89,7 +105,7 @@ test('setup', function(t) {
     t.ok(server, 'server ok');
     server.listen(PORT, '127.0.0.1', function() {
       client = restify.createJsonClient({
-        log4js: log4js,
+        log: log,
         url: 'http://127.0.0.1:' + PORT,
         type: 'json',
         version: '*'
@@ -532,7 +548,6 @@ test('POST /jobs/:uuid/info', function(t) {
     }, function(err, req, res, obj) {
       t.ifError(err);
       t.equal(res.statusCode, 200);
-      console.log(util.inspect(obj, false, 8));
       t.end();
     });
   });
