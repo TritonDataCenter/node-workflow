@@ -67,6 +67,7 @@ var series = [
           // Some task failed and, as a consequence, this task is being executed
           if (job.error) {
             // Do something here ...
+            cb(job.error);
           }
           cb(null);
         }

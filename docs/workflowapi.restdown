@@ -1,3 +1,6 @@
+---
+title: Workflow & Status API
+---
 # Workflow & Status API
 
 This document describes the HTTP REST API for workflows and tasks, and for the

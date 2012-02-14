@@ -1,0 +1,50 @@
+#
+# Copyright (c) 2012, Joyent, Inc. All rights reserved.
+#
+# Makefile.deps: Makefile for including common tools as dependencies
+#
+# This file is separate from Makefile.targ so that teams can choose
+# independently whether to use the common targets in Makefile.targ and the
+# common tools here.
+#
+
+#
+# javascriptlint
+#
+JSL_SCRIPT	= deps/javascriptlint/build/install/jsl
+JSL		= python2.7 $(JSL_SCRIPT)
+
+$(JSL_SCRIPT): | deps/javascriptlint/.git
+	cd deps/javascriptlint && make install
+
+deps/javascriptlint/.git:
+	git submodule update --init deps/javascriptlint
+
+#
+# jsstyle
+#
+JSSTYLE_SCRIPT  = deps/jsstyle/jsstyle
+JSSTYLE		= $(JSSTYLE_SCRIPT)
+
+deps/jsstyle/jsstyle:
+	git submodule update --init deps/jsstyle
+
+#
+# restdown
+#
+RESTDOWN	= python2.7 deps/restdown/bin/restdown
+
+$(RESTDOWN): | deps/restdown/.git
+
+deps/restdown/.git:
+	git submodule update --init deps/restdown
+
+#
+# The restdown submodule should be updated before we build "docs".
+#
+docs: $(RESTDOWN)
+
+#
+# JSL and JSSTYLE must be around before we build "check".
+#
+check: $(JSL_SCRIPT) $(JSSTYLE)

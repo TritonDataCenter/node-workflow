@@ -1,0 +1,106 @@
+#!/usr/bin/env node
+
+/*
+ * Copyright (c) 2012, Joyent, Inc. All rights reserved.
+ *
+ * bashstyle: check bash scripts for adherence to style guidelines, including:
+ *
+ *    o no lines longer than 80 characters
+ *    o file does not end with a blank line
+ *
+ * Future enhancements could include:
+ *    o indents consistent with respect to tabs, spaces
+ *    o indents consistently sized (all are some multiple of the smallest
+ *      indent, which must be a tab or 4 or 8 spaces)
+ */
+
+var mod_assert = require('assert');
+var mod_fs = require('fs');
+
+var nerrors = 0;
+
+main();
+process.exit(0);
+
+function main()
+{
+	var files = process.argv.slice(2);
+
+	if (files.length === 0) {
+		console.error('usage: %s file1 [...]',
+		    process.argv.slice(0, 2).join(' '));
+		process.exit(2);
+	}
+
+	files.forEach(checkFile);
+
+	if (nerrors != 0)
+		process.exit(1);
+}
+
+function checkFile(filename)
+{
+	var text = mod_fs.readFileSync(filename, 'utf-8');
+	var lines = text.split('\n');
+	var i;
+
+	mod_assert.ok(lines.length > 0);
+
+	/*
+	 * Expand tabs in each line and check for long lines.
+	 */
+	for (i = 1; i <= lines.length; i++) {
+		var line = expandTabs(lines[i - 1]);
+
+		if (line.length > 80) {
+			nerrors++;
+			console.log('%s: %d: line exceeds 80 columns',
+			    filename, i);
+		}
+	}
+
+	/*
+	 * No sane editor lets you save a file without a newline at the very end.
+	 */
+	if (lines[lines.length - 1].length !== 0) {
+		nerrors++;
+		console.log('%s: %d: file does not end with newline',
+			filename, lines.length);
+	}
+
+	/*
+	 * Since the file will always end with a newline, the last entry of
+	 * "lines" will actually be blank.
+	 */
+	if (lines.length > 1 && lines[lines.length - 2].length === 0) {
+		nerrors++;
+		console.log('%s: %d: file ends with a blank line',
+		    filename, lines.length - 1);
+	}
+}
+
+function expandTabs(text)
+{
+	var out = '';
+	var col = 0;
+	var j, k;
+
+	for (j = 0; j < text.length; j++) {
+		if (text[j] != '\t') {
+			out += text[j];
+			col++;
+			continue;
+		}
+
+		k = 8 - (col % 8);
+		col += k;
+
+		do {
+			out += ' ';
+		}  while (--k > 0);
+
+		col += k;
+	}
+
+	return (out);
+}
