@@ -71,6 +71,20 @@ or different machines, as far as they have access to Redis Server.
 
     make test
 
+# Pre-commit git hook:
+
+In order to run `make prepush` before every commit, add the following to a file
+`.git/hooks/pre-commit` and `chmod +x` it:
+
+    #!/bin/sh
+    # Run make prepush before allow commit
+
+    set -e
+
+    make prepush
+
+    exit 0
+
 # Development Data
 
 # Demo
