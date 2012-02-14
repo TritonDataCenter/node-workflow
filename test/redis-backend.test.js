@@ -15,19 +15,19 @@ var runnerId = uuid();
 // A DB for testing, flushed before and right after we're done with tests
 var TEST_DB_NUM = 15;
 
-test('setup', function(t) {
+test('setup', function (t) {
   backend = new WorkflowRedisBackend({
     port: 6379,
     host: '127.0.0.1',
     db: TEST_DB_NUM
   });
   t.ok(backend, 'backend ok');
-  backend.init(function() {
-    backend.client.flushdb(function(err, res) {
+  backend.init(function () {
+    backend.client.flushdb(function (err, res) {
       t.ifError(err, 'flush db error');
       t.equal('OK', res, 'flush db ok');
     });
-    backend.client.dbsize(function(err, res) {
+    backend.client.dbsize(function (err, res) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
@@ -38,25 +38,25 @@ test('setup', function(t) {
 });
 
 
-test('add a workflow', function(t) {
+test('add a workflow', function (t) {
   factory.workflow({
     name: 'A workflow',
-    chain: [{
+    chain: [ {
       name: 'A Task',
       timeout: 30,
       retry: 3,
-      body: function(job, cb) {
+      body: function (job, cb) {
         return cb(null);
       }
     }],
     timeout: 180,
-    onError: [{
+    onError: [ {
       name: 'Fallback task',
-      body: function(job, cb) {
+      body: function (job, cb) {
         return cb('Workflow error');
       }
     }]
-  }, function(err, workflow) {
+  }, function (err, workflow) {
     t.ifError(err, 'add workflow error');
     t.ok(workflow, 'add workflow ok');
     aWorkflow = workflow;
@@ -66,39 +66,39 @@ test('add a workflow', function(t) {
   });
 });
 
-test('workflow name must be unique', function(t) {
+test('workflow name must be unique', function (t) {
   factory.workflow({
     name: 'A workflow',
-    chain: [{
+    chain: [ {
       name: 'A Task',
       timeout: 30,
       retry: 3,
-      body: function(job, cb) {
+      body: function (job, cb) {
         return cb(null);
       }
     }],
     timeout: 180,
-    onError: [{
+    onError: [ {
       name: 'Fallback task',
-      body: function(job, cb) {
+      body: function (job, cb) {
         return cb('Workflow error');
       }
     }]
-  }, function(err, workflow) {
+  }, function (err, workflow) {
     t.ok(err, 'duplicated workflow name err');
     t.end();
   });
 });
 
-test('update workflow', function(t) {
+test('update workflow', function (t) {
   aWorkflow.chain.push({
     name: 'Another task',
-    body: function(job, cb) {
+    body: function (job, cb) {
       return cb(null);
     }.toString()
   });
   aWorkflow.name = 'A workflow name';
-  backend.updateWorkflow(aWorkflow, function(err, workflow) {
+  backend.updateWorkflow(aWorkflow, function (err, workflow) {
     t.ifError(err, 'update workflow error');
     t.ok(workflow, 'update workflow ok');
     t.ok(workflow.chain[1].name, 'Updated task ok');
@@ -108,7 +108,7 @@ test('update workflow', function(t) {
 });
 
 
-test('create job', function(t) {
+test('create job', function (t) {
   factory.job({
     workflow: aWorkflow.uuid,
     target: '/foo/bar',
@@ -116,7 +116,7 @@ test('create job', function(t) {
       a: '1',
       b: '2'
     }
-  }, function(err, job) {
+  }, function (err, job) {
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
     t.ok(job.exec_after, 'job exec_after');
@@ -125,11 +125,10 @@ test('create job', function(t) {
     t.ok(util.isArray(job.chain), 'job chain is array');
     t.ok(util.isArray(job.onerror), 'job onerror is array');
     t.ok(
-      (typeof job.params === 'object' && !util.isArray(job.params)),
-      'params ok'
-    );
+      (typeof (job.params) === 'object' && !util.isArray(job.params)),
+      'params ok');
     aJob = job;
-    backend.getJobProperty(aJob.uuid, 'target', function(err, val) {
+    backend.getJobProperty(aJob.uuid, 'target', function (err, val) {
       t.ifError(err, 'get job property error');
       t.equal(val, '/foo/bar', 'property value ok');
       t.end();
@@ -137,7 +136,7 @@ test('create job', function(t) {
   });
 });
 
-test('duplicated job target', function(t) {
+test('duplicated job target', function (t) {
   factory.job({
     workflow: aWorkflow.uuid,
     target: '/foo/bar',
@@ -145,14 +144,14 @@ test('duplicated job target', function(t) {
       a: '1',
       b: '2'
     }
-  }, function(err, job) {
+  }, function (err, job) {
     t.ok(err, 'duplicated job error');
     t.end();
   });
 });
 
 
-test('job with different params', function(t) {
+test('job with different params', function (t) {
   factory.job({
     workflow: aWorkflow.uuid,
     target: '/foo/bar',
@@ -160,7 +159,7 @@ test('job with different params', function(t) {
       a: '2',
       b: '1'
     }
-  }, function(err, job) {
+  }, function (err, job) {
     console.log(err);
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
@@ -170,17 +169,16 @@ test('job with different params', function(t) {
     t.ok(util.isArray(job.chain), 'job chain is array');
     t.ok(util.isArray(job.onerror), 'job onerror is array');
     t.ok(
-      (typeof job.params === 'object' && !util.isArray(job.params)),
-      'params ok'
-    );
+      (typeof (job.params) === 'object' && !util.isArray(job.params)),
+      'params ok');
     anotherJob = job;
     t.end();
   });
 });
 
 
-test('next jobs', function(t) {
-  backend.nextJobs(0, 1, function(err, jobs) {
+test('next jobs', function (t) {
+  backend.nextJobs(0, 1, function (err, jobs) {
     t.ifError(err, 'next jobs error');
     t.equal(jobs.length, 2);
     t.equal(jobs[0], aJob.uuid);
@@ -190,19 +188,19 @@ test('next jobs', function(t) {
 });
 
 
-test('next queued job', function(t) {
+test('next queued job', function (t) {
   var idx = 0;
-  backend.nextJob(function(err, job) {
+  backend.nextJob(function (err, job) {
     t.ifError(err, 'next job error' + idx);
     idx += 1;
     t.ok(job, 'first queued job OK');
     t.equal(aJob.uuid, job.uuid);
-    backend.nextJob(idx, function(err, job) {
+    backend.nextJob(idx, function (err, job) {
       t.ifError(err, 'next job error: ' + idx);
       idx += 1;
       t.ok(job, '2nd queued job OK');
       t.notEqual(aJob.uuid, job.uuid);
-      backend.nextJob(idx, function(err, job) {
+      backend.nextJob(idx, function (err, job) {
         t.ifError(err, 'next job error: ' + idx);
         t.equal(job, null, 'no more queued jobs');
         t.end();
@@ -212,14 +210,14 @@ test('next queued job', function(t) {
 });
 
 
-test('run job', function(t) {
-  backend.runJob(aJob.uuid, runnerId, function(err) {
+test('run job', function (t) {
+  backend.runJob(aJob.uuid, runnerId, function (err) {
     t.ifError(err, 'run job error');
     // If the job is running, it shouldn't be available for nextJob:
-    backend.nextJob(function(err, job) {
+    backend.nextJob(function (err, job) {
       t.ifError(err, 'run job next error');
       t.notEqual(aJob.uuid, job.uuid, 'run job next job');
-      backend.getJob(aJob.uuid, function(err, job) {
+      backend.getJob(aJob.uuid, function (err, job) {
         t.ifError(err, 'run job getJob');
         t.equal(job.runner, runnerId, 'run job runner');
         t.equal(job.execution, 'running', 'run job status');
@@ -231,15 +229,15 @@ test('run job', function(t) {
 });
 
 
-test('update job', function(t) {
+test('update job', function (t) {
   aJob.chain_results = [
     {result: 'OK', error: ''},
     {result: 'OK', error: ''}
   ];
 
-  backend.updateJob(aJob, function(err) {
+  backend.updateJob(aJob, function (err) {
     t.ifError(err, 'update job error');
-    backend.getJob(aJob.uuid, function(err, job) {
+    backend.getJob(aJob.uuid, function (err, job) {
       t.ifError(err, 'update job getJob');
       t.equal(job.runner, runnerId, 'update job runner');
       t.equal(job.execution, 'running', 'update job status');
@@ -253,7 +251,7 @@ test('update job', function(t) {
 });
 
 
-test('finish job', function(t) {
+test('finish job', function (t) {
   aJob.chain_results = [
     {result: 'OK', error: ''},
     {result: 'OK', error: ''},
@@ -261,9 +259,9 @@ test('finish job', function(t) {
     {result: 'OK', error: ''}
   ];
 
-  backend.finishJob(aJob, function(err) {
+  backend.finishJob(aJob, function (err) {
     t.ifError(err, 'finish job error');
-    backend.getJob(aJob.uuid, function(err, job) {
+    backend.getJob(aJob.uuid, function (err, job) {
       t.ifError(err, 'finish job getJob error');
       t.deepEqual(job.chain_results, aJob.chain_results, 'finish job results');
       t.ok(!job.runner);
@@ -274,15 +272,15 @@ test('finish job', function(t) {
 });
 
 
-test('re queue job', function(t) {
-  backend.runJob(anotherJob.uuid, runnerId, function(err) {
+test('re queue job', function (t) {
+  backend.runJob(anotherJob.uuid, runnerId, function (err) {
     t.ifError(err, 're queue job run job error');
     anotherJob.chain_results = JSON.stringify([
       {success: true, error: ''}
     ]);
-    backend.queueJob(anotherJob, function(err) {
+    backend.queueJob(anotherJob, function (err) {
       t.ifError(err, 're queue job error');
-      backend.getJob(anotherJob.uuid, function(err, job) {
+      backend.getJob(anotherJob.uuid, function (err, job) {
         t.ifError(err, 're queue job getJob');
         t.ok(!job.runner, 're queue job runner');
         t.equal(job.execution, 'queued', 're queue job status');
@@ -294,11 +292,11 @@ test('re queue job', function(t) {
 });
 
 
-test('register runner', function(t) {
+test('register runner', function (t) {
   var d = new Date();
-  backend.registerRunner(runnerId, function(err) {
+  backend.registerRunner(runnerId, function (err) {
     t.ifError(err, 'register runner error');
-    backend.client.hget('wf_runners', runnerId, function(err, res) {
+    backend.client.hget('wf_runners', runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();
@@ -307,11 +305,11 @@ test('register runner', function(t) {
 });
 
 
-test('runner active', function(t) {
+test('runner active', function (t) {
   var d = new Date();
-  backend.runnerActive(runnerId, function(err) {
+  backend.runnerActive(runnerId, function (err) {
     t.ifError(err, 'runner active error');
-    backend.client.hget('wf_runners', runnerId, function(err, res) {
+    backend.client.hget('wf_runners', runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();
@@ -320,8 +318,8 @@ test('runner active', function(t) {
 });
 
 
-test('get all runners', function(t) {
-  backend.getRunners(function(err, runners) {
+test('get all runners', function (t) {
+  backend.getRunners(function (err, runners) {
     t.ifError(err, 'get runners error');
     t.ok(runners, 'runners ok');
     t.ok(runners[runnerId], 'runner id ok');
@@ -331,33 +329,33 @@ test('get all runners', function(t) {
 });
 
 
-test('idle runner', function(t) {
-  t.test('check runner is not idle', function(t) {
-    backend.isRunnerIdle(runnerId, function(idle) {
+test('idle runner', function (t) {
+  t.test('check runner is not idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
       t.equal(idle, false);
       t.end();
     });
   });
-  t.test('set runner as idle', function(t) {
-    backend.idleRunner(runnerId, function(err) {
+  t.test('set runner as idle', function (t) {
+    backend.idleRunner(runnerId, function (err) {
       t.ifError(err);
       t.end();
     });
   });
-  t.test('check runner is idle', function(t) {
-    backend.isRunnerIdle(runnerId, function(idle) {
+  t.test('check runner is idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
       t.equal(idle, true);
       t.end();
     });
   });
-  t.test('set runner as not idle', function(t) {
-    backend.wakeUpRunner(runnerId, function(err) {
+  t.test('set runner as not idle', function (t) {
+    backend.wakeUpRunner(runnerId, function (err) {
       t.ifError(err);
       t.end();
     });
   });
-  t.test('check runner is not idle', function(t) {
-    backend.isRunnerIdle(runnerId, function(idle) {
+  t.test('check runner is not idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
       t.equal(idle, false);
       t.end();
     });
@@ -365,8 +363,8 @@ test('idle runner', function(t) {
   t.end();
 });
 
-test('get workflows', function(t) {
-  backend.getWorkflows(function(err, workflows) {
+test('get workflows', function (t) {
+  backend.getWorkflows(function (err, workflows) {
     t.ifError(err, 'get workflows error');
     t.ok(workflows, 'workflows ok');
     t.equal(workflows[0].uuid, aWorkflow.uuid, 'workflow uuid ok');
@@ -377,25 +375,24 @@ test('get workflows', function(t) {
 });
 
 
-test('get all jobs', function(t) {
-  backend.getJobs(function(err, jobs) {
+test('get all jobs', function (t) {
+  backend.getJobs(function (err, jobs) {
     t.ifError(err, 'get all jobs error');
     t.ok(jobs, 'jobs ok');
     t.ok(util.isArray(jobs[0].chain), 'jobs chain ok');
     t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
     t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
     t.ok(
-      (typeof jobs[0].params === 'object' && !util.isArray(jobs[0].params)),
-      'job params ok'
-    );
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
     t.equal(jobs.length, 2);
     t.end();
   });
 });
 
 
-test('get succeeded jobs', function(t) {
-  backend.getJobs('succeeded', function(err, jobs) {
+test('get succeeded jobs', function (t) {
+  backend.getJobs('succeeded', function (err, jobs) {
     t.ifError(err, 'get succeeded jobs error');
     t.ok(jobs, 'jobs ok');
     t.equal(jobs.length, 1);
@@ -404,16 +401,15 @@ test('get succeeded jobs', function(t) {
     t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
     t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
     t.ok(
-      (typeof jobs[0].params === 'object' && !util.isArray(jobs[0].params)),
-      'job params ok'
-    );
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
     t.end();
   });
 });
 
 
-test('get queued jobs', function(t) {
-  backend.getJobs('queued', function(err, jobs) {
+test('get queued jobs', function (t) {
+  backend.getJobs('queued', function (err, jobs) {
     t.ifError(err, 'get queued jobs error');
     t.ok(jobs, 'jobs ok');
     t.equal(jobs.length, 1);
@@ -422,39 +418,38 @@ test('get queued jobs', function(t) {
     t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
     t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
     t.ok(
-      (typeof jobs[0].params === 'object' && !util.isArray(jobs[0].params)),
-      'job params ok'
-    );
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
     t.end();
   });
 });
 
 
-test('add job info', function(t) {
-  t.test('to unexisting job', function(t) {
+test('add job info', function (t) {
+  t.test('to unexisting job', function (t) {
     backend.addInfo(
       uuid(),
       {'10%': 'Task completed step one'},
-      function(err) {
+      function (err) {
         t.ok(err);
         t.equal(err, 'Job does not exist. Cannot Update.');
         t.end();
       });
   });
-  t.test('to existing job without previous info', function(t) {
+  t.test('to existing job without previous info', function (t) {
     backend.addInfo(
       aJob.uuid,
       {'10%': 'Task completed step one'},
-      function(err) {
+      function (err) {
         t.ifError(err);
         t.end();
       });
   });
-  t.test('to existing job with previous info', function(t) {
+  t.test('to existing job with previous info', function (t) {
     backend.addInfo(
       aJob.uuid,
       {'20%': 'Task completed step two'},
-      function(err) {
+      function (err) {
         t.ifError(err);
         t.end();
       });
@@ -463,20 +458,20 @@ test('add job info', function(t) {
 });
 
 
-test('get job info', function(t) {
-  t.test('from unexisting job', function(t) {
+test('get job info', function (t) {
+  t.test('from unexisting job', function (t) {
     backend.getInfo(
       uuid(),
-      function(err, info) {
+      function (err, info) {
         t.ok(err);
         t.equal(err, 'Job does not exist. Cannot get info.');
         t.end();
       });
   });
-  t.test('from existing job', function(t) {
+  t.test('from existing job', function (t) {
     backend.getInfo(
       aJob.uuid,
-      function(err, info) {
+      function (err, info) {
         t.ifError(err);
         t.ok(info);
         t.ok(util.isArray(info));
@@ -489,9 +484,8 @@ test('get job info', function(t) {
   t.end();
 });
 
-test('teardown', function(t) {
-  backend.quit(function() {
+test('teardown', function (t) {
+  backend.quit(function () {
     t.end();
   });
 });
-

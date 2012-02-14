@@ -21,16 +21,16 @@ var async = require('async');
 // Our serie of functions to execute:
 var series = [
 
-  function(callback) {
+  function (callback) {
     // A workflow definition:
     factory.workflow({
       name: 'Sample Workflow',
-      chain: [{
-        // A task, that's it. It will fail on first retry, but succeed on 2nd one:
+      chain: [ {
+        // A task. It will fail on first retry, but succeed on 2nd one:
         name: 'A Task',
         timeout: 30,
         retry: 2,
-        body: function(job, cb) {
+        body: function (job, cb) {
           if (!job.foo) {
             job.foo = true;
             return cb('Foo was not defined');
@@ -39,31 +39,32 @@ var series = [
         }
       },
       {
-        // This task will fail, but it will succeed when the task's fallback function
-        // is called:
+        // This task will fail, but it will succeed when the task's fallback
+        // function is called:
         name: 'Another task',
-        body: function(job, cb) {
+        body: function (job, cb) {
           return cb('Task body error');
         },
-        // Note that the `fallback` function takes the error as its first argument:
-        fallback: function(err, job, cb) {
+        // Note that the `fallback` function takes the error as its first
+        // argument:
+        fallback: function (err, job, cb) {
           job.the_err = err;
           return cb(null);
         }
-      }, 
+      },
       {
         // This task will fail and, given there isn't an fallback callback,
         // the workflow will call the `onerror` chain:
         name: 'A task which will fail',
-        body: function(job, cb) {
+        body: function (job, cb) {
           job.this_failed_because = 'We decided it.';
           return cb('Task body error');
         }
       }],
       timeout: 180,
-      onError: [{
+      onError: [ {
         name: 'A fallback task',
-        body: function(job, cb) {
+        body: function (job, cb) {
           // Some task failed and, as a consequence, this task is being executed
           if (job.error) {
             // Do something here ...
@@ -72,7 +73,7 @@ var series = [
           cb(null);
         }
       }]
-    }, function(err, workflow) {
+    }, function (err, workflow) {
       if (err) {
         callback(err);
       }
@@ -81,12 +82,12 @@ var series = [
     });
   },
 
-  function(callback) {
+  function (callback) {
     // A Job based on the workflow:
     factory.job({
       workflow: aWorkflow,
       exec_after: '2012-01-03T12:54:05.788Z'
-    }, function(err, job) {
+    }, function (err, job) {
       if (err) {
         callback(err);
       }
@@ -108,14 +109,14 @@ function main() {
     db: TEST_DB_NUM
   });
 
-  backend.init(function() {
+  backend.init(function () {
 
-    backend.client.flushdb(function(err, res) {
+    backend.client.flushdb(function (err, res) {
       assert.ifError(err);
       assert.equal('OK', res);
     });
 
-    backend.client.dbsize(function(err, res) {
+    backend.client.dbsize(function (err, res) {
       assert.ifError(err);
       assert.equal(0, res);
     });
@@ -123,7 +124,7 @@ function main() {
     factory = Factory(backend);
     assert.ok(factory);
 
-    async.series(series, function(err, results) {
+    async.series(series, function (err, results) {
       if (err) {
         console.error(err);
         return;
@@ -146,4 +147,3 @@ function main() {
 }
 
 main();
-

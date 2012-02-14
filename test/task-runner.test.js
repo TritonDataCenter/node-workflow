@@ -27,32 +27,32 @@ var task = {
   'body': 'Fake body'
 };
 
-test('throws on missing opts', function(t) {
-  t.throws(function() {
+test('throws on missing opts', function (t) {
+  t.throws(function () {
     return new WorkflowTaskRunner();
   }, new TypeError('opts (Object) required'));
   t.end();
 });
 
 
-test('throws on missing opts.job', function(t) {
-  t.throws(function() {
+test('throws on missing opts.job', function (t) {
+  t.throws(function () {
     return new WorkflowTaskRunner({});
   }, new TypeError('opts.job (Object) required'));
   t.end();
 });
 
 
-test('throws on missing opts.task', function(t) {
-  t.throws(function() {
+test('throws on missing opts.task', function (t) {
+  t.throws(function () {
     return new WorkflowTaskRunner({job: job});
   }, new TypeError('opts.task (Object) required'));
   t.end();
 });
 
 
-test('throws on incorrect opts.sandbox', function(t) {
-  t.throws(function() {
+test('throws on incorrect opts.sandbox', function (t) {
+  t.throws(function () {
     return new WorkflowTaskRunner({
       job: job,
       task: task,
@@ -63,15 +63,15 @@ test('throws on incorrect opts.sandbox', function(t) {
 });
 
 
-test('throws on opts.task.body not a function', function(t) {
-  t.throws(function() {
+test('throws on opts.task.body not a function', function (t) {
+  t.throws(function () {
     return new WorkflowTaskRunner({
       job: job,
       task: task
     });
   }, new TypeError('opt.task.body (String) must be a Function source'));
   task.body = '5 === 5';
-  t.throws(function() {
+  t.throws(function () {
     return new WorkflowTaskRunner({
       job: job,
       task: task
@@ -81,8 +81,8 @@ test('throws on opts.task.body not a function', function(t) {
 });
 
 
-test('a task which succeeds on 1st retry', function(t) {
-  task.body = function(job, cb) {
+test('a task which succeeds on 1st retry', function (t) {
+  task.body = function (job, cb) {
     return cb(null);
   }.toString();
 
@@ -94,9 +94,9 @@ test('a task which succeeds on 1st retry', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.result);
     t.ifError(msg.error, 'task error');
     t.ok(msg.job);
@@ -107,8 +107,8 @@ test('a task which succeeds on 1st retry', function(t) {
 });
 
 
-test('a task which succeeds on 2nd retry', function(t) {
-  task.body = function(job, cb) {
+test('a task which succeeds on 2nd retry', function (t) {
+  task.body = function (job, cb) {
     if (!job.foo) {
       job.foo = true;
       return cb('Foo was not defined');
@@ -124,9 +124,9 @@ test('a task which succeeds on 2nd retry', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.result);
     t.ifError(msg.error, 'task error');
     t.ok(msg.job);
@@ -137,8 +137,8 @@ test('a task which succeeds on 2nd retry', function(t) {
 });
 
 
-test('a task which fails and has no "fallback"', function(t) {
-  task.body = function(job, cb) {
+test('a task which fails and has no "fallback"', function (t) {
+  task.body = function (job, cb) {
     return cb('Task body error');
   }.toString();
 
@@ -150,9 +150,9 @@ test('a task which fails and has no "fallback"', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ifError(msg.result);
     t.equal(msg.error, 'Task body error', 'task error');
     t.ok(msg.job);
@@ -162,8 +162,8 @@ test('a task which fails and has no "fallback"', function(t) {
 });
 
 
-test('a task which fails and succeeds "fallback"', function(t) {
-  task.fallback = function(err, job, cb) {
+test('a task which fails and succeeds "fallback"', function (t) {
+  task.fallback = function (err, job, cb) {
     job.the_err = err;
     return cb(null);
   }.toString();
@@ -176,10 +176,10 @@ test('a task which fails and succeeds "fallback"', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
-  t.equal(typeof wf_task_runner.fallback, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
+  t.equal(typeof (wf_task_runner.fallback), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.result);
     t.ifError(msg.error, 'task error');
     t.ok(msg.job);
@@ -190,8 +190,8 @@ test('a task which fails and succeeds "fallback"', function(t) {
 });
 
 
-test('a task which fails and "fallback" fails too', function(t) {
-  task.fallback = function(err, job, cb) {
+test('a task which fails and "fallback" fails too', function (t) {
+  task.fallback = function (err, job, cb) {
     return cb('fallback error');
   }.toString();
 
@@ -203,10 +203,10 @@ test('a task which fails and "fallback" fails too', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
-  t.equal(typeof wf_task_runner.fallback, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
+  t.equal(typeof (wf_task_runner.fallback), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ifError(msg.result);
     t.equal(msg.error, 'fallback error', 'task error');
     t.ok(msg.job);
@@ -216,50 +216,52 @@ test('a task which fails and "fallback" fails too', function(t) {
 });
 
 
-test('a task which fails after two retries and has no "fallback"', function(t) {
-  task.body = function(job, cb) {
-    if (!job.bar) {
-      job.bar = true;
-      return cb('Bar was not defined');
-    } else if (!job.baz) {
-      job.baz = true;
-      return cb('Baz was not defined');
-    }
-    // Should not be called
-    return cb(null);
-  }.toString();
-  task.fallback = null;
+test(
+  'a task which fails after two retries and has no "fallback"',
+  function (t) {
+    task.body = function (job, cb) {
+      if (!job.bar) {
+        job.bar = true;
+        return cb('Bar was not defined');
+      } else if (!job.baz) {
+        job.baz = true;
+        return cb('Baz was not defined');
+      }
+      // Should not be called
+      return cb(null);
+    }.toString();
+    task.fallback = null;
 
-  job.chain.push(task);
+    job.chain.push(task);
 
-  var wf_task_runner = new WorkflowTaskRunner({
-    job: job,
-    task: task
+    var wf_task_runner = new WorkflowTaskRunner({
+      job: job,
+      task: task
+    });
+
+    t.ok(wf_task_runner.uuid);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    wf_task_runner.runTask(function (msg) {
+      t.ifError(msg.result);
+      t.equal(msg.error, 'Baz was not defined', 'task error');
+      t.ok(msg.job, 'job ok');
+      t.ok(msg.job.bar, 'job.bar ok');
+      t.ok(msg.job.baz, 'job.baz ok');
+      t.equal(msg.cmd, 'error', 'job cmd ok');
+      t.end();
+    });
   });
 
-  t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
 
-  wf_task_runner.runTask(function(msg) {
-    t.ifError(msg.result);
-    t.equal(msg.error, 'Baz was not defined', 'task error');
-    t.ok(msg.job, 'job ok');
-    t.ok(msg.job.bar, 'job.bar ok');
-    t.ok(msg.job.baz, 'job.baz ok');
-    t.equal(msg.cmd, 'error', 'job cmd ok');
-    t.end();
-  });
-});
-
-
-test('a task which time out and succeeds "fallback"', function(t) {
-  task.body = function(job, cb) {
-    setTimeout(function() {
+test('a task which time out and succeeds "fallback"', function (t) {
+  task.body = function (job, cb) {
+    setTimeout(function () {
       // Should not be called:
       return cb('Error within timeout');
     }, 1050);
   }.toString();
-  task.fallback = function(err, job, cb) {
+  task.fallback = function (err, job, cb) {
     job.the_err = err;
     return cb(null);
   }.toString();
@@ -274,12 +276,12 @@ test('a task which time out and succeeds "fallback"', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
-  t.equal(typeof wf_task_runner.fallback, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
+  t.equal(typeof (wf_task_runner.fallback), 'function');
 
   t.equal(wf_task_runner.timeout, 1000);
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.result);
     t.ifError(msg.error, 'task error');
     t.ok(msg.job);
@@ -290,18 +292,18 @@ test('a task which time out and succeeds "fallback"', function(t) {
 });
 
 
-test('a task which times out and fallback does too', function(t) {
-  task.body = function(job, cb) {
+test('a task which times out and fallback does too', function (t) {
+  task.body = function (job, cb) {
     job.timer = 'Timeout set';
-    setTimeout(function() {
+    setTimeout(function () {
       // Should not be called:
       return cb(null);
     }, 1050);
   }.toString();
   task.retry = 1;
-  task.fallback = function(err, job, cb) {
+  task.fallback = function (err, job, cb) {
     job.fbtimer = 'Fallback timeout set';
-    setTimeout(function() {
+    setTimeout(function () {
       // Should not be called:
       return cb(null);
     }, 1025);
@@ -316,11 +318,11 @@ test('a task which times out and fallback does too', function(t) {
   });
 
   t.ok(wf_task_runner.uuid, 'uuid ok');
-  t.equal(typeof wf_task_runner.body, 'function', 'body ok');
-  t.equal(typeof wf_task_runner.body, 'function', 'fallback ok');
+  t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
+  t.equal(typeof (wf_task_runner.fallback), 'function', 'fallback ok');
   t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.error, 'task error');
     t.equal(msg.error, 'task timeout error', 'task timeout error');
     t.ifError(msg.result, 'task result');
@@ -330,8 +332,8 @@ test('a task which times out and fallback does too', function(t) {
   });
 });
 
-test('a task which succeeds and re-queues the workflow', function(t) {
-  task.body = function(job, cb) {
+test('a task which succeeds and re-queues the workflow', function (t) {
+  task.body = function (job, cb) {
     return cb('queue');
   }.toString();
   task.fallback = null;
@@ -345,9 +347,9 @@ test('a task which succeeds and re-queues the workflow', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.result);
     t.ok(msg.error, 'task error');
     t.ok(msg.job);
@@ -358,10 +360,10 @@ test('a task which succeeds and re-queues the workflow', function(t) {
 });
 
 
-test('a task which times out and has no fallback', function(t) {
-  task.body = function(job, cb) {
+test('a task which times out and has no fallback', function (t) {
+  task.body = function (job, cb) {
     job.timer = 'Timeout set';
-    setTimeout(function() {
+    setTimeout(function () {
       // Should not be called:
       return cb(null);
     }, 1050);
@@ -377,10 +379,10 @@ test('a task which times out and has no fallback', function(t) {
   });
 
   t.ok(wf_task_runner.uuid, 'uuid ok');
-  t.equal(typeof wf_task_runner.body, 'function', 'body ok');
+  t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
   t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.error, 'task error');
     t.equal(msg.error, 'task timeout error', 'task timeout error');
     t.ifError(msg.result, 'task result');
@@ -392,10 +394,10 @@ test('a task which times out and has no fallback', function(t) {
 });
 
 
-test('a task which timeout and is canceled', function(t) {
-  task.body = function(job, cb) {
+test('a task which timeout and is canceled', function (t) {
+  task.body = function (job, cb) {
     job.timer = 'Timeout set';
-    setTimeout(function() {
+    setTimeout(function () {
       // Should not be called:
       return cb(null);
     }, 1550);
@@ -411,14 +413,14 @@ test('a task which timeout and is canceled', function(t) {
   });
 
   t.ok(wf_task_runner.uuid, 'uuid ok');
-  t.equal(typeof wf_task_runner.body, 'function', 'body ok');
+  t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
   t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
 
-  setTimeout(function() {
+  setTimeout(function () {
     wf_task_runner.canceled = true;
   }, 750);
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.error, 'task error');
     t.equal(msg.error, 'cancel', 'task timeout error');
     t.ifError(msg.result, 'task result');
@@ -430,14 +432,14 @@ test('a task which timeout and is canceled', function(t) {
 });
 
 
-test('a task which fails and is canceled', function(t) {
-  task.body = function(job, cb) {
-    setTimeout(function() {
+test('a task which fails and is canceled', function (t) {
+  task.body = function (job, cb) {
+    setTimeout(function () {
       return cb('Task body error');
     }, 500);
   }.toString();
 
-  task.fallback = function(err, job, cb) {
+  task.fallback = function (err, job, cb) {
     job.the_err = err;
     return cb(null);
   }.toString();
@@ -452,14 +454,14 @@ test('a task which fails and is canceled', function(t) {
   });
 
   t.ok(wf_task_runner.uuid);
-  t.equal(typeof wf_task_runner.body, 'function');
-  t.equal(typeof wf_task_runner.fallback, 'function');
+  t.equal(typeof (wf_task_runner.body), 'function');
+  t.equal(typeof (wf_task_runner.fallback), 'function');
 
-  setTimeout(function() {
+  setTimeout(function () {
     wf_task_runner.canceled = true;
   }, 350);
 
-  wf_task_runner.runTask(function(msg) {
+  wf_task_runner.runTask(function (msg) {
     t.ok(msg.error, 'task error');
     t.equal(msg.error, 'cancel', 'task timeout error');
     t.ifError(msg.result, 'task result');
@@ -469,4 +471,3 @@ test('a task which fails and is canceled', function(t) {
   });
 
 });
-

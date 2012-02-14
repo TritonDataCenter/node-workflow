@@ -15,20 +15,20 @@ var backend, identifier, runner, factory;
 var okTask = {
   name: 'OK Task',
   retry: 1,
-  body: function(job, cb) {
+  body: function (job, cb) {
     return cb(null);
   }
 },
 failTask = {
   retry: 1,
   name: 'Fail Task',
-  body: function(job, cb) {
+  body: function (job, cb) {
     return cb('Fail task error');
   }
 },
 okWf, failWf, theJob;
 
-test('setup', function(t) {
+test('setup', function (t) {
   identifier = uuid();
   backend = new WorkflowRedisBackend({
     port: 6379,
@@ -36,12 +36,12 @@ test('setup', function(t) {
     db: TEST_DB_NUM
   });
   t.ok(backend, 'backend ok');
-  backend.init(function() {
-    backend.client.flushdb(function(err, res) {
+  backend.init(function () {
+    backend.client.flushdb(function (err, res) {
       t.ifError(err, 'flush db error');
       t.equal('OK', res, 'flush db ok');
     });
-    backend.client.dbsize(function(err, res) {
+    backend.client.dbsize(function (err, res) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
@@ -59,7 +59,7 @@ test('setup', function(t) {
       name: 'OK wf',
       chain: [okTask],
       timeout: 60
-    }, function(err, wf) {
+    }, function (err, wf) {
       t.ifError(err, 'ok wf error');
       t.ok(wf, 'OK wf OK');
       okWf = wf;
@@ -68,7 +68,7 @@ test('setup', function(t) {
         name: 'Fail wf',
         chain: [failTask],
         timeout: 60
-      }, function(err, wf) {
+      }, function (err, wf) {
         t.ifError(err, 'Fail wf error');
         t.ok(wf, 'Fail wf OK');
         failWf = wf;
@@ -79,17 +79,17 @@ test('setup', function(t) {
 });
 
 
-test('runner identifier', function(t) {
+test('runner identifier', function (t) {
   var runner = new WorkflowRunner(backend),
       identifier;
   t.ifError(runner.identifier);
   // run getIdentifier twice, one to create the file,
   // another to just read it:
-  runner.getIdentifier(function(err, id) {
+  runner.getIdentifier(function (err, id) {
     t.ifError(err);
     t.ok(id);
     identifier = id;
-    runner.getIdentifier(function(err, id) {
+    runner.getIdentifier(function (err, id) {
       t.ifError(err);
       t.equal(id, identifier);
       t.end();
@@ -98,7 +98,7 @@ test('runner identifier', function(t) {
 });
 
 
-test('runner run job now', function(t) {
+test('runner run job now', function (t) {
   var d = new Date();
   t.ok(runner.runNow({exec_after: d.toISOString()}));
   // Set to the future, so it shouldn't run:
@@ -108,22 +108,22 @@ test('runner run job now', function(t) {
 });
 
 
-test('idle runner', function(t) {
+test('idle runner', function (t) {
   factory.job({
     workflow: okWf.uuid,
     exec_after: '2012-01-03T12:54:05.788Z'
-  }, function(err, job) {
+  }, function (err, job) {
     t.ifError(err, 'job error');
     t.ok(job, 'run job ok');
     theJob = job;
     // The job is queued. Now we'll idle the runner and verify it will not
     // touch the job
-    backend.idleRunner(runner.identifier, function(err) {
+    backend.idleRunner(runner.identifier, function (err) {
       t.ifError(err, 'idle runner error');
       runner.run();
-      setTimeout(function() {
-        runner.quit(function() {
-          backend.getJob(theJob.uuid, function(err, job) {
+      setTimeout(function () {
+        runner.quit(function () {
+          backend.getJob(theJob.uuid, function (err, job) {
             t.ifError(err, 'run job get job error');
             t.equal(job.execution, 'queued', 'job execution');
             t.end();
@@ -135,14 +135,14 @@ test('idle runner', function(t) {
 });
 
 
-test('run job', function(t) {
+test('run job', function (t) {
   // Let's remove the idleness of the runner so it will pick the job
-  backend.wakeUpRunner(runner.identifier, function(err) {
+  backend.wakeUpRunner(runner.identifier, function (err) {
     t.ifError(err, 'wake up runner error');
     runner.run();
-    setTimeout(function() {
-      runner.quit(function() {
-        backend.getJob(theJob.uuid, function(err, job) {
+    setTimeout(function () {
+      runner.quit(function () {
+        backend.getJob(theJob.uuid, function (err, job) {
           t.ifError(err, 'run job get job error');
           t.equal(job.execution, 'succeeded', 'job execution');
           t.equal(job.chain_results[0].result, 'OK');
@@ -154,19 +154,19 @@ test('run job', function(t) {
 });
 
 
-test('run job which fails', function(t) {
+test('run job which fails', function (t) {
   var aJob;
   factory.job({
     workflow: failWf.uuid,
     exec_after: '2012-01-03T12:54:05.788Z'
-  }, function(err, job) {
+  }, function (err, job) {
     t.ifError(err, 'job error');
     t.ok(job, 'job ok');
     aJob = job;
     runner.run();
-    setTimeout(function() {
-      runner.quit(function() {
-        backend.getJob(aJob.uuid, function(err, job) {
+    setTimeout(function () {
+      runner.quit(function () {
+        backend.getJob(aJob.uuid, function (err, job) {
           t.ifError(err, 'get job error');
           t.equal(job.execution, 'failed', 'job execution');
           t.equal(job.chain_results[0].error, 'Fail task error');
@@ -178,10 +178,10 @@ test('run job which fails', function(t) {
 });
 
 
-test('runner init', function(t) {
-  runner.init(function(err) {
+test('runner init', function (t) {
+  runner.init(function (err) {
     t.ifError(err, 'runner init error');
-    runner.backend.getRunners(function(err, runners) {
+    runner.backend.getRunners(function (err, runners) {
       t.ifError(err, 'get runners error');
       t.ok(runners[identifier], 'runner id ok');
       t.ok(new Date(runners[identifier]), 'runner timestamp ok');
@@ -191,7 +191,7 @@ test('runner init', function(t) {
 });
 
 
-test('inactive runners', function(t) {
+test('inactive runners', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
   anotherRunner = new WorkflowRunner(backend, {
@@ -201,11 +201,11 @@ test('inactive runners', function(t) {
   });
   t.ok(anotherRunner, 'another runner ok');
   // Init the new runner, then update it to make inactive
-  anotherRunner.init(function(err) {
+  anotherRunner.init(function (err) {
     t.ifError(err, 'another runner init error');
     // Now we quit the new runner, and outdate it:
-    anotherRunner.quit(function() {
-      runner.inactiveRunners(function(err, runners) {
+    anotherRunner.quit(function () {
+      runner.inactiveRunners(function (err, runners) {
         t.ifError(err, 'inactive runners error');
         t.ok(util.isArray(runners), 'runners is array');
         t.equal(runners.length, 0, 'runners length');
@@ -214,9 +214,9 @@ test('inactive runners', function(t) {
           'wf_runners',
           anotherRunner.identifier,
           '2012-01-03T12:54:05.788Z',
-          function(err, res) {
+          function (err, res) {
             t.ifError(err, 'set runner timestamp error');
-            runner.inactiveRunners(function(err, runners) {
+            runner.inactiveRunners(function (err, runners) {
               t.ifError(err, 'inactive runners error');
               t.ok(util.isArray(runners), 'runners is array');
               t.equal(runners.length, 1, 'runners length');
@@ -230,12 +230,12 @@ test('inactive runners', function(t) {
 });
 
 
-test('teardown', function(t) {
+test('teardown', function (t) {
   var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
-  backend.quit(function() {
-    path.exists(cfg_file, function(exist) {
+  backend.quit(function () {
+    path.exists(cfg_file, function (exist) {
       if (exist) {
-        fs.unlink(cfg_file, function(err) {
+        fs.unlink(cfg_file, function (err) {
           t.ifError(err);
           t.end();
         });
@@ -245,5 +245,3 @@ test('teardown', function(t) {
     });
   });
 });
-
-

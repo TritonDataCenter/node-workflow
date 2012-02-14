@@ -28,16 +28,16 @@ var task = {
 };
 
 
-test('unkown message', function(t) {
+test('unkown message', function (t) {
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ifError(msg.job);
     t.ok(msg.error);
     t.equal(msg.error, 'unknown message');
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -49,16 +49,16 @@ test('unkown message', function(t) {
 });
 
 
-test('message without job', function(t) {
+test('message without job', function (t) {
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ifError(msg.job);
     t.ok(msg.error);
     t.equal(msg.error, 'unknown message');
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -68,16 +68,16 @@ test('message without job', function(t) {
   });
 });
 
-test('message without task', function(t) {
+test('message without task', function (t) {
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ifError(msg.job);
     t.ok(msg.error);
     t.equal(msg.error, 'unknown message');
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -87,16 +87,16 @@ test('message without task', function(t) {
   });
 });
 
-test('message with invalid task', function(t) {
+test('message with invalid task', function (t) {
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ifError(msg.job);
     t.ok(msg.error);
     t.ok(msg.error.match(/opt\.task\.body/));
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -107,8 +107,8 @@ test('message with invalid task', function(t) {
   });
 });
 
-test('message with successful task', function(t) {
-  task.body = function(job, cb) {
+test('message with successful task', function (t) {
+  task.body = function (job, cb) {
     return cb(null);
   }.toString();
 
@@ -116,14 +116,14 @@ test('message with successful task', function(t) {
 
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ifError(msg.error);
     t.ok(msg.result);
     t.equal(msg.cmd, 'run');
     t.ok(msg.job);
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -134,8 +134,8 @@ test('message with successful task', function(t) {
   });
 });
 
-test('message with failed task', function(t) {
-  task.body = function(job, cb) {
+test('message with failed task', function (t) {
+  task.body = function (job, cb) {
     return cb('Task body error');
   }.toString();
 
@@ -143,14 +143,14 @@ test('message with failed task', function(t) {
 
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ok(msg.error);
     t.ifError(msg.result);
     t.equal(msg.cmd, 'error');
     t.ok(msg.job);
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
@@ -162,10 +162,10 @@ test('message with failed task', function(t) {
 });
 
 
-test('cancel message', function(t) {
-  task.body = function(job, cb) {
+test('cancel message', function (t) {
+  task.body = function (job, cb) {
     job.timer = 'Timeout set';
-    setTimeout(function() {
+    setTimeout(function () {
       // Should not be called:
       return cb(null);
     }, 1550);
@@ -177,7 +177,7 @@ test('cancel message', function(t) {
 
   var child = fork(__dirname + '/../lib/child.js');
 
-  child.on('message', function(msg) {
+  child.on('message', function (msg) {
     t.ok(msg.error);
     t.equal(msg.error, 'cancel');
     t.ifError(msg.result);
@@ -185,12 +185,12 @@ test('cancel message', function(t) {
     t.ok(msg.job);
   });
 
-  child.on('exit', function(code) {
+  child.on('exit', function (code) {
     t.equal(code, 0);
     t.end();
   });
 
-  setTimeout(function() {
+  setTimeout(function () {
     child.send({
       cmd: 'cancel'
     });
