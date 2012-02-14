@@ -1,10 +1,10 @@
 # Tasks Workflows Orchestration API and Runners.
 
-Repository: <git://github.com/kusor/node-workflow.git>
-Browsing: <https://github.com/kusor/node-workflow>
-Who: Pedro Palazón Candel
-Docs: <https://...>
-Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
+- Repository: <git://github.com/kusor/node-workflow.git>
+- Browsing: <https://github.com/kusor/node-workflow>
+- Who: Pedro Palazón Candel
+- Docs: <https://...>
+- Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 
 # Overview
 
