@@ -23,8 +23,7 @@ JSSTYLE_FLAGS    = -o indent=2,doxygen,unparenthesized-return=0
 # Repo-specific targets
 #
 .PHONY: all
-all:
-	$(NPM) rebuild
+all: test check
 
 .PHONY: setup
 setup: $(NPM)
