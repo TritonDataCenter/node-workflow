@@ -28,6 +28,7 @@ var FakeRunner = function () {
   this.child_processes = {};
   this.uuid = uuid();
   this.run_interval = 1000;
+  this.log = console;
 };
 
 FakeRunner.prototype.childUp = function (job_uuid, child_pid) {

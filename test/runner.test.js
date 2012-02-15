@@ -12,6 +12,21 @@ var TEST_DB_NUM = 15;
 
 var backend, identifier, runner, factory;
 
+var Logger = require('bunyan');
+var log = new Logger({
+  name: 'workflow-runner',
+  streams: [ {
+    level: 'info',
+    stream: process.stdout
+  }, {
+    level: 'trace',
+    path: path.resolve(__dirname, '../logs/test.runner.log')
+  }],
+  serializers: {
+    err: Logger.stdSerializers.err
+  }
+});
+
 var okTask = {
   name: 'OK Task',
   retry: 1,
@@ -48,7 +63,8 @@ test('setup', function (t) {
     runner = new WorkflowRunner(backend, {
       identifier: identifier,
       forks: 2,
-      run_interval: 0.1
+      run_interval: 0.1,
+      log: log
     });
     t.ok(runner);
     factory = Factory(backend);

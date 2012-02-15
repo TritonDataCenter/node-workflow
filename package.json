@@ -16,11 +16,9 @@
     "restify": "1.0.0"
   },
   "scripts": {
-    "pretest": "which gjslint; if [[ \"$?\" = 0 ]] ; then  gjslint --nojsdoc -r lib -r test; else echo \"Missing gjslint. Skipping lint\"; fi; jshint lib test",
-    "test": "./node_modules/.bin/tap ./test"
+    "test": "./node_modules/.bin/tap ./test/*.test.js"
   },
   "devDependencies": {
-    "jshint": "0.5.7",
     "tap": "0.2.0"
   },
   "engines": {
