@@ -4,6 +4,7 @@ var test = require('tap').test,
     SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
     path = require('path'),
+    fs = require('fs'),
     Logger = require('bunyan'),
     restify = require('restify'),
     API = require('../lib/api');
@@ -25,6 +26,12 @@ var config = {
     }
   }
 };
+
+var logDir = path.resolve(__dirname, '../logs');
+var exists = path.existsSync(logDir);
+if (!exists) {
+  fs.mkdirSync(logDir, '0777');
+}
 
 var Backend = require(config.backend.module);
 
