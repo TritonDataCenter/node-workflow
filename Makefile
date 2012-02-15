@@ -26,9 +26,17 @@ JSSTYLE_FLAGS    = -o indent=2,doxygen,unparenthesized-return=0
 all:
 	$(NPM) rebuild
 
+.PHONY: setup
+setup: $(NPM)
+	$(NPM) install
+
 .PHONY: test
-test: $(TAP)
-	TAP=1 $(TAP) test/*.test.js
+test: setup $(TAP)
+	$(TAP) test/*.test.js
+
+.PHONY: coverage
+coverage: $(TAP)
+	TAP_COV=1 $(TAP) test/*.test.js
 
 include ./Makefile.deps
 include ./Makefile.targ
