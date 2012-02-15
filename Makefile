@@ -5,7 +5,7 @@
 #
 # Tools
 #
-NPM		:= npm
+NPM		:= $(shell which npm)
 TAP		:= ./node_modules/.bin/tap
 
 #
