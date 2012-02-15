@@ -4,3 +4,6 @@ var/*
 *.tar.bz2
 *.log
 coverage
+docs/*.json
+docs/*.html
+build

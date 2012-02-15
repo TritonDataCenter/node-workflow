@@ -85,6 +85,10 @@ called `.git/hooks/pre-commit` and `chmod +x` it:
 
     exit 0
 
+Obviously, if you've made a change not affecting source code files but, for
+example only docs, you can skip this hook by passing the option `--no-verify`
+to the `git commit` command.
+
 # Development Data
 
 # Demo
