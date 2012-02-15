@@ -53,8 +53,11 @@ Pre-requirements:
 
     git clone git://github.com/kusor/node-workflow.git
     cd node-workflow
-    git submodule update --init
     make all
+
+Note `make all` will setup all the required dependencies, node modules and run
+`make check` and `make test`. In order to just setup node modules, `make setup`
+is enough.
 
 To run the Workflow API server:
 
@@ -89,9 +92,9 @@ Obviously, if you've made a change not affecting source code files but, for
 example only docs, you can skip this hook by passing the option `--no-verify`
 to the `git commit` command.
 
-# Development Data
-
 # Demo
+
+TBD, see `example.js` in the meanwhile.
 
 # TODO
 
