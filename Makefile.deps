@@ -12,7 +12,7 @@
 # javascriptlint
 #
 JSL_SCRIPT	= deps/javascriptlint/build/install/jsl
-JSL		= python2.7 $(JSL_SCRIPT)
+JSL		= python $(JSL_SCRIPT)
 
 $(JSL_SCRIPT): | deps/javascriptlint/.git
 	cd deps/javascriptlint && make install
@@ -32,7 +32,7 @@ deps/jsstyle/jsstyle:
 #
 # restdown
 #
-RESTDOWN	= python2.7 deps/restdown/bin/restdown
+RESTDOWN	= python deps/restdown/bin/restdown
 
 $(RESTDOWN): | deps/restdown/.git
 
