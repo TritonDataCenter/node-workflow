@@ -7,3 +7,5 @@ coverage
 docs/*.json
 docs/*.html
 build
+examples/*.log
+examples/*.json

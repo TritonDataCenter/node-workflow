@@ -1,0 +1,22 @@
+{
+  "backend": {
+    "module": "../lib/workflow-redis-backend",
+    "opts": {
+      "port": 6379,
+      "host": "127.0.0.1",
+      "db": 14
+    }
+  },
+  "api": {
+    "port": 8080
+  },
+  "runner": {
+    "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
+    "forks": 10,
+    "run_interval": 1,
+    "sandbox": {
+      "restify": "restify",
+      "uuid": "node-uuid"
+    }
+  }
+}

@@ -94,7 +94,34 @@ to the `git commit` command.
 
 # Demo
 
-TBD, see `example.js` in the meanwhile.
+The directory `examples` contain everything needed to illustrate:
+
+- An example config file - `examples/config.json.sample` which should be
+  renamed to `examples/config.json` and modified to properly match your local
+  environment.
+- How to run the Workflow API with appropriated configuration for your env.
+  See `examples/wf-api.js`.
+- How to run the Workflow Runners with appropriated config. See
+  `examples/wf-runner.js`.
+- An example of how to use node-workflow as a node module in order to create
+  workflows, queue jobs and wait for the results. See `examples/module.js`.
+- Also, an example of how to achieve same goal using Workflow API instead of
+  the node module. See `examples/api.js`.
+- Both examples share the same workflow definition, contained at the file
+  `examples/shared-workflow.js`. The beginning of the aforementioned files
+  can be useful to understand the differences when trying to create a workflow
+  using these different approaches.
+- Finally, this directory also contains a file `examples/node.js` which does
+  exactly the same thing than the workflow/job does - create and star a gist
+  using your github's username and password - but straight from NodeJS. This
+  file is useful in order to understand the differences between writing code
+  to be executed by NodeJS directly, and using it to create workflows and the
+  associated tasks. Remember code withing tasks runs sandboxed using
+  [Node's VM API](http://nodejs.org/docs/latest/api/vm.html) and that tasks
+  are totally independent, and run each one on its own child process.
+
+Also, see `example.js` for more options when defining workflows and the
+different possibilities for tasks fallbacks, retries, timeouts ...
 
 # TODO
 
