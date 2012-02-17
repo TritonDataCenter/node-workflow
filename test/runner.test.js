@@ -250,6 +250,75 @@ test('inactive runners', function (t) {
 });
 
 
+test('stale jobs', function (t) {
+  // Add another runner, which we'll set as inactive
+  var theUUID = uuid(),
+  anotherRunner = new WorkflowRunner(backend, {
+    identifier: theUUID,
+    forks: 2,
+    run_interval: 0.1
+  }),
+  aJob;
+  t.ok(anotherRunner, 'another runner ok');
+
+  factory.job({
+    workflow: okWf.uuid,
+    exec_after: '2012-01-03T12:54:05.788Z'
+  }, function (err, job) {
+    t.ifError(err, 'job error');
+    t.ok(job, 'run job ok');
+    aJob = job;
+    // Init the new runner, then update it to make inactive
+    anotherRunner.init(function (err) {
+      t.ifError(err, 'another runner init error');
+      backend.runJob(aJob.uuid, anotherRunner.identifier, function (err) {
+        t.ifError(err, 'backend run job error');
+        // FIXME: Shouldn't be required after GH-33
+        aJob.runner = anotherRunner.identifier;
+        // The runner is not inactive; therefore, no stale jobs
+        runner.staleJobs(function (err, jobs) {
+          t.ifError(err, 'stale jobs error');
+          t.equivalent(jobs, [], 'stale jobs empty');
+          // Now we quit the new runner, and outdate it:
+          anotherRunner.quit(function () {
+            // The runner will be inactive so, any job flagged as owned by
+            // this runner will be stale
+            backend.runnerActive(
+              anotherRunner.identifier,
+              '2012-01-03T12:54:05.788Z',
+              function (err) {
+                t.ifError(err, 'set runner timestamp error');
+                // Our job should be here now:
+                runner.staleJobs(function (err, jobs) {
+                  t.ifError(err, 'stale jobs 2 error');
+                  t.equivalent([aJob.uuid], jobs);
+                  // Let's set the job canceled and finish it:
+                  backend.updateJobProperty(
+                    aJob.uuid,
+                    'execution',
+                    'canceled',
+                    function (err) {
+                      t.ifError(err, 'update job prop err');
+                      aJob.execution = 'canceled';
+                      backend.finishJob(job, function (err) {
+                        t.ifError(err, 'finish job err');
+                        runner.staleJobs(function (err, jobs) {
+                          t.ifError(err, 'stale jobs 3 error');
+                          t.equivalent(jobs, []);
+                          t.end();
+                        });
+                      });
+                    });
+                });
+              });
+          });
+        });
+      });
+    });
+
+  });
+});
+
 test('teardown', function (t) {
   var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
   backend.quit(function () {
