@@ -296,10 +296,20 @@ test('register runner', function (t) {
   var d = new Date();
   backend.registerRunner(runnerId, function (err) {
     t.ifError(err, 'register runner error');
-    backend.client.hget('wf_runners', runnerId, function (err, res) {
+    backend.getRunner(runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();
+    });
+  });
+  t.test('with specific time', function (t) {
+    backend.registerRunner(runnerId, d.toISOString(), function (err) {
+      t.ifError(err, 'register runner error');
+      backend.getRunner(runnerId, function (err, timestamp) {
+        t.ifError(err, 'backend get runner error');
+        t.equal(d.toISOString(), timestamp);
+        t.end();
+      });
     });
   });
 });
@@ -309,7 +319,7 @@ test('runner active', function (t) {
   var d = new Date();
   backend.runnerActive(runnerId, function (err) {
     t.ifError(err, 'runner active error');
-    backend.client.hget('wf_runners', runnerId, function (err, res) {
+    backend.getRunner(runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
       t.ok((new Date(res).getTime() >= d.getTime()), 'runner timestamp');
       t.end();

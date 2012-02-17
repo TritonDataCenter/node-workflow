@@ -231,12 +231,10 @@ test('inactive runners', function (t) {
         t.ifError(err, 'inactive runners error');
         t.ok(util.isArray(runners), 'runners is array');
         t.equal(runners.length, 0, 'runners length');
-        // TODO: This is Redis specific, should add backend method:
-        backend.client.hset(
-          'wf_runners',
+        backend.runnerActive(
           anotherRunner.identifier,
           '2012-01-03T12:54:05.788Z',
-          function (err, res) {
+          function (err) {
             t.ifError(err, 'set runner timestamp error');
             runner.inactiveRunners(function (err, runners) {
               t.ifError(err, 'inactive runners error');
