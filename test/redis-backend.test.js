@@ -213,16 +213,21 @@ test('next queued job', function (t) {
 test('run job', function (t) {
   backend.runJob(aJob.uuid, runnerId, function (err) {
     t.ifError(err, 'run job error');
-    // If the job is running, it shouldn't be available for nextJob:
-    backend.nextJob(function (err, job) {
-      t.ifError(err, 'run job next error');
-      t.notEqual(aJob.uuid, job.uuid, 'run job next job');
-      backend.getJob(aJob.uuid, function (err, job) {
-        t.ifError(err, 'run job getJob');
-        t.equal(job.runner, runnerId, 'run job runner');
-        t.equal(job.execution, 'running', 'run job status');
-        aJob = job;
-        t.end();
+    backend.getRunnerJobs(runnerId, function (err, jobs) {
+      t.ifError(err, 'get runner jobs err');
+      t.equal(jobs.length, 1);
+      t.equal(jobs[0], aJob.uuid);
+      // If the job is running, it shouldn't be available for nextJob:
+      backend.nextJob(function (err, job) {
+        t.ifError(err, 'run job next error');
+        t.notEqual(aJob.uuid, job.uuid, 'run job next job');
+        backend.getJob(aJob.uuid, function (err, job) {
+          t.ifError(err, 'run job getJob');
+          t.equal(job.runner, runnerId, 'run job runner');
+          t.equal(job.execution, 'running', 'run job status');
+          aJob = job;
+          t.end();
+        });
       });
     });
   });
