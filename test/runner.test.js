@@ -271,10 +271,10 @@ test('stale jobs', function (t) {
     // Init the new runner, then update it to make inactive
     anotherRunner.init(function (err) {
       t.ifError(err, 'another runner init error');
-      backend.runJob(aJob.uuid, anotherRunner.identifier, function (err) {
+      backend.runJob(aJob.uuid, anotherRunner.identifier, function (err, job) {
         t.ifError(err, 'backend run job error');
         // FIXME: Shouldn't be required after GH-33
-        aJob.runner = anotherRunner.identifier;
+        //aJob.runner = anotherRunner.identifier;
         // The runner is not inactive; therefore, no stale jobs
         runner.staleJobs(function (err, jobs) {
           t.ifError(err, 'stale jobs error');
@@ -300,8 +300,9 @@ test('stale jobs', function (t) {
                     function (err) {
                       t.ifError(err, 'update job prop err');
                       aJob.execution = 'canceled';
-                      backend.finishJob(job, function (err) {
+                      backend.finishJob(job, function (err, job) {
                         t.ifError(err, 'finish job err');
+                        t.ok(job, 'finish job ok');
                         runner.staleJobs(function (err, jobs) {
                           t.ifError(err, 'stale jobs 3 error');
                           t.equivalent(jobs, []);

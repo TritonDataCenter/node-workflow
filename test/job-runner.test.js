@@ -205,7 +205,7 @@ test('run job ok', function (t) {
       trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
-    backend.runJob(job.uuid, runner.uuid, function (err) {
+    backend.runJob(job.uuid, runner.uuid, function (err, job) {
       t.ifError(err, 'backend.runJob error');
       wf_job_runner.run(function (err) {
         t.ifError(err, 'wf_job_runner run error');
@@ -237,7 +237,7 @@ test('run a job which fails without "onerror"', function (t) {
       trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
-    backend.runJob(job.uuid, runner.uuid, function (err) {
+    backend.runJob(job.uuid, runner.uuid, function (err, job) {
       t.ifError(err, 'backend.runJob error');
       wf_job_runner.run(function (err) {
         t.ifError(err, 'wf_job_runner run error');
@@ -267,7 +267,7 @@ test('run a job which re-queues itself', function (t) {
       trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
-    backend.runJob(job.uuid, runner.uuid, function (err) {
+    backend.runJob(job.uuid, runner.uuid, function (err, job) {
       t.ifError(err, 'backend.runJob error');
       wf_job_runner.run(function (err) {
         t.ifError(err, 'wf_job_runner run error');
@@ -297,7 +297,7 @@ test('run a previously re-queued job', function (t) {
     trace: false
   });
   t.ok(wf_job_runner, 'wf_job_runner ok');
-  backend.runJob(reQueuedJob.uuid, runner.uuid, function (err) {
+  backend.runJob(reQueuedJob.uuid, runner.uuid, function (err, job) {
     t.ifError(err, 'backend.runJob error');
     wf_job_runner.run(function (err) {
       t.ok(
@@ -332,7 +332,7 @@ test('run a job which time out without "onerror"', function (t) {
       trace: false
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
-    backend.runJob(job.uuid, runner.uuid, function (err) {
+    backend.runJob(job.uuid, runner.uuid, function (err, job) {
       t.ifError(err, 'backend.runJob error');
       wf_job_runner.run(function (err) {
         t.ifError(err, 'wf_job_runner run error');
@@ -388,7 +388,7 @@ test('a failed workflow with successful "onerror"', function (t) {
       t.ok(wf_job_runner, 'wf_job_runner ok');
       t.equal(wf_job_runner.timeout, null, 'no runner timeout');
       t.equal(typeof (job.timeout), 'undefined', 'no job timeout');
-      backend.runJob(job.uuid, runner.uuid, function (err) {
+      backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         wf_job_runner.run(function (err) {
           t.ifError(err, 'wf_job_runner run error');
@@ -451,7 +451,7 @@ test('a failed workflow with a non successful "onerror"', function (t) {
         trace: false
       });
       t.ok(wf_job_runner, 'wf_job_runner ok');
-      backend.runJob(job.uuid, runner.uuid, function (err) {
+      backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         wf_job_runner.run(function (err) {
           t.ifError(err, 'wf_job_runner run error');
@@ -498,7 +498,7 @@ test('a job cannot access undefined sandbox modules', function (t) {
         trace: false
       });
       t.ok(wf_job_runner, 'wf_job_runner ok');
-      backend.runJob(job.uuid, runner.uuid, function (err) {
+      backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         wf_job_runner.run(function (err) {
           t.ifError(err, 'wf_job_runner run error');
@@ -546,7 +546,7 @@ test('a job can access explicitly defined sandbox modules', function (t) {
         }
       });
       t.ok(wf_job_runner, 'wf_job_runner ok');
-      backend.runJob(job.uuid, runner.uuid, function (err) {
+      backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         wf_job_runner.run(function (err) {
           t.ifError(err, 'wf_job_runner run error');
@@ -601,7 +601,7 @@ test('a canceled job', function (t) {
         trace: false
       });
       t.ok(wf_job_runner, 'wf_job_runner ok');
-      backend.runJob(job.uuid, runner.uuid, function (err) {
+      backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         setTimeout(function () {
           backend.updateJobProperty(

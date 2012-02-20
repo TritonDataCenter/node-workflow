@@ -211,7 +211,7 @@ test('next queued job', function (t) {
 
 
 test('run job', function (t) {
-  backend.runJob(aJob.uuid, runnerId, function (err) {
+  backend.runJob(aJob.uuid, runnerId, function (err, job) {
     t.ifError(err, 'run job error');
     backend.getRunnerJobs(runnerId, function (err, jobs) {
       t.ifError(err, 'get runner jobs err');
@@ -240,18 +240,14 @@ test('update job', function (t) {
     {result: 'OK', error: ''}
   ];
 
-  backend.updateJob(aJob, function (err) {
+  backend.updateJob(aJob, function (err, job) {
     t.ifError(err, 'update job error');
-    backend.getJob(aJob.uuid, function (err, job) {
-      t.ifError(err, 'update job getJob');
-      t.equal(job.runner, runnerId, 'update job runner');
-      t.equal(job.execution, 'running', 'update job status');
-      t.ok(util.isArray(job.chain_results), 'chain_results is array');
-      t.equal(2, job.chain_results.length);
-      aJob = job;
-      t.end();
-    });
-
+    t.equal(job.runner, runnerId, 'update job runner');
+    t.equal(job.execution, 'running', 'update job status');
+    t.ok(util.isArray(job.chain_results), 'chain_results is array');
+    t.equal(2, job.chain_results.length);
+    aJob = job;
+    t.end();
   });
 });
 
@@ -264,34 +260,34 @@ test('finish job', function (t) {
     {result: 'OK', error: ''}
   ];
 
-  backend.finishJob(aJob, function (err) {
+  backend.finishJob(aJob, function (err, job) {
     t.ifError(err, 'finish job error');
-    backend.getJob(aJob.uuid, function (err, job) {
-      t.ifError(err, 'finish job getJob error');
-      t.deepEqual(job.chain_results, aJob.chain_results, 'finish job results');
-      t.ok(!job.runner);
-      t.equal(job.execution, 'succeeded', 'finished job status');
-      t.end();
-    });
+    t.equivalent(job.chain_results, [
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''}
+    ], 'finish job results');
+    t.ok(!job.runner);
+    t.equal(job.execution, 'succeeded', 'finished job status');
+    aJob = job;
+    t.end();
   });
 });
 
 
 test('re queue job', function (t) {
-  backend.runJob(anotherJob.uuid, runnerId, function (err) {
+  backend.runJob(anotherJob.uuid, runnerId, function (err, job) {
     t.ifError(err, 're queue job run job error');
     anotherJob.chain_results = JSON.stringify([
       {success: true, error: ''}
     ]);
-    backend.queueJob(anotherJob, function (err) {
+    backend.queueJob(anotherJob, function (err, job) {
       t.ifError(err, 're queue job error');
-      backend.getJob(anotherJob.uuid, function (err, job) {
-        t.ifError(err, 're queue job getJob');
-        t.ok(!job.runner, 're queue job runner');
-        t.equal(job.execution, 'queued', 're queue job status');
-        anotherJob = job;
-        t.end();
-      });
+      t.ok(!job.runner, 're queue job runner');
+      t.equal(job.execution, 'queued', 're queue job status');
+      anotherJob = job;
+      t.end();
     });
   });
 });
@@ -514,7 +510,7 @@ test('job lock', function (t) {
     t.ok(job.uuid, 'job uuid');
     async.parallel([
       function (callback) {
-        backend.runJob(job.uuid, runnerOneUUID, function (err) {
+        backend.runJob(job.uuid, runnerOneUUID, function (err, job) {
           if (err) {
             callback(null, {
               error: err
@@ -525,7 +521,7 @@ test('job lock', function (t) {
         });
       },
       function (callback) {
-        backend.runJob(job.uuid, runnerTwoUUID, function (err) {
+        backend.runJob(job.uuid, runnerTwoUUID, function (err, job) {
           if (err) {
             callback(null, {
               error: err
