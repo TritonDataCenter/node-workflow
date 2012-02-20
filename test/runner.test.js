@@ -273,8 +273,6 @@ test('stale jobs', function (t) {
       t.ifError(err, 'another runner init error');
       backend.runJob(aJob.uuid, anotherRunner.identifier, function (err, job) {
         t.ifError(err, 'backend run job error');
-        // FIXME: Shouldn't be required after GH-33
-        //aJob.runner = anotherRunner.identifier;
         // The runner is not inactive; therefore, no stale jobs
         runner.staleJobs(function (err, jobs) {
           t.ifError(err, 'stale jobs error');
