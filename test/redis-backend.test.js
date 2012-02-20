@@ -503,7 +503,7 @@ test('get job info', function (t) {
 test('job lock', function (t) {
   var runnerOneUUID = uuid(),
       runnerTwoUUID = uuid();
-  
+
   factory.job({
     workflow: aWorkflow.uuid
   }, function (err, job) {
