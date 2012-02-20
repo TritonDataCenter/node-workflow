@@ -7,6 +7,7 @@
 #
 NPM		:= $(shell which npm)
 TAP		:= ./node_modules/.bin/tap
+#RESTDOWN_FLAGS  := -b deps/restdown/brand/spartan
 
 #
 # Files
@@ -39,4 +40,3 @@ coverage: $(TAP)
 
 include ./Makefile.deps
 include ./Makefile.targ
-

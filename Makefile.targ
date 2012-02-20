@@ -3,6 +3,11 @@
 #
 # Makefile.targ: common targets.
 #
+# NOTE: This makefile comes from the "eng" repo. It's designed to be dropped
+# into other repos as-is without requiring any modifications. If you find
+# yourself changing this file, you should instead update the original copy in
+# eng.git and then update your repo to use the new version.
+#
 # This Makefile defines several useful targets and rules. You can use it by
 # including it from a Makefile that specifies some of the variables below.
 #
@@ -81,6 +86,7 @@ JSSTYLE		?= jsstyle
 MKDIR		?= mkdir -p
 MV		?= mv
 RESTDOWN	?= restdown
+RESTDOWN_FLAGS	?=
 RMTREE		?= rm -rf
 XMLLINT		?= xmllint --noout
 JSL_FLAGS  	?= --nologo --nosummary
@@ -90,7 +96,9 @@ JSL_FLAGS  	?= --nologo --nosummary
 #
 SMF_DTD		?= tools/service_bundle.dtd.1
 
-DOC_BUILD	= build/docs/public
+BUILD		= build
+CLEAN_FILES	+= $(BUILD)
+DOC_BUILD	= $(BUILD)/docs/public
 
 #
 # Configure JSL_FLAGS_{NODE,WEB} based on JSL_CONF_{NODE,WEB}.
@@ -235,7 +243,7 @@ $(DOC_BUILD)/%: docs/% | $(DOC_BUILD)
 	$(CP) $< $@
 
 docs/%.json docs/%.html: docs/%.restdown | $(DOC_BUILD)
-	$(RESTDOWN) -m $(DOC_BUILD) $<
+	$(RESTDOWN) $(RESTDOWN_FLAGS) -m $(DOC_BUILD) $<
 
 $(DOC_BUILD):
 	$(MKDIR) $@
