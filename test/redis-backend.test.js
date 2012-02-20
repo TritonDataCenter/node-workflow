@@ -3,6 +3,7 @@ var test = require('tap').test,
     uuid = require('node-uuid'),
     SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
+    async = require('async'),
     Factory = require('../lib/index').Factory,
     WorkflowRedisBackend = require('../lib/workflow-redis-backend');
 
@@ -160,7 +161,6 @@ test('job with different params', function (t) {
       b: '1'
     }
   }, function (err, job) {
-    console.log(err);
     t.ifError(err, 'create job error');
     t.ok(job, 'create job ok');
     t.ok(job.exec_after);
@@ -498,6 +498,62 @@ test('get job info', function (t) {
   });
   t.end();
 });
+
+
+test('job lock', function (t) {
+  var runnerOneUUID = uuid(),
+      runnerTwoUUID = uuid();
+  
+  factory.job({
+    workflow: aWorkflow.uuid
+  }, function (err, job) {
+    t.ifError(err, 'create job error');
+    t.ok(job, 'create job ok');
+    t.ok(job.exec_after, 'job exec_after');
+    t.equal(job.execution, 'queued', 'job queued');
+    t.ok(job.uuid, 'job uuid');
+    async.parallel([
+      function (callback) {
+        backend.runJob(job.uuid, runnerOneUUID, function (err) {
+          if (err) {
+            callback(null, {
+              error: err
+            });
+          } else {
+            callback(null, null);
+          }
+        });
+      },
+      function (callback) {
+        backend.runJob(job.uuid, runnerTwoUUID, function (err) {
+          if (err) {
+            callback(null, {
+              error: err
+            });
+          } else {
+            callback(null, null);
+          }
+        });
+      }
+    ], function (err, results) {
+      var oneNull = 0,
+          oneError = 0;
+      t.ifError(err);
+      t.ok(util.isArray(results));
+      results.forEach(function (res) {
+        if (res === null) {
+          oneNull += 1;
+        } else {
+          oneError += 1;
+        }
+      });
+      t.equal(oneNull, 1);
+      t.equal(oneError, 1);
+      t.end();
+    });
+  });
+});
+
 
 test('teardown', function (t) {
   backend.quit(function () {
