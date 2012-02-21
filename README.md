@@ -26,22 +26,42 @@ Or you can keep it simple by taking some assumptions:
 * If a task requires a specific property of the workflow to be present, the
   task can fail, or re-schedule itself within the workflow, or ...
 
-# Repository
+TBD: Link to the gh-pages here, both for the main description and API docs.
 
-    deps/           Git submodules and/or commited 3rd-party deps.
-                    See "node_modules/" for node.js deps.
-    docs/           Project docs (restdown)
-    lib/            Source files.
-    node_modules/   Node.js deps, either populated at build time or commited.
-    pkg/            Package lifecycle scripts
-    smf/manifests   SMF manifests
-    smf/methods     SMF method scripts
-    test/           Test suite (using node-tap)
-    tools/          Miscellaneous dev/upgrade/deployment tools and data.
-    Makefile
-    package.json    npm module info
-    README.md
+## node-workflow
 
+This package provides a way to define re-usable `workflows` using JSON and run
+concrete `jobs` with specific `targets` and `parameters` based on such
+`workflows`.
+
+### Workflow Runners
+
+In order to execute the `jobs`, at least a `WorkflowRunner` must be up and
+ready to take jobs. You can run as many `runners` as required, even on
+different hosts while you provide the right configuration to all of them.
+
+An example `WorkflowRunner` is provided with the package and can be initialized
+with:
+
+    `./bin/workflow-runner path/to/config.json`
+
+(The `examples` directory contains the file `config.json.sample` which can be
+used as reference).
+
+There are two possibilities in order to create `workflows` and `jobs`: use this
+package as a node module, or use the provided REST API. While the first
+approach might be faster, there are some advantages of using the API:
+
+- You can use it from whatever application, not only NodeJS based apps.
+- You don't need to know anything about `backend` and configuration, just the
+  HTTP end-point for the API.
+
+The package also provides a binary file to run the `WorkflowAPI` using the
+same configuration file we pass to our `WorkflowRunner`:
+
+    `./bin/Workflow-api path/to/config.json`
+
+See demo section below for more details about both approaches.
 
 # Development
 
@@ -99,10 +119,19 @@ The directory `examples` contain everything needed to illustrate:
 - An example config file - `examples/config.json.sample` which should be
   renamed to `examples/config.json` and modified to properly match your local
   environment.
-- How to run the Workflow API with appropriated configuration for your env.
-  See `examples/wf-api.js`.
-- How to run the Workflow Runners with appropriated config. See
-  `examples/wf-runner.js`.
+
+Remember that, in order to process any `job` the `workflow-runner` needs
+to be initialized pointing to the aforementioned configuration file:
+
+    `./bin/workflow-runner examples/config.json`
+
+Also, in order to be able to run the API based example mentioned below, the
+`workflow-api` HTTP server needs to be up and running too:
+
+    `./bin/workflow-runner examples/config.json`
+
+Contents for the other files within the `examples` directory are:
+
 - An example of how to use node-workflow as a node module in order to create
   workflows, queue jobs and wait for the results. See `examples/module.js`.
 - Also, an example of how to achieve same goal using Workflow API instead of
@@ -122,6 +151,22 @@ The directory `examples` contain everything needed to illustrate:
 
 Also, see `example.js` for more options when defining workflows and the
 different possibilities for tasks fallbacks, retries, timeouts ...
+
+# Repository
+
+    deps/           Git submodules and/or commited 3rd-party deps.
+                    See "node_modules/" for node.js deps.
+    docs/           Project docs (restdown)
+    lib/            Source files.
+    node_modules/   Node.js deps, either populated at build time or commited.
+    pkg/            Package lifecycle scripts
+    smf/manifests   SMF manifests
+    smf/methods     SMF method scripts
+    test/           Test suite (using node-tap)
+    tools/          Miscellaneous dev/upgrade/deployment tools and data.
+    Makefile
+    package.json    npm module info
+    README.md
 
 # TODO
 
