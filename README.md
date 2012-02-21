@@ -43,7 +43,7 @@ different hosts while you provide the right configuration to all of them.
 An example `WorkflowRunner` is provided with the package and can be initialized
 with:
 
-    `./bin/workflow-runner path/to/config.json`
+    ./bin/workflow-runner path/to/config.json
 
 (The `examples` directory contains the file `config.json.sample` which can be
 used as reference).
@@ -59,7 +59,7 @@ approach might be faster, there are some advantages of using the API:
 The package also provides a binary file to run the `WorkflowAPI` using the
 same configuration file we pass to our `WorkflowRunner`:
 
-    `./bin/Workflow-api path/to/config.json`
+    ./bin/Workflow-api path/to/config.json
 
 See demo section below for more details about both approaches.
 
@@ -123,12 +123,12 @@ The directory `examples` contain everything needed to illustrate:
 Remember that, in order to process any `job` the `workflow-runner` needs
 to be initialized pointing to the aforementioned configuration file:
 
-    `./bin/workflow-runner examples/config.json`
+    ./bin/workflow-runner examples/config.json
 
 Also, in order to be able to run the API based example mentioned below, the
 `workflow-api` HTTP server needs to be up and running too:
 
-    `./bin/workflow-runner examples/config.json`
+    ./bin/workflow-runner examples/config.json
 
 Contents for the other files within the `examples` directory are:
 
