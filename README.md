@@ -2,7 +2,7 @@
 
 - Repository: <git://github.com/kusor/node-workflow.git>
 - Browsing: <https://github.com/kusor/node-workflow>
-- Who: Pedro Palazón Candel
+- Who: Pedro Palazón Candel, Trent Mick, Mark Cavage
 - Docs: <https://...>
 - Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 
@@ -36,11 +36,11 @@ concrete `jobs` with specific `targets` and `parameters` based on such
 
 ### Workflow Runners
 
-In order to execute the `jobs`, at least a `WorkflowRunner` must be up and
-ready to take jobs. You can run as many `runners` as required, even on
-different hosts while you provide the right configuration to all of them.
+In order to execute the `jobs`, at least one `WorkflowRunner` must be up and
+ready to take jobs. An arbitrary number of `runners` can be used on any set of
+hosts; configuration must match.
 
-An example `WorkflowRunner` is provided with the package and can be initialized
+An example `WorkflowRunner` is provided with the package and can be started
 with:
 
     ./bin/workflow-runner path/to/config.json
@@ -48,13 +48,15 @@ with:
 (The `examples` directory contains the file `config.json.sample` which can be
 used as reference).
 
-There are two possibilities in order to create `workflows` and `jobs`: use this
-package as a node module, or use the provided REST API. While the first
-approach might be faster, there are some advantages of using the API:
+You can create `workflows` and `jobs` either by using the provided REST API(s),
+or by embedding this module's API into your own system(s).
+The former will be easier to get up and running, but you should use the latter
+when:
 
-- You can use it from whatever application, not only NodeJS based apps.
-- You don't need to know anything about `backend` and configuration, just the
-  HTTP end-point for the API.
+- You want to use the Worflow API in a (node.js) application that is not the
+  bundled REST API.
+- You want to use a different backend storage system, or otherwise change the
+  assumptions of the bundled REST API
 
 The package also provides a binary file to run the `WorkflowAPI` using the
 same configuration file we pass to our `WorkflowRunner`:
