@@ -66,12 +66,12 @@ test('setup', function (t) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
-    runner = new WorkflowRunner(backend, {
+    runner = new WorkflowRunner({runner: {
       identifier: identifier,
       forks: 2,
       run_interval: 0.1,
       log: log
-    });
+    }}, backend);
     t.ok(runner);
     factory = Factory(backend);
     t.ok(factory);
@@ -102,7 +102,7 @@ test('setup', function (t) {
 
 
 test('runner identifier', function (t) {
-  var runner = new WorkflowRunner(backend),
+  var runner = new WorkflowRunner({runner: {}}, backend),
       identifier;
   t.ifError(runner.identifier);
   // run getIdentifier twice, one to create the file,
@@ -216,11 +216,11 @@ test('runner init', function (t) {
 test('inactive runners', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
-  anotherRunner = new WorkflowRunner(backend, {
+  anotherRunner = new WorkflowRunner({runner: {
     identifier: theUUID,
     forks: 2,
     run_interval: 0.1
-  });
+  }}, backend);
   t.ok(anotherRunner, 'another runner ok');
   // Init the new runner, then update it to make inactive
   anotherRunner.init(function (err) {
@@ -253,11 +253,11 @@ test('inactive runners', function (t) {
 test('stale jobs', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
-  anotherRunner = new WorkflowRunner(backend, {
+  anotherRunner = new WorkflowRunner({runner: {
     identifier: theUUID,
     forks: 2,
     run_interval: 0.1
-  }),
+  }}, backend),
   aJob;
   t.ok(anotherRunner, 'another runner ok');
 

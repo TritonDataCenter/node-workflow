@@ -34,7 +34,7 @@ fs.readFile(config_file, 'utf8', function (err, data) {
   Backend = require(config.backend.module);
   backend = new Backend(config.backend.opts);
   backend.init(function () {
-    runner = new WorkflowRunner(backend, config.runner);
+    runner = new WorkflowRunner(config, backend);
     runner.run();
   });
 });
