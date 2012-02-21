@@ -35,22 +35,15 @@ if (!exists) {
 
 var Backend = require(config.backend.module);
 
-var log = new Logger({
-  name: 'workflow-api',
+config.logger = {
   streams: [ {
     level: 'info',
     stream: process.stdout
   }, {
     level: 'trace',
     path: path.resolve(__dirname, '../logs/test.api.log')
-  }],
-  serializers: {
-    err: Logger.stdSerializers.err,
-    req: Logger.stdSerializers.req,
-    res: restify.bunyan.serializers.response
-  }
-});
-
+  }]
+};
 
 // --- Tests
 
@@ -70,19 +63,9 @@ test('throws on missing backend', function (t) {
 });
 
 
-test('throws on missing opts.logger', function (t) {
+test('throws on missing opts.api', function (t) {
   backend = new Backend(config.backend.opts);
   t.ok(backend, 'backend ok');
-
-  t.throws(function () {
-    return new API(config, backend);
-  }, new TypeError('opts.logger (Object) required'));
-  t.end();
-});
-
-
-test('throws on missing opts.api', function (t) {
-  config.logger = log;
   t.throws(function () {
     return new API(config, backend);
   }, new TypeError('opts.api (Object) required'));
@@ -112,7 +95,7 @@ test('setup', function (t) {
     t.ok(server, 'server ok');
     server.listen(PORT, '127.0.0.1', function () {
       client = restify.createJsonClient({
-        log: log,
+        log: api.log,
         url: 'http://127.0.0.1:' + PORT,
         type: 'json',
         version: '*'
