@@ -4,7 +4,6 @@ var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
     WorkflowRunner = require('../lib/runner'),
-    WorkflowRedisBackend = require('../lib/workflow-redis-backend'),
     Factory = require('../lib/index').Factory;
 
 // A DB for testing, flushed before and right after we're done with tests
@@ -49,7 +48,7 @@ test('throws on missing opts', function (t) {
 test('throws on missing backend', function (t) {
   t.throws(function () {
     return new WorkflowRunner(config);
-  }, new TypeError('backend (Object) required'));
+  }, new TypeError('opts.backend (Object) required'));
   t.end();
 });
 
@@ -60,12 +59,21 @@ test('setup', function (t) {
     forks: 2,
     run_interval: 0.1
   };
-  backend = new WorkflowRedisBackend({
-    port: 6379,
-    host: '127.0.0.1',
-    db: TEST_DB_NUM
-  });
-  t.ok(backend, 'backend ok');
+  config.backend = {
+    module: '../lib/workflow-redis-backend',
+    opts: {
+      port: 6379,
+      host: '127.0.0.1',
+      db: TEST_DB_NUM
+    }
+  };
+
+  runner = new WorkflowRunner(config);
+  t.ok(runner);
+  t.ok(runner.backend, 'backend ok');
+  backend = runner.backend;
+  // The only reason for backend.init here is to flush db,
+  // not really needed, since it's initialized by runner.init
   backend.init(function () {
     backend.client.flushdb(function (err, res) {
       t.ifError(err, 'flush db error');
@@ -75,30 +83,38 @@ test('setup', function (t) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
-    runner = new WorkflowRunner(config, backend);
-    t.ok(runner);
-    factory = Factory(backend);
-    t.ok(factory);
+    backend.quit(function () {
+      runner.init(function (err) {
+        t.ifError(err, 'runner init error');
+        factory = Factory(backend);
+        t.ok(factory);
 
-    // okWf:
-    factory.workflow({
-      name: 'OK wf',
-      chain: [okTask],
-      timeout: 60
-    }, function (err, wf) {
-      t.ifError(err, 'ok wf error');
-      t.ok(wf, 'OK wf OK');
-      okWf = wf;
-      // failWf:
-      factory.workflow({
-        name: 'Fail wf',
-        chain: [failTask],
-        timeout: 60
-      }, function (err, wf) {
-        t.ifError(err, 'Fail wf error');
-        t.ok(wf, 'Fail wf OK');
-        failWf = wf;
-        t.end();
+        // okWf:
+        factory.workflow({
+          name: 'OK wf',
+          chain: [okTask],
+          timeout: 60
+        }, function (err, wf) {
+          t.ifError(err, 'ok wf error');
+          t.ok(wf, 'OK wf OK');
+          okWf = wf;
+          // failWf:
+          factory.workflow({
+            name: 'Fail wf',
+            chain: [failTask],
+            timeout: 60
+          }, function (err, wf) {
+            t.ifError(err, 'Fail wf error');
+            t.ok(wf, 'Fail wf OK');
+            failWf = wf;
+            backend.getRunners(function (err, runners) {
+              t.ifError(err, 'get runners error');
+              t.ok(runners[identifier], 'runner id ok');
+              t.ok(new Date(runners[identifier]), 'runner timestamp ok');
+              t.end();
+            });
+          });
+        });
       });
     });
   });
@@ -106,19 +122,32 @@ test('setup', function (t) {
 
 
 test('runner identifier', function (t) {
-  var runner = new WorkflowRunner({runner: {}}, backend),
-      identifier;
-  t.ifError(runner.identifier);
+  var cfg = {
+    backend: {
+      module: '../lib/workflow-redis-backend',
+      opts: {
+        port: 6379,
+        host: '127.0.0.1',
+        db: TEST_DB_NUM
+      }
+    }
+  }, aRunner = new WorkflowRunner(cfg),
+  identifier;
   // run getIdentifier twice, one to create the file,
   // another to just read it:
-  runner.getIdentifier(function (err, id) {
-    t.ifError(err);
-    t.ok(id);
-    identifier = id;
-    runner.getIdentifier(function (err, id) {
-      t.ifError(err);
-      t.equal(id, identifier);
-      t.end();
+  aRunner.init(function (err) {
+    t.ifError(err, 'runner init error');
+    aRunner.getIdentifier(function (err, id) {
+      t.ifError(err, 'get identifier error');
+      t.ok(id, 'get identifier id');
+      identifier = id;
+      aRunner.getIdentifier(function (err, id) {
+        t.ifError(err, 'get identifier error');
+        t.equal(id, identifier, 'correct id');
+        aRunner.backend.quit(function () {
+          t.end();
+        });
+      });
     });
   });
 });
@@ -204,27 +233,25 @@ test('run job which fails', function (t) {
 });
 
 
-test('runner init', function (t) {
-  runner.init(function (err) {
-    t.ifError(err, 'runner init error');
-    runner.backend.getRunners(function (err, runners) {
-      t.ifError(err, 'get runners error');
-      t.ok(runners[identifier], 'runner id ok');
-      t.ok(new Date(runners[identifier]), 'runner timestamp ok');
-      t.end();
-    });
-  });
-});
-
-
 test('inactive runners', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
-  anotherRunner = new WorkflowRunner({runner: {
-    identifier: theUUID,
-    forks: 2,
-    run_interval: 0.1
-  }}, backend);
+  cfg = {
+    backend: {
+      module: '../lib/workflow-redis-backend',
+      opts: {
+        port: 6379,
+        host: '127.0.0.1',
+        db: TEST_DB_NUM
+      }
+    },
+    runner: {
+      identifier: theUUID,
+      forks: 2,
+      run_interval: 0.1
+    }
+  },
+  anotherRunner = new WorkflowRunner(cfg);
   t.ok(anotherRunner, 'another runner ok');
   // Init the new runner, then update it to make inactive
   anotherRunner.init(function (err) {
@@ -245,7 +272,9 @@ test('inactive runners', function (t) {
               t.ok(util.isArray(runners), 'runners is array');
               t.equal(runners.length, 1, 'runners length');
               t.equal(runners[0], theUUID, 'runner uuid error');
-              t.end();
+              anotherRunner.backend.quit(function () {
+                t.end();
+              });
             });
           });
       });
@@ -257,11 +286,22 @@ test('inactive runners', function (t) {
 test('stale jobs', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
-  anotherRunner = new WorkflowRunner({runner: {
-    identifier: theUUID,
-    forks: 2,
-    run_interval: 0.1
-  }}, backend),
+  cfg = {
+    backend: {
+      module: '../lib/workflow-redis-backend',
+      opts: {
+        port: 6379,
+        host: '127.0.0.1',
+        db: TEST_DB_NUM
+      }
+    },
+    runner: {
+      identifier: theUUID,
+      forks: 2,
+      run_interval: 0.1
+    }
+  },
+  anotherRunner = new WorkflowRunner(cfg),
   aJob;
   t.ok(anotherRunner, 'another runner ok');
 
@@ -308,7 +348,9 @@ test('stale jobs', function (t) {
                         runner.staleJobs(function (err, jobs) {
                           t.ifError(err, 'stale jobs 3 error');
                           t.equivalent(jobs, []);
-                          t.end();
+                          anotherRunner.backend.quit(function () {
+                            t.end();
+                          });
                         });
                       });
                     });
@@ -318,13 +360,13 @@ test('stale jobs', function (t) {
         });
       });
     });
-
   });
 });
 
+
 test('teardown', function (t) {
   var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
-  backend.quit(function () {
+  runner.backend.quit(function () {
     path.exists(cfg_file, function (exist) {
       if (exist) {
         fs.unlink(cfg_file, function (err) {

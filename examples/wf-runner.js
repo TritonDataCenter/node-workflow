@@ -14,12 +14,13 @@ fs.readFile(config_file, 'utf8', function (err, data) {
   if (err) {
     throw err;
   }
-  var config, backend, Backend, runner;
-  config = JSON.parse(data);
-  Backend = require(config.backend.module);
-  backend = new Backend(config.backend.opts);
-  backend.init(function () {
-    runner = new WorkflowRunner(config, backend);
+  var config = JSON.parse(data),
+      runner = new WorkflowRunner(config);
+
+  runner.init(function (err) {
+    if (err) {
+      throw err;
+    }
     runner.run();
   });
 });

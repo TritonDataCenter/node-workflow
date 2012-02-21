@@ -16,24 +16,13 @@ var api, server, client, backend, wf_uuid, job_uuid;
 var PORT = process.env.UNIT_TEST_PORT || 12345;
 var TEST_DB_NUM = 15;
 
-var config = {
-  backend: {
-    module: '../lib/workflow-redis-backend',
-    opts: {
-      db: TEST_DB_NUM,
-      port: 6379,
-      host: '127.0.0.1'
-    }
-  }
-};
+var config = {};
 
 var logDir = path.resolve(__dirname, '../logs');
 var exists = path.existsSync(logDir);
 if (!exists) {
   fs.mkdirSync(logDir, '0777');
 }
-
-var Backend = require(config.backend.module);
 
 config.logger = {
   streams: [ {
@@ -58,16 +47,23 @@ test('throws on missing opts', function (t) {
 test('throws on missing backend', function (t) {
   t.throws(function () {
     return new API(config);
-  }, new TypeError('backend (Object) required'));
+  }, new TypeError('opts.backend (Object) required'));
   t.end();
 });
 
 
 test('throws on missing opts.api', function (t) {
-  backend = new Backend(config.backend.opts);
-  t.ok(backend, 'backend ok');
+  config.backend = {
+    module: '../lib/workflow-redis-backend',
+    opts: {
+      db: TEST_DB_NUM,
+      port: 6379,
+      host: '127.0.0.1'
+    }
+  };
+
   t.throws(function () {
-    return new API(config, backend);
+    return new API(config);
   }, new TypeError('opts.api (Object) required'));
   t.end();
 });
@@ -80,7 +76,13 @@ test('setup', function (t) {
   config.api = {
     port: PORT
   };
-  backend.init(function () {
+  api = new API(config);
+  t.ok(api, 'api ok');
+  server = api.server;
+  t.ok(server, 'server ok');
+  backend = api.backend;
+  t.ok(backend, 'backend ok');
+  api.init(function () {
     backend.client.flushdb(function (err, res) {
       t.ifError(err, 'flush db error');
       t.equal('OK', res, 'flush db ok');
@@ -89,20 +91,14 @@ test('setup', function (t) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
-    api = new API(config, backend);
-    t.ok(api, 'api ok');
-    server = api.server;
-    t.ok(server, 'server ok');
-    server.listen(PORT, '127.0.0.1', function () {
-      client = restify.createJsonClient({
-        log: api.log,
-        url: 'http://127.0.0.1:' + PORT,
-        type: 'json',
-        version: '*'
-      });
-      t.ok(client, 'client ok');
-      t.end();
+    client = restify.createJsonClient({
+      log: api.log,
+      url: 'http://127.0.0.1:' + PORT,
+      type: 'json',
+      version: '*'
     });
+    t.ok(client, 'client ok');
+    t.end();
   });
 });
 
