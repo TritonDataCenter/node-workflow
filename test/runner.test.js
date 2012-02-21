@@ -13,10 +13,13 @@ var TEST_DB_NUM = 15;
 var backend, identifier, runner, factory;
 
 var logDir = path.resolve(__dirname, '../logs');
+
 var exists = path.existsSync(logDir);
 if (!exists) {
   fs.mkdirSync(logDir, '0777');
 }
+
+var config = {};
 
 var okTask = {
   name: 'OK Task',
@@ -34,8 +37,29 @@ failTask = {
 },
 okWf, failWf, theJob;
 
+
+test('throws on missing opts', function (t) {
+  t.throws(function () {
+    return new WorkflowRunner();
+  }, new TypeError('opts (Object) required'));
+  t.end();
+});
+
+
+test('throws on missing backend', function (t) {
+  t.throws(function () {
+    return new WorkflowRunner(config);
+  }, new TypeError('backend (Object) required'));
+  t.end();
+});
+
 test('setup', function (t) {
   identifier = uuid();
+  config.runner = {
+    identifier: identifier,
+    forks: 2,
+    run_interval: 0.1
+  };
   backend = new WorkflowRedisBackend({
     port: 6379,
     host: '127.0.0.1',
@@ -51,11 +75,7 @@ test('setup', function (t) {
       t.ifError(err, 'db size error');
       t.equal(0, res, 'db size ok');
     });
-    runner = new WorkflowRunner({runner: {
-      identifier: identifier,
-      forks: 2,
-      run_interval: 0.1
-    }}, backend);
+    runner = new WorkflowRunner(config, backend);
     t.ok(runner);
     factory = Factory(backend);
     t.ok(factory);
