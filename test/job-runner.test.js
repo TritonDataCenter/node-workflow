@@ -3,6 +3,7 @@ var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
     WorkflowJobRunner = require('../lib/job-runner'),
+    Logger = require('bunyan'),
     Factory = require('../lib/index').Factory;
 
 var TEST_DB_NUM = 15;
@@ -18,6 +19,17 @@ var config = {
   }
 };
 
+var logger = {
+  name: 'workflow-runner',
+  serializers: {
+    err: Logger.stdSerializers.err
+  },
+  streams: [ {
+    level: 'trace',
+    stream: process.stdout
+  }]
+};
+
 var Backend = require(config.backend.module),
     backend = new Backend(config.backend.opts),
     factory, wf_job_runner;
@@ -28,7 +40,7 @@ var FakeRunner = function () {
   this.child_processes = {};
   this.uuid = uuid();
   this.run_interval = 1000;
-  this.log = console;
+  this.log = new Logger(logger);
 };
 
 FakeRunner.prototype.childUp = function (job_uuid, child_pid) {

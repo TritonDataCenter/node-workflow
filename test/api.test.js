@@ -18,19 +18,13 @@ var TEST_DB_NUM = 15;
 
 var config = {};
 
-var logDir = path.resolve(__dirname, '../logs');
-var exists = path.existsSync(logDir);
-if (!exists) {
-  fs.mkdirSync(logDir, '0777');
-}
-
 config.logger = {
   streams: [ {
     level: 'info',
     stream: process.stdout
   }, {
     level: 'trace',
-    path: path.resolve(__dirname, '../logs/test.api.log')
+    path: path.resolve(__dirname, './test.api.log')
   }]
 };
 

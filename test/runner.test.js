@@ -11,14 +11,16 @@ var TEST_DB_NUM = 15;
 
 var backend, identifier, runner, factory;
 
-var logDir = path.resolve(__dirname, '../logs');
-
-var exists = path.existsSync(logDir);
-if (!exists) {
-  fs.mkdirSync(logDir, '0777');
-}
-
 var config = {};
+config.logger = {
+  streams: [ {
+    level: 'info',
+    stream: process.stdout
+  }, {
+    level: 'trace',
+    path: path.resolve(__dirname, './test.runner.log')
+  }]
+};
 
 var okTask = {
   name: 'OK Task',
