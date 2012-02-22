@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Workflow REST API</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="media/css/style.css">
+  <style>
+
+#logo {
+  color: #aa0000;
+}
+
+</style>
+
+  <script type="text/javascript" src="media/js/jquery-1.4.2.min.js"></script>
+
+</head>
+<body>
+<div id="wrapper">
+<div id="main">
+
+<header id="header">
+  <span id="logo">Workflow REST API</span>
+  <span id="tocbox">
+    <span id="tocbutton" class="navbutton">Table of Contents</span>
+    <div id="toc" style="display: none">
+      <ul>
+  <li><div><a href="#end-points"> End-Points</a></div>
+  <ul>
+    <li><div><a href="#GET-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows</span></span></a></div></li>
+    <li><div><a href="#POST-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/workflows</span></span></a></div></li>
+    <li><div><a href="#GET-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
+    <li><div><a href="#PUT-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
+    <li><div><a href="#DELETE-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
+    <li><div><a href="#GET-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs</span></span></a></div></li>
+    <li><div><a href="#POST-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs</span></span></a></div></li>
+    <li><div><a href="#GET-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
+    <li><div><a href="#PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
+    <li><div><a href="#DELETE-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
+    <li><div><a href="#POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></a></div></li>
+    <li><div><a href="#GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
+    <li><div><a href="#POST-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
+    <li><div><a href="#PUT-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
+    <li><div><a href="#DELETE-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
+  </ul></li>
+</ul>
+
+    </div>
+  </span>
+</header>
+    <div id="content">
+
+<h1>Workflow &amp; Status API</h1>
+<div class="intro">
+
+
+<p>This document describes the HTTP REST API for workflows and tasks, and for the
+creation of Jobs and tracking their execution progres.</p>
+
+<p><strong>This API speaks only JSON</strong>. For every request. For all the HTTP methods.
+This means that any <code>POST</code> or <code>PUT</code> request <code>Content-Type</code> <strong>must be JSON</strong>.</p>
+
+
+</div>
+<h1 id="end-points"> End-Points</h1>
+
+<p>The API is composed by the following end-points:</p>
+
+<ul>
+<li><code>/workflows</code></li>
+<li><code>/jobs</code></li>
+<li><code>/jobs/:uuid/info</code></li>
+</ul>
+
+<p><code>/workflows</code> accept any of the HTTP verbs for the usual CRUD
+but <code>/jobs</code> will not accept <code>PUT</code>, given the only way to modify a Job once it
+has been created is through execution.</p>
+
+<p>For the same reason, <code>/jobs/:uuid/info</code> will not accept neither <code>POST</code>
+requests, since the staus information for a Job is created when the Job itself
+is created, neither <code>DELETE</code>, given the status information for a job will be
+removed only if the job is removed.</p>
+
+<h2 id="GET-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows</span></span></h2>
+
+<p>Retrieve a list of all the existing workflows.</p>
+
+<h3>HTTP Parameters.</h3>
+
+<p>None.</p>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>200 OK</code>: A list of existing workflows is returned, even if there isn't
+        any workflow, which will result on an empty array.</li>
+</ul>
+
+<h3> Response Body</h3>
+
+<p>An array of workflow objects, (see <code>POST /workflows</code>).</p>
+
+<h2 id="POST-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/workflows</span></span></h2>
+
+<p>Create a new workflow.</p>
+
+<h3>HTTP Parameters</h3>
+
+<ul>
+<li><code>name</code>: The workflow name. Required.</li>
+<li><code>chain[]</code>: The tasks to add to the workflow. Optional. Multiple values
+allowed.</li>
+<li><code>onerror[]</code>: The tasks to add to the workflow fallback. Optional.
+Multiple values allowed. </li>
+<li><code>timeout</code>: Optional timeout, in seconds, for the workflow execution.</li>
+</ul>
+
+<h3>Every <code>task</code> may be composed of:</h3>
+
+<ul>
+<li><code>name</code>: The task name. Optional.</li>
+<li><code>body</code>: Required. A string enclosing a JavaScript function definition.
+The function <strong>must</strong> take the parameters <code>job</code> and <code>cb</code>, where <code>cb</code> is a
+callback to be called by the function when its execution is finished, either
+without any arguments, (<em>task succeed</em>), or with an error message, (<em>task
+failed</em>).</li>
+<li><code>fallback</code>: Optional. A string enclosing a JavaScript function definition.
+The function <strong>must</strong> take the parameters <code>err</code>, <code>job</code> and <code>cb</code>, where <code>cb</code>
+is a callback to be called by the function when its execution fails;
+<code>err</code> is the error message returned by task <code>body</code>.</li>
+<li><code>retry</code>: Optional. Number of times to retry the task's body execution
+before either fail the task or call the <code>fallback</code> function, when given.</li>
+<li><code>timeout</code>: Optional timeout, in seconds, for the task execution.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect
+Information about the missing/incorrect parameter will be included into
+response body.</li>
+<li><code>201 Created</code>: Successful creation of the workflow. The workflow's JSON
+representation will be included into the response body, together with a
+<code>Location</code> header for the new resource. Generated workflow's <code>uuid</code> will be
+part of this <code>Location</code> and a member of the returned workflow JSON object.</li>
+</ul>
+
+<h4> Response Body:</h4>
+
+<pre><code>{
+  uuid: UUID,
+  name: 'The workflow name',
+  chain: [:task, :task, ...],
+  onerror: [:task, :task, ...],
+  timeout: 3600(secs)
+}
+</code></pre>
+
+<h4>Sample task on the response:</h4>
+
+<pre><code>{
+  uuid: UUID,
+  name: 'The task name',
+  body: "function(job, cb) {
+    if (job.foo) {
+      return cb(null);
+    } else {
+      return cb('Uh, oh!, no foo.');
+    }
+  }",
+  fallback: "function(err, job, cb) {
+    if (err === 'Uh, oh!, no foo.') {
+      job.foo = 'bar';
+      return cb(null);
+    } else {
+      return cb('Arise chicken, arise!');
+    }
+  }",
+  timeout: 360(secs)
+}
+</code></pre>
+
+<h2 id="GET-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+
+<h3> HTTP Parameters:</h3>
+
+<ul>
+<li><code>wf_uuid</code>: The workflow UUID.</li>
+</ul>
+
+<h3>Status Codes:</h3>
+
+<ul>
+<li><code>404 Not Found</code>: There's no worlflow with the provided <code>wf_uuid</code>.</li>
+<li><code>200 OK</code>: The workflow with the provided <code>wf_uuid</code> has been found and is
+returned as response body.</li>
+</ul>
+
+<p>Note this API will not keep track of <em>destroyed</em> workflows, therefore, when a
+request for such workflows is made, the HTTP Status code will be <code>404 Not Found</code>
+instead of <code>410 Gone</code>.</p>
+
+<h3>Response body</h3>
+
+<p>Same than for <code>POST /workflows</code> + <code>wf_uuid</code>.</p>
+
+<h2 id="PUT-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+
+<h3>HTTP Parameters</h3>
+
+<p>Same than for <code>POST /workflows</code>.</p>
+
+<h3> Status Codes</h3>
+
+<p>Same than for <code>POST /workflows</code> with the addition of:</p>
+
+<ul>
+<li><code>404 Not Found</code>, when the provided <code>wf_uuid</code> cannot be found on the backend.</li>
+</ul>
+
+<h3> Response body</h3>
+
+<p>Same than for <code>POST /workflows</code>.</p>
+
+<h2 id="DELETE-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+
+<h3> HTTP Parameters:</h3>
+
+<ul>
+<li><code>wf_uuid</code>: The workflow UUID.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>204 OK</code>: Workflow successfully destroyed.</li>
+</ul>
+
+<h2 id="GET-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs</span></span></h2>
+
+<p>Retrieve a list of jobs. Without <code>execution</code> HTTP parameter all the existing
+jobs will be retrieved. If <code>execution</code> is given, only the jobs on the given
+execution status are retrieved.</p>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>execution</code>: Optional, one of <code>suceeded</code>, <code>failed</code>, <code>running</code> or <code>queued</code>.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>200 OK</code>: A list of existing jobs is returned, even when it's totally empty.</li>
+</ul>
+
+<h2 id="POST-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs</span></span></h2>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>workflow</code>: Required. UUID of the workflow from which the new job will
+be created.</li>
+<li><code>exec_after</code>: Optional, ISO 8601 Date. Delay job execution until the provided
+time.</li>
+<li><code>target</code>: The job's target, intended to restrict the creation of another job
+with this same target and same extra parameters while this one execution hasn't
+finished.</li>
+<li>Any extra <code>k/v</code> pairs of parameters desired, which will be passed to the job
+object as an object like <code>{k1: v1, k2: v2, ...}</code>.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect
+Information about the missing/incorrect parameter will be included into
+response body.</li>
+<li><code>201 Created</code>: Successful creation of the job. The job's JSON
+representation will be included into the response body, together with a
+<code>Location</code> header for the new resource. Generated job's <code>uuid</code> will be
+part of this <code>Location</code> and a member of the returned job JSON object.</li>
+</ul>
+
+<h3> Response Body</h3>
+
+<pre><code>{
+  uuid: UUID,
+  workflow_uuid: wf_uuid,
+  name: 'The workflow name',
+  chain: ['task object', 'task object', ...],
+  onerror: ['task object', 'task object', ...],
+  timeout: 3600,
+  exec_after: new Date().toISOString(),
+  target: '/some/uri',
+  params: {
+    k1: v1,
+    k2: v2
+  },
+  chain_results: [{result: 'OK', error: ''}, ...],
+  onerror_results: [{result: 'OK', error: ''}, ...],
+  execution: 'queued' ('running'|'failure'|'success')
+}
+</code></pre>
+
+<h2 id="GET-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>job_uuid</code>: The job's UUID.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>404 Not Found</code>: There's no job with the provided <code>job_uuid</code>.</li>
+<li><code>200 OK</code>: The task with the provided <code>job_uuid</code> has been found and is
+returned as response body.</li>
+</ul>
+
+<p>Note this API will not keep track of <em>destroyed</em> jobs, therefore, when a
+request for such tasks is made, the HTTP Status code will be <code>404 Not Found</code>
+instead of <code>410 Gone</code>.</p>
+
+<h3> Response Body</h3>
+
+<p>Same than for <code>POST /jobs</code>.</p>
+
+<h2 id="PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+
+<p><strong>TBD</strong>. Response with status code <code>405 Method Not Allowed</code>.</p>
+
+<h2 id="DELETE-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+
+<p><strong>TBD</strong>. Response with status code <code>405 Method Not Allowed</code>.</p>
+
+<h2 id="POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></h2>
+
+<p>Cancel a job's execution. The job should not be finished in order to be
+cancelable.</p>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>job_uuid</code>: The job's UUID.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>404 Not Found</code>: There's no job with the provided <code>job_uuid</code>.</li>
+<li><code>409 Conflict</code>: The job is already finalized and cannot be canceled.</li>
+<li><code>200 OK</code>: Successfully canceled job.</li>
+</ul>
+
+<h3> Response Body</h3>
+
+<p>Same than for <code>POST /jobs</code>.</p>
+
+<h2 id="GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+
+<p>Detailed information for the given job. A task may result into a 3rd
+party application executing a process which may require some time/steps to
+finish. While our task is running and waiting for the finalization of such
+process, those 3rd party applications can publish information about progress
+using <code>POST /jobs/:job_uuid/info</code>; this information could then being used
+by other applications interested on job results using
+<code>GET /jobs/:job_uuid/info</code>.</p>
+
+<p>This information will consist into an arbitrary length array, where
+every <code>POST</code> request will result in a new member being appended.</p>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>job_uuid</code>: The job's UUID.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<p>Same than for <code>GET /jobs/:job_uuid</code>.</p>
+
+<h3> Response Body</h3>
+
+<pre><code>[
+  { '10%': 'Task completed step one' },
+  { '20%': 'Task completed step two' }
+]
+</code></pre>
+
+<h2 id="POST-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><p><code>message</code>: Required. Object containing a message regarding operations progresses.</p>
+
+<p>{ '10%': 'Task completed step one' }</p></li>
+</ul>
+
+<p>Note you can provide any key/value pair here.</p>
+
+<h3>Status Codes</h3>
+
+<p>Same than for <code>GET /jobs/:job_uuid</code>.</p>
+
+<h3> Response Body</h3>
+
+<p>None.</p>
+
+<h2 id="PUT-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+
+<p>Response with status code <code>405 Method Not Allowed</code>.</p>
+
+<h2 id="DELETE-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+
+<p>Response with status code <code>405 Method Not Allowed</code>.</p>
+
+<p><a href="http://github.com/kusor/node-workflow">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">
+</a></p>
+
+    </div>
+</div> <!-- end of #main -->
+</div> <!-- end of #wrapper -->
+
+
+<script type="text/javascript" charset="utf-8">
+$(function () {
+    $("#toc").click(function(event) {
+        // This to ensure clicks in the #toc don't make it up to the
+        // `closeTocOnBodyClick` handler.
+        event.stopPropagation();
+    });
+    $("#toc a").click(function(event) {
+        $("#tocbutton").click();
+    })
+    $("#tocbutton").click(function(event) {
+        var target = $("#toc");
+        if (target.css("display") !== "block") {
+            $("body").bind("click.tocCloser", function(event) {
+                $("#tocbutton").click();
+                event.stopPropagation();
+            });
+        } else {
+            $("body").unbind("click.tocCloser");
+        }
+        target.slideToggle(100);
+        event.stopPropagation();
+    });
+});
+</script>
+
+</body>
+</html>
