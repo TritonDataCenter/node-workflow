@@ -1,5 +1,6 @@
 ---
-title: Workflow & Status API
+title: Workflow REST API
+logo-color: #aa0000
 ---
 # Workflow & Status API
 
@@ -26,7 +27,7 @@ requests, since the staus information for a Job is created when the Job itself
 is created, neither `DELETE`, given the status information for a job will be
 removed only if the job is removed.
 
-## GET /workflows
+## GET /workflows
 
 Retrieve a list of all the existing workflows.
 
@@ -115,7 +116,7 @@ Create a new workflow.
       timeout: 360(secs)
     }
 
-## GET /workflows/:wf_uuid
+## GET /workflows/:wf_uuid
 
 ### HTTP Parameters:
 
@@ -151,7 +152,7 @@ Same than for `POST /workflows` with the addition of:
 
 Same than for `POST /workflows`.
 
-## DELETE /workflows/:wf_uuid
+## DELETE /workflows/:wf_uuid
 
 ### HTTP Parameters:
 
@@ -321,4 +322,6 @@ Response with status code `405 Method Not Allowed`.
 
 Response with status code `405 Method Not Allowed`.
 
-
+<a href="http://github.com/kusor/node-workflow">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">
+</a>

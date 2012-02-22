@@ -1,5 +1,6 @@
 ---
-title: Tasks Orchestration API and Runners
+title: Node Workflow
+logo-color: #aa0000
 ---
 # Overview
 
@@ -143,7 +144,7 @@ care of that once we find the example.
 17. Of course, you want to know the results of each task execution.
 18. You may want to know the workflow status at any moment.
 
-## Task properties:
+## Task properties
 
 - A name,
 - code to be executed,
@@ -170,7 +171,7 @@ Note that a task's timeout shouldn't be bigger than the workflow timeout, but
 it really doesn't matter. If a task execution exceeds the workflow timeout it
 will be failed with 'workflow timeout' error.
 
-## Workflow properties:
+## Workflow properties
 
 - A name.
 - The 'chain' of tasks to be executed.
@@ -192,7 +193,7 @@ will be failed with 'workflow timeout' error.
         });
 
 
-## Job properties:
+## Job properties
 
 Same than the workflow plus:
 
@@ -351,3 +352,6 @@ results, and the runner will save back those results into the backend, either
 finishing the job, or re-queueing it for another runner which may fetch it in
 order to continue its execution at a later time.
 
+<a href="http://github.com/kusor/node-workflow">
+<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">
+</a>
