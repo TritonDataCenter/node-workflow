@@ -7,17 +7,7 @@ var util = require('util'),
     Factory = require('../lib/index').Factory;
 
 var TEST_DB_NUM = 15;
-
-var config = {
-  backend: {
-    module: '../lib/workflow-redis-backend',
-    opts: {
-      db: TEST_DB_NUM,
-      port: 6379,
-      host: '127.0.0.1'
-    }
-  }
-};
+var helper = require('./helper');
 
 var logger = {
   name: 'workflow-runner',
@@ -30,8 +20,8 @@ var logger = {
   }]
 };
 
-var Backend = require(config.backend.module),
-    backend = new Backend(config.backend.opts),
+var Backend = require(helper.config().backend.module),
+    backend = new Backend(helper.config().backend.opts),
     factory, wf_job_runner;
 
 var okWf, failWf, timeoutWf, reQueueWf, reQueuedJob, elapsed;

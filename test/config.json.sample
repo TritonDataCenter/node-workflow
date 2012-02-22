@@ -1,6 +1,6 @@
 {
   "backend": {
-    "module": "workflow-redis-backend",
+    "module": "../lib/workflow-redis-backend",
     "opts": {
       "port": 6379,
       "host": "127.0.0.1",
@@ -12,8 +12,8 @@
   },
   "runner": {
     "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
-    "forks": 10,
-    "run_interval": 10,
+    "forks": 2,
+    "run_interval": 0.1,
     "sandbox": {
       "http": "http",
       "uuid": "node-uuid"

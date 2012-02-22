@@ -11,17 +11,12 @@ var backend, factory;
 
 var aWorkflow, aJob, anotherJob;
 
-var runnerId = uuid();
-
-// A DB for testing, flushed before and right after we're done with tests
-var TEST_DB_NUM = 15;
+var helper = require('./helper'),
+    config = helper.config(),
+    runnerId = config.runner.identifier;
 
 test('setup', function (t) {
-  backend = new WorkflowRedisBackend({
-    port: 6379,
-    host: '127.0.0.1',
-    db: TEST_DB_NUM
-  });
+  backend = new WorkflowRedisBackend(config.backend.opts);
   t.ok(backend, 'backend ok');
   backend.init(function () {
     backend.client.flushdb(function (err, res) {

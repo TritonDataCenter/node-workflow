@@ -1,3 +1,4 @@
+// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     path = require('path'),
     fs = require('fs'),
@@ -6,21 +7,9 @@ var util = require('util'),
     WorkflowRunner = require('../lib/runner'),
     Factory = require('../lib/index').Factory;
 
-// A DB for testing, flushed before and right after we're done with tests
-var TEST_DB_NUM = 15;
-
 var backend, identifier, runner, factory;
 
 var config = {};
-config.logger = {
-  streams: [ {
-    level: 'info',
-    stream: process.stdout
-  }, {
-    level: 'trace',
-    path: path.resolve(__dirname, './test.runner.log')
-  }]
-};
 
 var okTask = {
   name: 'OK Task',
@@ -38,6 +27,8 @@ failTask = {
 },
 okWf, failWf, theJob;
 
+var helper = require('./helper');
+
 
 test('throws on missing opts', function (t) {
   t.throws(function () {
@@ -54,22 +45,19 @@ test('throws on missing backend', function (t) {
   t.end();
 });
 
-test('setup', function (t) {
-  identifier = uuid();
-  config.runner = {
-    identifier: identifier,
-    forks: 2,
-    run_interval: 0.1
-  };
-  config.backend = {
-    module: '../lib/workflow-redis-backend',
-    opts: {
-      port: 6379,
-      host: '127.0.0.1',
-      db: TEST_DB_NUM
-    }
-  };
 
+test('setup', function (t) {
+  config = helper.config();
+  identifier = config.runner.identifier;
+  config.logger = {
+    streams: [ {
+      level: 'info',
+      stream: process.stdout
+    }, {
+      level: 'trace',
+      path: path.resolve(__dirname, './test.runner.log')
+    }]
+  };
   runner = new WorkflowRunner(config);
   t.ok(runner);
   t.ok(runner.backend, 'backend ok');
@@ -125,14 +113,7 @@ test('setup', function (t) {
 
 test('runner identifier', function (t) {
   var cfg = {
-    backend: {
-      module: '../lib/workflow-redis-backend',
-      opts: {
-        port: 6379,
-        host: '127.0.0.1',
-        db: TEST_DB_NUM
-      }
-    }
+    backend: helper.config().backend
   }, aRunner = new WorkflowRunner(cfg),
   identifier;
   // run getIdentifier twice, one to create the file,
@@ -239,14 +220,7 @@ test('inactive runners', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
   cfg = {
-    backend: {
-      module: '../lib/workflow-redis-backend',
-      opts: {
-        port: 6379,
-        host: '127.0.0.1',
-        db: TEST_DB_NUM
-      }
-    },
+    backend: helper.config().backend,
     runner: {
       identifier: theUUID,
       forks: 2,
@@ -289,14 +263,7 @@ test('stale jobs', function (t) {
   // Add another runner, which we'll set as inactive
   var theUUID = uuid(),
   cfg = {
-    backend: {
-      module: '../lib/workflow-redis-backend',
-      opts: {
-        port: 6379,
-        host: '127.0.0.1',
-        db: TEST_DB_NUM
-      }
-    },
+    backend: helper.config().backend,
     runner: {
       identifier: theUUID,
       forks: 2,
@@ -367,7 +334,7 @@ test('stale jobs', function (t) {
 
 
 test('teardown', function (t) {
-  var cfg_file = path.resolve(__dirname, '../config/workflow-indentifier');
+  var cfg_file = path.resolve(__dirname, '../workflow-indentifier');
   runner.backend.quit(function () {
     path.exists(cfg_file, function (exist) {
       if (exist) {

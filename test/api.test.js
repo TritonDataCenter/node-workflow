@@ -13,9 +13,6 @@ var test = require('tap').test,
 // --- Globals
 var api, server, client, backend, wf_uuid, job_uuid;
 
-var PORT = process.env.UNIT_TEST_PORT || 12345;
-var TEST_DB_NUM = 15;
-
 var config = {};
 
 config.logger = {
@@ -27,6 +24,8 @@ config.logger = {
     path: path.resolve(__dirname, './test.api.log')
   }]
 };
+
+var helper = require('./helper');
 
 // --- Tests
 
@@ -47,14 +46,7 @@ test('throws on missing backend', function (t) {
 
 
 test('throws on missing opts.api', function (t) {
-  config.backend = {
-    module: '../lib/workflow-redis-backend',
-    opts: {
-      db: TEST_DB_NUM,
-      port: 6379,
-      host: '127.0.0.1'
-    }
-  };
+  config.backend = helper.config().backend;
 
   t.throws(function () {
     return new API(config);
@@ -67,9 +59,7 @@ test('throws on missing opts.api', function (t) {
 // --- Yes, I know it's not the canonical way to proceed setting up the suite
 // right after you've ran some tests before but, it's handy here:
 test('setup', function (t) {
-  config.api = {
-    port: PORT
-  };
+  config.api = helper.config().api;
   api = new API(config);
   t.ok(api, 'api ok');
   server = api.server;
@@ -87,7 +77,7 @@ test('setup', function (t) {
     });
     client = restify.createJsonClient({
       log: api.log,
-      url: 'http://127.0.0.1:' + PORT,
+      url: 'http://127.0.0.1:' + helper.config().api.port,
       type: 'json',
       version: '*'
     });
