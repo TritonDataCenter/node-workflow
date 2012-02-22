@@ -7,7 +7,7 @@
 #
 NPM		:= $(shell which npm)
 TAP		:= ./node_modules/.bin/tap
-#RESTDOWN_FLAGS  := -b deps/restdown/brand/spartan
+RESTDOWN_FLAGS  := -b deps/restdown/brand/spartan
 
 #
 # Files
