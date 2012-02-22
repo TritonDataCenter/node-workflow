@@ -83,11 +83,11 @@ is enough.
 
 To run the Workflow API server:
 
-    node lib/api.js
+    ./bin/Workflow-api path/to/config.json
 
 To run a Job Runner:
 
-    node lib/runner.js
+    ./bin/workflow-runner path/to/config.json
 
 Note that it's perfectly fine to run more than one Runner, either on the same
 or different machines, as far as they have access to Redis Server.
