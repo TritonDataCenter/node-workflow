@@ -8,6 +8,12 @@
 
 # Overview
 
+Either if you are building a completely new system composed of many discreet API
+applications, each of them with a clearly defined area of responsibility, or
+in the case you are trying to assemble a collaboration channel between an
+heterogeneous set of totally unrelated API applications, you need a way to
+orchestrate interactions between these applications.
+
 So a workflow is effectively an orchestration.
 
 You want a workflow, because it gives you a way to decompose a complex series
@@ -61,7 +67,7 @@ when:
 The package also provides a binary file to run the `WorkflowAPI` using the
 same configuration file we pass to our `WorkflowRunner`:
 
-    ./bin/Workflow-api path/to/config.json
+    ./bin/workflow-api path/to/config.json
 
 See demo section below for more details about both approaches.
 
@@ -130,7 +136,7 @@ to be initialized pointing to the aforementioned configuration file:
 Also, in order to be able to run the API based example mentioned below, the
 `workflow-api` HTTP server needs to be up and running too:
 
-    ./bin/workflow-runner examples/config.json
+    ./bin/workflow-api examples/config.json
 
 Contents for the other files within the `examples` directory are:
 

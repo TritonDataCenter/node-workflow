@@ -2,7 +2,14 @@
 title: Node Workflow
 logo-color: #aa0000
 ---
+
 # Overview
+
+Either if you are building a completely new system composed of many discreet API
+applications, each of them with a clearly defined area of responsibility, or
+in the case you are trying to assemble a collaboration channel between an
+heterogeneous set of totally unrelated API applications, you need a way to
+orchestrate interactions between these applications.
 
 So a workflow is effectively an orchestration.
 
@@ -22,15 +29,19 @@ Or you can keep it simple by taking some assumptions:
 * If a task requires a specific property of the workflow to be present, the
   task can fail, or re-schedule itself within the workflow, or ...
 
-# System design
-
 System needs to be designed with failures in mind. Tasks can fail and, as a
 consequence, workflows may fail. You may want to recover from a task failure,
 or from a whole workflow failure.
 
 The system itself may also fail due to any unexpected reason.
 
-## Terminology
+## node-workflow
+
+This package provides a way to define re-usable `workflows` using JSON and run
+concrete `jobs` with specific `targets` and `parameters` based on such
+`workflows`.
+
+# Terminology
 
 * _Task_: A single discreet operation, such as Send Email.
 * _Workflow_: An abstract definition of a sequence of Tasks, including
@@ -38,7 +49,7 @@ The system itself may also fail due to any unexpected reason.
 * _Job_: An instance of a Workflow containing all the required information
   to execute itself and, eventually, a target.
 
-## System components
+# System components
 
 - A workflow and task **factory**, where you can create tasks, workflows and queue
   jobs, using NodeJS.
@@ -49,8 +60,8 @@ The system itself may also fail due to any unexpected reason.
   about failures, ...
 - **Job runners**. You can have as many runners as you want. Runners can live
   everywhere. Once a runner "picks" a job, that job is flagged with the runner
-  identifier so no other runner attempts to execute it. One runner can be
-  composed of multiple associated processes to execute jobs.
+  identifier - _locked_ - so no other runner attempts to execute it. One runner
+  can be composed of multiple associated processes to execute jobs.
 
 The factory talks to a __persistence layer__, and saves workflows and tasks. Also,
 once a Job is created, it's saved with all the required information, including
@@ -62,87 +73,7 @@ A runner itself may go dive nuts while a job is being executed, leaving the
 job into an unappropriated _"running"_ status. When a runner starts, there
 shouldn't be any job flagged with the runner identifier and, furthermore,
 it shouldn't be on a running status. If that happens, the first thing a runner
-must do on restart is to pick any job into such invalid state and execute
-the fall-back recovery branch for such job.
-
-## Recursion and Branches
-
-Imagine you have a task and, as the fall-back for the case that task fails,
-you specify that same task. Not very useful; not too bad since the fall-back
-task will also fail and, as a consequence, the workflow will fail ...
-
-... wait!, or will call the workflow's failure branch which may also contain
-_the same task!_ which, obviously, will fail again.
-
-So, first rule: When a task is specified as part of a workflow, that same task
-can not be specified as the task itself `onerror` fall-back, neither to the
-workflow's `onerror` branch.
-
-Now, let's think about the following scenario: a job is created as the result
-of some action, for example, a GET request to a given REST URI. Then, as part
-of the workflow's tasks, another GET request is made to the same REST URI,
-which will obviously result into infinite number of jobs being created to do
-exactly the same thing.
-
-Job's target property may help us on avoiding this infinite loop problem. While
-a Workflow is something "abstract", a Job may "operate" over a concrete target.
-For example, you can use a REST URI as the target of the job, or an LDAP DN, or
-whatever you need to make sure that the same job will not be queued twice.
-
-When jobs are created and queued, they will check if another job with the same
-target (and the same parameters) exists and, if that's the case, the job creation
-will fail.
-
-Obviously, there are some cases where you may want the same job to be queued
-exactly for the same target; for example, POST to a given URI to create a new
-collection element. That's the reason job's `parameters` are also checked with
-job's `target` in order to allow or not creation and queueing of a new job.
-
-In the case a job has failed for a given target and parameters, you may want to
-create a new one after some time. This is perfectly possible since the previous
-job uniqueness checks are made only versus "running" or "queued" jobs, not versus
-"finished" jobs, whatever is their result.
-
-Finally, a note about multiple branches:
-
-In theory, one may want to specify any arbitrary number of branches to be
-executed depending on workflow's tasks results. That would bring us into a complex
-scenario where we should take decisions like: _should we allow the same task to
-be specified as part of several different branches?_.
-
-So far I haven't got a clear answer for that. In theory, only the fall-backs
-should be different than their respective tasks, and the workflow's `onerror`
-chain shouldn't contain any of the tasks specified as part of any of the other
-branches.
-
-Anyhow, can we imagine a concrete scenario where multiple branches are required?.
-I mean, with an example. If so, we can take care of things like avoiding
-recursion and infinite loops being caused there, but I'm thinking we'd rather
-care of that once we find the example.
-
-# Implementation details
-
-1. You need a way to define tasks.
-2. Need a way to define a workflow.
-3. Need a way to add tasks to a workflow. Sometimes specify the exact position
-   of a task on the workflow chain.
-4. Need a way to remove tasks from the workflow. Some tasks may be able to flag
-   themselves as no-removable.
-5. A task can fail.
-6. You need to know how many times you want to retry a task in case of failure.
-7. You need to know what to do when a task fail. Fail the workflow?, try a
-   different branch?, ...
-8. A task can be stuck.
-9. You need to know when to timeout a task.
-10. You need to know what to do when a given task timeout is over.
-11. You need to be able to instantiate a workflow in order to create a Job.
-12. A Job may have parameters.
-13. A Job may have a target.
-14. You need to run a Job.
-15. A job may have an acceptable period of time to be completed.
-16. At job end, you may want to be able to specify another job to be completed.
-17. Of course, you want to know the results of each task execution.
-18. You may want to know the workflow status at any moment.
+must do on restart is to pick any job into such invalid state and cancel it.
 
 ## Task properties
 
@@ -163,6 +94,10 @@ care of that once we find the example.
               return cb('Foo was not defined');
             }
             return cb(null);
+          },
+          fallback: function (err, job, cb) {
+            job.the_err = err;
+            return cb(null);
           }
         }
 
@@ -177,7 +112,6 @@ will be failed with 'workflow timeout' error.
 - The 'chain' of tasks to be executed.
 - A global timeout.
 - Alternate error branch.
-- Optionally, another workflow to execute right after the current one is completed.
 
 
         factory.workflow({
@@ -194,6 +128,24 @@ will be failed with 'workflow timeout' error.
 
 
 ## Job properties
+
+While a Workflow is something "abstract", a Job may "operate" over a concrete target.
+For example, you can use a REST URI as the target of the job, or an LDAP DN, or
+whatever you need to make sure that the same job will not be queued twice.
+
+When jobs are created and queued, they will check if another job with the same
+target (and the same parameters) exists and, if that's the case, the job creation
+will fail.
+
+Obviously, there are some cases where you may want the same job to be queued
+exactly for the same target; for example, POST to a given URI to create a new
+collection element. That's the reason job's `parameters` are also checked with
+job's `target` in order to allow or not creation and queueing of a new job.
+
+In the case a job has failed for a given target and parameters, you may want to
+create a new one after some time. This is perfectly possible since the previous
+job uniqueness checks are made only versus "running" or "queued" jobs, not versus
+"finished" jobs, whatever is their result.
 
 Same than the workflow plus:
 
@@ -222,29 +174,43 @@ Same than the workflow plus:
         });
 
 
-Some questions about other jobs options:
+# Workflow API and REST API.
 
-- Do we want to be able to "abort" a job?.
-- Even if it's running?
-- And, if so, what to do when it's running and we abort?, call `onerror`
-  branch?, (note I'm beginning to think that `onerror` should be called
-  `revert` sometimes, or maybe it's just an extra branch ...).
+You can create `workflows` and `jobs` either by using the provided REST API(s),
+or by embedding this module's API into your own system(s).
+The former will be easier to get up and running, but you should use the latter
+when:
 
-See `example.js` for a detailed description on how to create Tasks, Workflows
-and Jobs using NodeJS through the **factory** component.
+- You want to use the Worflow API in a (node.js) application that is not the
+  bundled REST API.
+- You want to use a different backend storage system, or otherwise change the
+  assumptions of the bundled REST API
 
-## Workflow Runners
+The package also provides a binary file to run the `WorkflowAPI` using the
+same configuration file we pass to our `WorkflowRunner`:
+
+    ./bin/workflow-api path/to/config.json
+
+See [REST API docs](workflowapi.html) for the details of available end-points.
+
+# Workflow Runners
+
+In order to execute the `jobs`, at least one `WorkflowRunner` must be up and
+ready to take jobs. An arbitrary number of `runners` can be used on any set of
+hosts; configuration must match.
+
+An example `WorkflowRunner` is provided with the package and can be started
+with:
+
+    ./bin/workflow-runner path/to/config.json
 
 The system design requires that we can have workflow runners everywhere. As
-many as needed, and all of them reporting health periodically. Also, it would
-be desirable that runners could implement a `ping` method to provide immediate
-information about their status.
+many as needed, and all of them reporting health periodically.
 
 All runners will periodically query the backend for information about other
 runners and, in case they detect one of those runners has been inactive for a
 configurable period of time, they will check for stale jobs associated with
-the inactive runner and either fail those jobs or run the associated `onerror`
-branch.
+the inactive runner and cancel those jobs.
 
 The first thing a runner does when it boots, is to register itself on the
 backend, (which is the same as report its health). At a configurable interval
@@ -258,7 +224,7 @@ created and saved for future runs).
 Runners will spawn child processes, one process per job. Max number of child
 processes is also configurable.
 
-### How runners pick and execute jobs
+## How runners pick and execute jobs
 
 A runner will query the backend for queued jobs, (exactly the same number of
 them than available child processes to spawn). Once the runner gets a set of
@@ -277,7 +243,7 @@ Note that everything must be executed within the acceptable amount of time
 provided for the job. If this time expires, the job execution will fail and
 the `onerror` branch will be executed when given.
 
-### Task execution:
+## Task execution:
 
 Workflow runner will then try to execute the `job` chain of tasks, in order.
 For every task, the runner will try to execute the task `body`, using NodeJS
@@ -300,9 +266,8 @@ Otherwise, the task should call the callback with an error message:
 
     cb('whatever the error reason');
 
-These error messages will be available for the task's `onerror` function, in
-order to allow a task's fallback to decide if it can recover the task from a
-failure.
+These error messages will be available for the task's `fallback` function, in
+order to allow it to decide if can recover the task from a failure.
 
 It's also possible to set an specific timeout for every task execution.
 
@@ -311,17 +276,17 @@ check if we've exceeded the number of retries for the task and, if that's not
 the case, it'll try to execute the task again.
 
 Once the max number of retries for a task has been reached, the runner will
-check if the task has an `onerror` fallback and, when that's the case, it'll
+check if the task has an `fallback` and, when that's the case, it'll
 call it with the error which caused the failure, as follows:
 
     task.onerror(error, job, cb);
 
-The same logic than for tasks bodies can be applied to `onerror` fallbacks.
+The same logic than for tasks bodies can be applied to `fallbacks`.
 
 Note that __tasks run sandboxed__. Only the node modules we specify to the
 runner at initialization time, alongside with `setTimeout`, `clearTimeout`,
 `setInterval` and `clearInterval` global functions will be available for
-task `body` and `onerror` functions. (This will be configurable).
+task `body` and `fallback` functions. (This is configurable).
 
 All the tasks results will be saved sorted at the job's property
 `chain_results`. For every task, the results will be something like:
@@ -338,7 +303,7 @@ or, for a task which failed:
       results: ''
     }
 
-If the task fails because its `onerror` fallback failed, or because the task
+If the task fails because its `fallback` failed, or because the task
 doesn't has such fallback, the job's `onerror` chain will be invoked if
 present.
 
@@ -351,6 +316,146 @@ reason, the child process running the job will communicate the runner the
 results, and the runner will save back those results into the backend, either
 finishing the job, or re-queueing it for another runner which may fetch it in
 order to continue its execution at a later time.
+
+# Configuration options
+
+The following is an example configuration for node-workflow, with all the
+relevant sections included:
+
+    { 
+      backend: {
+        module: '../lib/workflow-redis-backend',
+        opts: {
+          port: 6379,
+          host: '127.0.0.1',
+          db: 14 
+        } 
+      },
+      api: {
+        port: 8080
+      },
+      runner: {
+        identifier: 'cd925eef-93fb-4bfe-a820-2aaedf9fc006',
+        forks: 10,
+        run_interval: 1,
+        sandbox: {
+          restify: 'restify',
+          uuid: 'node-uuid',
+          util: 'util'
+        } 
+      },
+      logger: {
+        streams: [ {
+          level: 'info',
+          stream: process.stdout
+        }, {
+          level: 'debug',
+          path: './some-file.log'
+        }]
+      } 
+    }
+
+## Backend
+
+Backend configuration has two main sections: `module` and `opts`. `module` value
+must be something we can use to load the backend module of choice by issuing
+`require(backend.module)`. It doesn't matter if it's a node.js npm module or a
+relative path to the module. The included module must be a class which inherits
+from `WorkflowBackend`.
+
+Then, the `opts` section is anything required by the chosen backend constructor
+to be initialized:
+
+    var BackendModule = require(config.backend.module);
+    var backend = new BackendModule(config.backend.opts);
+
+Both, API and Runner will communicate with the backend using the configuration
+provided on this section.
+
+## API
+
+Anything you want to pass to [restify.createServer](http://mcavage.github.com/node-restify/#Creating-a-Server).
+restify's server logger configuration will be the same you provide for logger section.
+
+Note you can pass either a `port` number or a socket `path` here too.
+
+## Runner
+
+Configuration for workflow runners. None of the options on this section is required.
+
+- `identifier`: Unique identifier for a runner. If none given, the first time
+  a runner is started it will generate an UUID and store it on a file `workflow-runner`
+  which will be reused on the subsequent boots.
+- `forks`: Number of child processes to be forked by the runner, which will also match
+  the max number of jobs to run in parallel. (10 if nothing given).
+- `run_interval`: Integer. Time __in minutes__ for the runner to: report it is active,
+  search for new queued jobs to process, search for _stale_ jobs from other runners. Also,
+  3 times this value is what we'll take to decide if a runner is inactive. It's to say:
+  if a given runner hasn't reported it's healthy since `3 * run_interval`, it'll be
+  considered inactive by other runners, and all the associated jobs will be canceled.
+  (If nothing is given, 2 minutes is the default value for `run_interval`).
+- `sandbox`: node.js modules we want to make available for the VM where we run
+  our tasks. Note that the key for each member will be the way you can refer to such
+  object from your tasks `body` and `fallback` functions, while the value is what
+  the system will use to require the module. For example: `{uuid: 'node-uuid'}`.
+  Remember that, by default, only [global node timers](http://nodejs.org/docs/latest/api/timers.html)
+  will be available for tasks if nothing is given.
+
+## Logger
+
+Any streams you want to pass to [node-bunyan](https://github.com/trentm/node-bunyan#readme), used
+by both, `Runners` and `REST API`.
+
+# Demo
+
+The directory `examples` contain everything needed to illustrate:
+
+- An example config file - `examples/config.json.sample` which should be
+  renamed to `examples/config.json` and modified to properly match your local
+  environment.
+
+Remember that, in order to process any `job` the `workflow-runner` needs
+to be initialized pointing to the aforementioned configuration file:
+
+    ./bin/workflow-runner examples/config.json
+
+Also, in order to be able to run the API based example mentioned below, the
+`workflow-api` HTTP server needs to be up and running too:
+
+    ./bin/workflow-api examples/config.json
+
+Contents for the other files within the `examples` directory are:
+
+- An example of how to use node-workflow as a node module in order to create
+  workflows, queue jobs and wait for the results. See `examples/module.js`.
+- Also, an example of how to achieve same goal using Workflow API instead of
+  the node module. See `examples/api.js`.
+- Both examples share the same workflow definition, contained at the file
+  `examples/shared-workflow.js`. The beginning of the aforementioned files
+  can be useful to understand the differences when trying to create a workflow
+  using these different approaches.
+- Finally, this directory also contains a file `examples/node.js` which does
+  exactly the same thing than the workflow/job does - create and star a gist
+  using your github's username and password - but straight from NodeJS. This
+  file is useful in order to understand the differences between writing code
+  to be executed by NodeJS directly, and using it to create workflows and the
+  associated tasks. Remember code withing tasks runs sandboxed using
+  [Node's VM API](http://nodejs.org/docs/latest/api/vm.html) and that tasks
+  are totally independent, and run each one on its own child process.
+
+Also, see `example.js` for more options when defining workflows and the
+different possibilities for tasks fallbacks, retries, timeouts ...
+
+
+# LICENSE
+
+The MIT License (MIT) Copyright (c) 2012 Pedro Palazón Candel
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 <a href="http://github.com/kusor/node-workflow">
 <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">

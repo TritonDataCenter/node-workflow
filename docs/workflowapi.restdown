@@ -2,13 +2,16 @@
 title: Workflow REST API
 logo-color: #aa0000
 ---
-# Workflow & Status API
+# Workflow REST API
 
 This document describes the HTTP REST API for workflows and tasks, and for the
 creation of Jobs and tracking their execution progres.
 
 __This API speaks only JSON__. For every request. For all the HTTP methods.
 This means that any `POST` or `PUT` request `Content-Type` __must be JSON__.
+
+(See [node-workflow](index.html) docs for information on the whole module,
+not just the REST API).
 
 # End-Points
 
