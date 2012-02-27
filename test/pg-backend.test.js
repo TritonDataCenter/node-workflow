@@ -200,7 +200,6 @@ test('next jobs', function (t) {
   backend.nextJobs(0, 1, function (err, jobs) {
     t.ifError(err, 'next jobs error');
     t.equal(jobs.length, 2);
-    console.dir(jobs);
     t.equal(jobs[0], aJob.uuid);
     t.equal(jobs[1], anotherJob.uuid);
     t.end();
@@ -230,6 +229,85 @@ test('next queued job', function (t) {
 });
 
 
+test('register runner', function (t) {
+  var d = new Date();
+  backend.registerRunner(runnerId, function (err) {
+    t.ifError(err, 'register runner error');
+    backend.getRunner(runnerId, function (err, res) {
+      t.ifError(err, 'get runner error');
+      t.ok((res.active_at.getTime() >= d.getTime()), 'runner timestamp');
+      t.end();
+    });
+  });
+  t.test('with specific time', function (t) {
+    backend.registerRunner(runnerId, d.toISOString(), function (err) {
+      t.ifError(err, 'register runner error');
+      backend.getRunner(runnerId, function (err, res) {
+        t.ifError(err, 'backend get runner error');
+        t.equal(d.toISOString(), res.active_at);
+        t.end();
+      });
+    });
+  });
+});
+
+
+test('runner active', function (t) {
+  var d = new Date();
+  backend.runnerActive(runnerId, function (err) {
+    t.ifError(err, 'runner active error');
+    backend.getRunner(runnerId, function (err, res) {
+      t.ifError(err, 'get runner error');
+      t.ok((res.active_at.getTime() >= d.getTime()), 'runner timestamp');
+      t.end();
+    });
+  });
+});
+
+
+test('get all runners', function (t) {
+  backend.getRunners(function (err, runners) {
+    t.ifError(err, 'get runners error');
+    t.ok(runners, 'runners ok');
+    t.ok(runners[0].uuid, 'runner id ok');
+    t.ok(runners[0].active_at, 'runner timestamp ok');
+    t.end();
+  });
+});
+
+
+test('idle runner', function (t) {
+  t.test('check runner is not idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
+      t.equal(idle, false);
+      t.end();
+    });
+  });
+  t.test('set runner as idle', function (t) {
+    backend.idleRunner(runnerId, function (err) {
+      t.ifError(err);
+      t.end();
+    });
+  });
+  t.test('check runner is idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
+      t.equal(idle, true);
+      t.end();
+    });
+  });
+  t.test('set runner as not idle', function (t) {
+    backend.wakeUpRunner(runnerId, function (err) {
+      t.ifError(err);
+      t.end();
+    });
+  });
+  t.test('check runner is not idle', function (t) {
+    backend.isRunnerIdle(runnerId, function (idle) {
+      t.equal(idle, false);
+      t.end();
+    });
+  });
+});
 
 
 

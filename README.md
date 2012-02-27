@@ -3,7 +3,7 @@
 - Repository: <git://github.com/kusor/node-workflow.git>
 - Browsing: <https://github.com/kusor/node-workflow>
 - Who: Pedro Palazón Candel, Trent Mick, Mark Cavage
-- Docs: <https://...>
+- Docs: <http://kusor.github.com/node-workflow/>
 - Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 
 # Overview
@@ -32,8 +32,6 @@ Or you can keep it simple by taking some assumptions:
 * If a task requires a specific property of the workflow to be present, the
   task can fail, or re-schedule itself within the workflow, or ...
 
-TBD: Link to the gh-pages here, both for the main description and API docs.
-
 ## node-workflow
 
 This package provides a way to define re-usable `workflows` using JSON and run
@@ -60,7 +58,7 @@ The former will be easier to get up and running, but you should use the latter
 when:
 
 - You want to use the Worflow API in a (node.js) application that is not the
-  bundled REST API.
+  bundled [REST API](http://kusor.github.com/node-workflow/workflowapi.html).
 - You want to use a different backend storage system, or otherwise change the
   assumptions of the bundled REST API
 
