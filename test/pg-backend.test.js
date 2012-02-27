@@ -229,6 +229,123 @@ test('next queued job', function (t) {
 });
 
 
+test('job lock', function (t) {
+  var completed = 0,
+      anotherUUID = uuid();
+  async.forEach([runnerId, anotherUUID], function (runner, cb) {
+    backend.runJob(aJob.uuid, runner, function (err, job) {
+      if (err) {
+        cb(err);
+      } else {
+        completed += 1;
+        aJob = job;
+        cb();
+      }
+    });
+  }, function (err) {
+    t.equal(completed, 1, 'Only one runner can lock');
+    t.ok(err, 'Expected lock error');
+    t.equal(aJob.runner_id, runnerId);
+    t.equal(aJob.execution, 'running');
+    t.end();
+  });
+});
+
+
+test('update job', function (t) {
+  aJob.chain_results = [
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''}
+  ];
+
+  backend.updateJob(aJob, function (err, job) {
+    t.ifError(err, 'update job error');
+    t.equal(job.runner_id, runnerId, 'update job runner');
+    t.equal(job.execution, 'running', 'update job status');
+    t.ok(util.isArray(job.chain_results), 'chain_results is array');
+    t.equal(2, job.chain_results.length, 'expected results number');
+    aJob = job;
+    t.end();
+  });
+});
+
+
+test('re queue job', function (t) {
+  backend.queueJob(aJob, function (err, job) {
+    t.ifError(err, 're queue job error');
+    t.ok(!job.runner_id, 're queue job runner');
+    t.equal(job.execution, 'queued', 're queue job status');
+    aJob = job;
+    t.end();
+  });
+});
+
+
+test('run job', function (t) {
+  backend.runJob(aJob.uuid, runnerId, function (err, job) {
+    t.ifError(err, 'run job error');
+    backend.getRunnerJobs(runnerId, function (err, jobs) {
+      t.ifError(err, 'get runner jobs err');
+      t.equal(jobs.length, 1);
+      t.equal(jobs[0].uuid, aJob.uuid);
+      // If the job is running, it shouldn't be available for nextJob:
+      backend.nextJob(function (err, job) {
+        t.ifError(err, 'run job next error');
+        t.notEqual(aJob.uuid, job.uuid, 'run job next job');
+        backend.getJob(aJob.uuid, function (err, job) {
+          t.ifError(err, 'run job getJob');
+          t.equal(job.runner_id, runnerId, 'run job runner');
+          t.equal(job.execution, 'running', 'run job status');
+          aJob = job;
+          t.end();
+        });
+      });
+    });
+  });
+});
+
+
+test('finish job', function (t) {
+  aJob.chain_results = [
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''},
+    {result: 'OK', error: ''}
+  ];
+
+  backend.finishJob(aJob, function (err, job) {
+    t.ifError(err, 'finish job error');
+    t.equivalent(job.chain_results, [
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''},
+      {result: 'OK', error: ''}
+    ], 'finish job results');
+    t.ok(!job.runner);
+    t.equal(job.execution, 'succeeded', 'finished job status');
+    aJob = job;
+    t.end();
+  });
+});
+
+
+test('re queue job', function (t) {
+  backend.runJob(anotherJob.uuid, runnerId, function (err, job) {
+    t.ifError(err, 're queue job run job error');
+    anotherJob.chain_results = JSON.stringify([
+      {success: true, error: ''}
+    ]);
+    backend.queueJob(anotherJob, function (err, job) {
+      t.ifError(err, 're queue job error');
+      t.ok(!job.runner, 're queue job runner');
+      t.equal(job.execution, 'queued', 're queue job status');
+      anotherJob = job;
+      t.end();
+    });
+  });
+});
+
+
 test('register runner', function (t) {
   var d = new Date();
   backend.registerRunner(runnerId, function (err) {
@@ -310,7 +427,6 @@ test('idle runner', function (t) {
 });
 
 
-
 test('get workflows', function (t) {
   backend.getWorkflows(function (err, workflows) {
     t.ifError(err, 'get workflows error');
@@ -321,6 +437,117 @@ test('get workflows', function (t) {
     t.end();
   });
 });
+
+
+test('get all jobs', function (t) {
+  backend.getJobs(function (err, jobs) {
+    t.ifError(err, 'get all jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.ok(util.isArray(jobs[0].chain), 'jobs chain ok');
+    t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
+    t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
+    t.ok(
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
+    t.equal(jobs.length, 2);
+    t.end();
+  });
+});
+
+
+test('get succeeded jobs', function (t) {
+  backend.getJobs('succeeded', function (err, jobs) {
+    t.ifError(err, 'get succeeded jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.equal(jobs.length, 1);
+    t.equal(jobs[0].execution, 'succeeded');
+    t.ok(util.isArray(jobs[0].chain), 'jobs chain ok');
+    t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
+    t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
+    t.ok(
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
+    t.end();
+  });
+});
+
+
+test('get queued jobs', function (t) {
+  backend.getJobs('queued', function (err, jobs) {
+    t.ifError(err, 'get queued jobs error');
+    t.ok(jobs, 'jobs ok');
+    t.equal(jobs.length, 1);
+    t.equal(jobs[0].execution, 'queued');
+    t.ok(util.isArray(jobs[0].chain), 'jobs chain ok');
+    t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
+    t.ok(util.isArray(jobs[0].chain_results), 'jobs chain_results ok');
+    t.ok(
+      (typeof (jobs[0].params) === 'object' && !util.isArray(jobs[0].params)),
+      'job params ok');
+    t.end();
+  });
+});
+
+
+test('add job info', function (t) {
+  t.test('to unexisting job', function (t) {
+    backend.addInfo(
+      uuid(),
+      {'10%': 'Task completed step one'},
+      function (err) {
+        t.ok(err);
+        t.equal(err, 'Job does not exist. Cannot Update.');
+        t.end();
+      });
+  });
+  t.test('to existing job without previous info', function (t) {
+    backend.addInfo(
+      aJob.uuid,
+      {'10%': 'Task completed step one'},
+      function (err) {
+        t.ifError(err);
+        t.end();
+      });
+  });
+  t.test('to existing job with previous info', function (t) {
+    backend.addInfo(
+      aJob.uuid,
+      {'20%': 'Task completed step two'},
+      function (err) {
+        t.ifError(err);
+        t.end();
+      });
+  });
+  t.end();
+});
+
+
+test('get job info', function (t) {
+  t.test('from unexisting job', function (t) {
+    backend.getInfo(
+      uuid(),
+      function (err, info) {
+        t.ok(err);
+        t.equal(err, 'Job does not exist. Cannot get info.');
+        t.end();
+      });
+  });
+  t.test('from existing job', function (t) {
+    backend.getInfo(
+      aJob.uuid,
+      function (err, info) {
+        t.ifError(err);
+        t.ok(info);
+        t.ok(util.isArray(info));
+        t.equal(info.length, 2);
+        t.equivalent({'10%': 'Task completed step one'}, info[0]);
+        t.equivalent({'20%': 'Task completed step two'}, info[1]);
+        t.end();
+      });
+  });
+  t.end();
+});
+
 
 
 test('delete workflow', function (t) {
