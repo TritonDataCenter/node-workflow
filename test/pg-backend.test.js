@@ -287,7 +287,7 @@ test('run job', function (t) {
     backend.getRunnerJobs(runnerId, function (err, jobs) {
       t.ifError(err, 'get runner jobs err');
       t.equal(jobs.length, 1);
-      t.equal(jobs[0].uuid, aJob.uuid);
+      t.equal(jobs[0], aJob.uuid);
       // If the job is running, it shouldn't be available for nextJob:
       backend.nextJob(function (err, job) {
         t.ifError(err, 'run job next error');
@@ -321,7 +321,7 @@ test('finish job', function (t) {
       {result: 'OK', error: ''},
       {result: 'OK', error: ''}
     ], 'finish job results');
-    t.ok(!job.runner);
+    t.ok(!job.runner_id);
     t.equal(job.execution, 'succeeded', 'finished job status');
     aJob = job;
     t.end();
@@ -337,7 +337,7 @@ test('re queue job', function (t) {
     ]);
     backend.queueJob(anotherJob, function (err, job) {
       t.ifError(err, 're queue job error');
-      t.ok(!job.runner, 're queue job runner');
+      t.ok(!job.runner_id, 're queue job runner');
       t.equal(job.execution, 'queued', 're queue job status');
       anotherJob = job;
       t.end();
@@ -352,7 +352,7 @@ test('register runner', function (t) {
     t.ifError(err, 'register runner error');
     backend.getRunner(runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
-      t.ok((res.active_at.getTime() >= d.getTime()), 'runner timestamp');
+      t.ok((res.getTime() >= d.getTime()), 'runner timestamp');
       t.end();
     });
   });
@@ -361,7 +361,7 @@ test('register runner', function (t) {
       t.ifError(err, 'register runner error');
       backend.getRunner(runnerId, function (err, res) {
         t.ifError(err, 'backend get runner error');
-        t.equal(d.toISOString(), res.active_at);
+        t.equal(d.toISOString(), res);
         t.end();
       });
     });
@@ -375,7 +375,7 @@ test('runner active', function (t) {
     t.ifError(err, 'runner active error');
     backend.getRunner(runnerId, function (err, res) {
       t.ifError(err, 'get runner error');
-      t.ok((res.active_at.getTime() >= d.getTime()), 'runner timestamp');
+      t.ok((res.getTime() >= d.getTime()), 'runner timestamp');
       t.end();
     });
   });
@@ -386,8 +386,8 @@ test('get all runners', function (t) {
   backend.getRunners(function (err, runners) {
     t.ifError(err, 'get runners error');
     t.ok(runners, 'runners ok');
-    t.ok(runners[0].uuid, 'runner id ok');
-    t.ok(runners[0].active_at, 'runner timestamp ok');
+    t.ok(runners[runnerId], 'runner id ok');
+    t.ok(util.isDate(runners[runnerId]), 'runner timestamp ok');
     t.end();
   });
 });
@@ -570,13 +570,7 @@ test('delete workflow', function (t) {
 
 
 test('teardown', function (t) {
-  backend.client.query('DROP TABLE wf_workflows', function (err, res) {
-    t.ifError(err, 'drop wf_workflows error');
-    backend.client.query('DROP TABLE wf_jobs', function (err, res) {
-      t.ifError(err, 'drop wf_jobs error');
-      backend.quit(function () {
-        t.end();
-      });
-    });
+  backend.quit(function () {
+    t.end();
   });
 });

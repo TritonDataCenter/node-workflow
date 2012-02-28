@@ -398,7 +398,7 @@ test('POST /jobs', function (t) {
       t.equal(err.statusCode, 409);
       t.equal(err.name, 'ConflictError');
       t.ok(obj.message);
-      t.ok(obj.message.match(/unexisting workflow/gi));
+      t.ok(obj.message.match(/does not exist/gi));
       t.end();
     });
   });
