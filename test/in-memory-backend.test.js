@@ -5,7 +5,7 @@ var test = require('tap').test,
     util = require('util'),
     async = require('async'),
     Factory = require('../lib/index').Factory,
-    WorkflowRedisBackend = require('../lib/workflow-redis-backend');
+    WorkflowInMemoryBackend = require('../lib/workflow-in-memory-backend');
 
 var backend, factory;
 
@@ -16,18 +16,10 @@ var helper = require('./helper'),
     runnerId = config.runner.identifier;
 
 test('setup', function (t) {
-  console.time('Redis Backend');
-  backend = new WorkflowRedisBackend(config.backend.opts);
+  console.time('In Memory Backend');
+  backend = new WorkflowInMemoryBackend();
   t.ok(backend, 'backend ok');
   backend.init(function () {
-    backend.client.flushdb(function (err, res) {
-      t.ifError(err, 'flush db error');
-      t.equal('OK', res, 'flush db ok');
-    });
-    backend.client.dbsize(function (err, res) {
-      t.ifError(err, 'db size error');
-      t.equal(0, res, 'db size ok');
-    });
     factory = Factory(backend);
     t.ok(factory, 'factory ok');
     t.end();
@@ -117,7 +109,6 @@ test('update workflow', function (t) {
     t.end();
   });
 });
-
 
 test('create job', function (t) {
   factory.job({
@@ -289,9 +280,9 @@ test('finish job', function (t) {
 test('re queue job', function (t) {
   backend.runJob(anotherJob.uuid, runnerId, function (err, job) {
     t.ifError(err, 're queue job run job error');
-    anotherJob.chain_results = JSON.stringify([
+    anotherJob.chain_results = [
       {success: true, error: ''}
-    ]);
+    ];
     backend.queueJob(anotherJob, function (err, job) {
       t.ifError(err, 're queue job error');
       t.ok(!job.runner_id, 're queue job runner');
@@ -384,6 +375,7 @@ test('idle runner', function (t) {
   });
   t.end();
 });
+
 
 test('get workflows', function (t) {
   backend.getWorkflows(function (err, workflows) {
@@ -507,64 +499,28 @@ test('get job info', function (t) {
 });
 
 
-test('job lock', function (t) {
-  var runnerOneUUID = uuid(),
-      runnerTwoUUID = uuid();
-
-  factory.job({
-    workflow: aWorkflow.uuid
-  }, function (err, job) {
-    t.ifError(err, 'create job error');
-    t.ok(job, 'create job ok');
-    t.ok(job.exec_after, 'job exec_after');
-    t.equal(job.execution, 'queued', 'job queued');
-    t.ok(job.uuid, 'job uuid');
-    async.parallel([
-      function (callback) {
-        backend.runJob(job.uuid, runnerOneUUID, function (err, job) {
-          if (err) {
-            callback(null, {
-              error: err
-            });
-          } else {
-            callback(null, null);
-          }
-        });
-      },
-      function (callback) {
-        backend.runJob(job.uuid, runnerTwoUUID, function (err, job) {
-          if (err) {
-            callback(null, {
-              error: err
-            });
-          } else {
-            callback(null, null);
-          }
-        });
-      }
-    ], function (err, results) {
-      var oneNull = 0,
-          oneError = 0;
-      t.ifError(err);
-      t.ok(util.isArray(results));
-      results.forEach(function (res) {
-        if (res === null) {
-          oneNull += 1;
-        } else {
-          oneError += 1;
-        }
-      });
-      t.equal(oneNull, 1);
-      t.equal(oneError, 1);
+test('delete workflow', function (t) {
+  t.test('when the workflow exists', function (t) {
+    backend.deleteWorkflow(aWorkflow, function (err, success) {
+      t.ifError(err, 'delete existing workflow error');
+      t.ok(success);
       t.end();
     });
   });
+  t.test('when the workflow does not exist', function (t) {
+    backend.deleteWorkflow(aWorkflow, function (err, success) {
+      t.ifError(err, 'delete unexisting workflow error');
+      t.equal(success, false, 'no row deleted');
+      t.end();
+    });
+  });
+  t.end();
 });
 
 
 test('teardown', function (t) {
   backend.quit(function () {
-    console.timeEnd('Redis Backend');
+    console.timeEnd('In Memory Backend');
     t.end();
   });
 });

@@ -29,6 +29,7 @@ var pg_opts = {
 };
 
 test('setup', function (t) {
+  console.time('PostgreSQL Backend');
   backend = new WorkflowPgBackend(pg_opts);
   t.ok(backend, 'backend ok');
   backend.init(function (err) {
@@ -571,6 +572,7 @@ test('delete workflow', function (t) {
 
 test('teardown', function (t) {
   backend.quit(function () {
+    console.timeEnd('PostgreSQL Backend');
     t.end();
   });
 });
