@@ -13,7 +13,7 @@
   "runner": {
     "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
     "forks": 2,
-    "run_interval": 0.1,
+    "run_interval": 6,
     "sandbox": {
       "http": "http",
       "uuid": "node-uuid"

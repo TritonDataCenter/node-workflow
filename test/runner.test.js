@@ -224,7 +224,7 @@ test('inactive runners', function (t) {
     runner: {
       identifier: theUUID,
       forks: 2,
-      run_interval: 0.1
+      run_interval: 6
     }
   },
   anotherRunner = new WorkflowRunner(cfg);
@@ -267,7 +267,7 @@ test('stale jobs', function (t) {
     runner: {
       identifier: theUUID,
       forks: 2,
-      run_interval: 0.1
+      run_interval: 6
     }
   },
   anotherRunner = new WorkflowRunner(cfg),

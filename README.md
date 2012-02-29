@@ -87,7 +87,7 @@ is enough.
 
 To run the Workflow API server:
 
-    ./bin/Workflow-api path/to/config.json
+    ./bin/workflow-api path/to/config.json
 
 To run a Job Runner:
 

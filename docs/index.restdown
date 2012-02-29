@@ -337,7 +337,7 @@ relevant sections included:
       runner: {
         identifier: 'cd925eef-93fb-4bfe-a820-2aaedf9fc006',
         forks: 10,
-        run_interval: 1,
+        run_interval: 60,
         sandbox: {
           restify: 'restify',
           uuid: 'node-uuid',
@@ -388,12 +388,12 @@ Configuration for workflow runners. None of the options on this section is requi
   which will be reused on the subsequent boots.
 - `forks`: Number of child processes to be forked by the runner, which will also match
   the max number of jobs to run in parallel. (10 if nothing given).
-- `run_interval`: Integer. Time __in minutes__ for the runner to: report it is active,
+- `run_interval`: Integer. Time __in seconds__ for the runner to: report it is active,
   search for new queued jobs to process, search for _stale_ jobs from other runners. Also,
   3 times this value is what we'll take to decide if a runner is inactive. It's to say:
   if a given runner hasn't reported it's healthy since `3 * run_interval`, it'll be
   considered inactive by other runners, and all the associated jobs will be canceled.
-  (If nothing is given, 2 minutes is the default value for `run_interval`).
+  (If nothing is given, 120 seconds is the default value for `run_interval`).
 - `sandbox`: node.js modules we want to make available for the VM where we run
   our tasks. Note that the key for each member will be the way you can refer to such
   object from your tasks `body` and `fallback` functions, while the value is what
