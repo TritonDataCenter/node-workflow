@@ -10,3 +10,4 @@ build
 examples/*.log
 examples/*.json
 workflow-indentifier
+*.vim

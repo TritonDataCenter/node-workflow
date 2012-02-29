@@ -1,0 +1,14 @@
+*.vim
+.git*
+.travis.yml
+build
+deps
+docs
+example.js
+examples
+node_modules
+tools
+Makefile*
+*.tar.gz
+*.log
+logs
