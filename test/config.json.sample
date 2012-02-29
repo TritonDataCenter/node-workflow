@@ -1,10 +1,7 @@
 {
   "backend": {
-    "module": "../lib/workflow-redis-backend",
+    "module": "../lib/workflow-in-memory-backend",
     "opts": {
-      "port": 6379,
-      "host": "127.0.0.1",
-      "db": 15
     }
   },
   "api": {

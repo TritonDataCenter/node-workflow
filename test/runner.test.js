@@ -62,48 +62,34 @@ test('setup', function (t) {
   t.ok(runner);
   t.ok(runner.backend, 'backend ok');
   backend = runner.backend;
-  // The only reason for backend.init here is to flush db,
-  // not really needed, since it's initialized by runner.init
-  backend.init(function () {
-    backend.client.flushdb(function (err, res) {
-      t.ifError(err, 'flush db error');
-      t.equal('OK', res, 'flush db ok');
-    });
-    backend.client.dbsize(function (err, res) {
-      t.ifError(err, 'db size error');
-      t.equal(0, res, 'db size ok');
-    });
-    backend.quit(function () {
-      runner.init(function (err) {
-        t.ifError(err, 'runner init error');
-        factory = Factory(backend);
-        t.ok(factory);
+  runner.init(function (err) {
+    t.ifError(err, 'runner init error');
+    factory = Factory(backend);
+    t.ok(factory);
 
-        // okWf:
-        factory.workflow({
-          name: 'OK wf',
-          chain: [okTask],
-          timeout: 60
-        }, function (err, wf) {
-          t.ifError(err, 'ok wf error');
-          t.ok(wf, 'OK wf OK');
-          okWf = wf;
-          // failWf:
-          factory.workflow({
-            name: 'Fail wf',
-            chain: [failTask],
-            timeout: 60
-          }, function (err, wf) {
-            t.ifError(err, 'Fail wf error');
-            t.ok(wf, 'Fail wf OK');
-            failWf = wf;
-            backend.getRunners(function (err, runners) {
-              t.ifError(err, 'get runners error');
-              t.ok(runners[identifier], 'runner id ok');
-              t.ok(new Date(runners[identifier]), 'runner timestamp ok');
-              t.end();
-            });
-          });
+    // okWf:
+    factory.workflow({
+      name: 'OK wf',
+      chain: [okTask],
+      timeout: 60
+    }, function (err, wf) {
+      t.ifError(err, 'ok wf error');
+      t.ok(wf, 'OK wf OK');
+      okWf = wf;
+      // failWf:
+      factory.workflow({
+        name: 'Fail wf',
+        chain: [failTask],
+        timeout: 60
+      }, function (err, wf) {
+        t.ifError(err, 'Fail wf error');
+        t.ok(wf, 'Fail wf OK');
+        failWf = wf;
+        backend.getRunners(function (err, runners) {
+          t.ifError(err, 'get runners error');
+          t.ok(runners[identifier], 'runner id ok');
+          t.ok(new Date(runners[identifier]), 'runner timestamp ok');
+          t.end();
         });
       });
     });
@@ -167,7 +153,7 @@ test('idle runner', function (t) {
             t.end();
           });
         });
-      }, 7000);
+      }, 1000);
     });
   });
 });

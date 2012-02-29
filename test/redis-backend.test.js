@@ -15,6 +15,12 @@ var helper = require('./helper'),
     config = helper.config(),
     runnerId = config.runner.identifier;
 
+config.backend.opts = {
+  'port': 6379,
+  'host': '127.0.0.1',
+  'db': 15
+};
+
 test('setup', function (t) {
   console.time('Redis Backend');
   backend = new WorkflowRedisBackend(config.backend.opts);

@@ -6,7 +6,6 @@ var util = require('util'),
     Logger = require('bunyan'),
     Factory = require('../lib/index').Factory;
 
-var TEST_DB_NUM = 15;
 var helper = require('./helper');
 
 var logger = {
@@ -50,15 +49,6 @@ var runner = new FakeRunner();
 test('setup', function (t) {
   t.ok(backend, 'backend ok');
   backend.init(function () {
-    backend.client.flushdb(function (err, res) {
-      t.ifError(err, 'flush db error');
-      t.equal('OK', res, 'flush db ok');
-    });
-    backend.client.dbsize(function (err, res) {
-      t.ifError(err, 'db size error');
-      t.equal(0, res, 'db size ok');
-    });
-
     factory = Factory(backend);
     t.ok(factory, 'factory ok');
 
