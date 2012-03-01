@@ -1,5 +1,5 @@
 {
-  "name": "workflow",
+  "name": "node-workflow",
   "description": "Task orchestration API and runners",
   "version": "0.1.0",
   "repository": {
