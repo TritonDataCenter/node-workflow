@@ -483,38 +483,39 @@ by both, <code>Runners</code> and <code>REST API</code>.</p>
 
 <h1 id="demo">Demo</h1>
 
-<p>The directory <code>examples</code> contain everything needed to illustrate:</p>
+<p>The <a href="https://github.com/kusor/node-workflow-example">workflow-example</a> repository
+contains everything needed to illustrate:</p>
 
 <ul>
-<li>An example config file - <code>examples/config.json.sample</code> which should be
-renamed to <code>examples/config.json</code> and modified to properly match your local
+<li>An example config file - <code>config.json.sample</code> which should be
+renamed to <code>config.json</code> and modified to properly match your local
 environment.</li>
 </ul>
 
 <p>Remember that, in order to process any <code>job</code> the <code>workflow-runner</code> needs
 to be initialized pointing to the aforementioned configuration file:</p>
 
-<pre><code>./bin/workflow-runner examples/config.json
+<pre><code>./node_modules/.bin/workflow-runner config.json
 </code></pre>
 
 <p>Also, in order to be able to run the API based example mentioned below, the
 <code>workflow-api</code> HTTP server needs to be up and running too:</p>
 
-<pre><code>./bin/workflow-api examples/config.json
+<pre><code>./node_modules/.bin/workflow-api config.json
 </code></pre>
 
-<p>Contents for the other files within the <code>examples</code> directory are:</p>
+<p>Contents for the other files within the <a href="https://github.com/kusor/node-workflow-example">workflow-example</a> repository are:</p>
 
 <ul>
 <li>An example of how to use node-workflow as a node module in order to create
-workflows, queue jobs and wait for the results. See <code>examples/module.js</code>.</li>
+workflows, queue jobs and wait for the results. See <code>module.js</code>.</li>
 <li>Also, an example of how to achieve same goal using Workflow API instead of
-the node module. See <code>examples/api.js</code>.</li>
+the node module. See <code>api.js</code>.</li>
 <li>Both examples share the same workflow definition, contained at the file
-<code>examples/shared-workflow.js</code>. The beginning of the aforementioned files
+<code>shared-workflow.js</code>. The beginning of the aforementioned files
 can be useful to understand the differences when trying to create a workflow
 using these different approaches.</li>
-<li>Finally, this directory also contains a file <code>examples/node.js</code> which does
+<li>Finally, this directory also contains a file <code>node.js</code> which does
 exactly the same thing than the workflow/job does - create and star a gist
 using your github's username and password - but straight from NodeJS. This
 file is useful in order to understand the differences between writing code
