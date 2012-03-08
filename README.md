@@ -32,7 +32,7 @@ Or you can keep it simple by taking some assumptions:
 * If a task requires a specific property of the workflow to be present, the
   task can fail, or re-schedule itself within the workflow, or ...
 
-## node-workflow
+## wf
 
 This package provides a way to define re-usable `workflows` using JSON and run
 concrete `jobs` with specific `targets` and `parameters` based on such
