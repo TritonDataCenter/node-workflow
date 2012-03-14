@@ -207,7 +207,6 @@ test('GET /workflows/:uuid 404', function (t) {
     function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(err.name, 'RestError');
       t.equal(obj.code, 'ResourceNotFound');
       t.ok(obj.message);
       t.ok(obj.message.match(/does not exist/g));
@@ -283,7 +282,6 @@ test('PUT /workflows/:uuid 404', function (t) {
   }, function (err, req, res, obj) {
     t.ok(err);
     t.equal(err.statusCode, 404);
-    t.equal(err.name, 'RestError');
     t.equal(obj.code, 'ResourceNotFound');
     t.ok(obj.message);
     t.end();
@@ -468,7 +466,6 @@ test('GET /jobs/:uuid', function (t) {
     client.get('/jobs/' + uuid(), function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(err.name, 'RestError');
       t.equal(obj.code, 'ResourceNotFound');
       t.ok(obj.message);
       t.end();
@@ -486,7 +483,6 @@ test('POST /jobs/:uuid/info', function (t) {
     }, function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(err.name, 'RestError');
       t.equal(obj.code, 'ResourceNotFound');
       t.ok(obj.message);
       t.equal(obj.message, 'Job does not exist. Cannot Update.');
@@ -513,7 +509,6 @@ test('GET /jobs/:uuid/info', function (t) {
     client.get('/jobs/' + uuid() + '/info', function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(err.name, 'RestError');
       t.equal(obj.code, 'ResourceNotFound');
       t.ok(obj.message);
       t.equal(obj.message, 'Job does not exist. Cannot get info.');
@@ -541,7 +536,6 @@ test('POST /jobs/:uuid/cancel', function (t) {
       function (err, req, res, obj) {
         t.ok(err);
         t.equal(err.statusCode, 404);
-        t.equal(err.name, 'RestError');
         t.equal(obj.code, 'ResourceNotFound');
         t.ok(obj.message);
         t.end();
@@ -579,7 +573,6 @@ test('DELETE /workflows/:uuid 404', function (t) {
     function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(err.name, 'RestError');
       t.equal(obj.code, 'ResourceNotFound');
       t.ok(obj.message);
       t.end();
