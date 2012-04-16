@@ -298,13 +298,15 @@ test('re queue job', function (t) {
 
 test('register runner', function (t) {
   var d = new Date();
-  backend.registerRunner(runnerId, function (err) {
-    t.ifError(err, 'register runner error');
-    backend.getRunner(runnerId, function (err, res) {
-      t.ifError(err, 'get runner error');
-      t.ok(util.isDate(res), 'runner active at');
-      t.ok((res.getTime() >= d.getTime()), 'runner timestamp');
-      t.end();
+  t.test('without specific time', function (t) {
+    backend.registerRunner(runnerId, function (err) {
+      t.ifError(err, 'register runner error');
+      backend.getRunner(runnerId, function (err, res) {
+        t.ifError(err, 'get runner error');
+        t.ok(util.isDate(res), 'runner active at');
+        t.ok((res.getTime() >= d.getTime()), 'runner timestamp');
+        t.end();
+      });
     });
   });
   t.test('with specific time', function (t) {
@@ -312,7 +314,9 @@ test('register runner', function (t) {
       t.ifError(err, 'register runner error');
       backend.getRunner(runnerId, function (err, timestamp) {
         t.ifError(err, 'backend get runner error');
-        t.equal(d.toISOString(), timestamp);
+        console.log(typeof (d));
+        console.log(typeof (timestamp));
+        t.equivalent(d, timestamp);
         t.end();
       });
     });
