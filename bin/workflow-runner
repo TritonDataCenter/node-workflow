@@ -5,7 +5,10 @@
 var path = require('path'),
     fs = require('fs'),
     util = require('util'),
-    WorkflowRunner = require('../lib/runner');
+    Logger = require('bunyan'),
+    WorkflowRunner = require('../lib/runner'),
+    levels = [Logger.TRACE, Logger.DEBUG, Logger.INFO,
+              Logger.WARN, Logger.ERROR, Logger.FATAL];
 
 if (process.argv.length < 3) {
   console.error('Usage: [node] ' + process.argv[1] + ' path/to/config.json');
@@ -33,7 +36,33 @@ if (process.argv.length < 3) {
           exit(1);
         }
         runner.run();
-        console.log('Workflow Runner up!');
+        runner.log.info('Workflow Runner up!');
+      });
+
+      process.on('SIGUSR1', function () {
+        var pos = levels.indexOf(runner.log._level);
+
+        console.log('Got SIGUSR1. Attempting to decrease log level');
+
+        if (pos === (levels.length + 1)) {
+          console.log('Log level already set to the minimun. Doing nothing');
+        } else {
+          runner.log.level(levels[pos + 1]);
+          console.log('Log level set to ' + levels[pos + 1]);
+        }
+      });
+
+      process.on('SIGUSR2', function () {
+        var pos = levels.indexOf(runner.log._level);
+
+        console.log('Got SIGUSR2. Attempting to increase log level');
+
+        if (pos === 0) {
+          console.log('Log level already set to the maximun. Doing nothing');
+        } else {
+          runner.log.level(levels[pos - 1]);
+          console.log('Log level set to ' + levels[pos - 1]);
+        }
       });
 
     }

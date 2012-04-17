@@ -5,7 +5,10 @@
 var path = require('path'),
     fs = require('fs'),
     util = require('util'),
-    API = require('../lib/api');
+    Logger = require('bunyan'),
+    API = require('../lib/api'),
+    levels = [Logger.TRACE, Logger.DEBUG, Logger.INFO,
+              Logger.WARN, Logger.ERROR, Logger.FATAL];
 
 if (process.argv.length < 3) {
   console.error('Usage: [node] ' + process.argv[1] + ' path/to/config.json');
@@ -28,9 +31,34 @@ if (process.argv.length < 3) {
 
       var api = new API(config);
       api.init(function () {
-        console.log('API server up and running!');
+        api.log.info('API server up and running!');
       });
 
+      process.on('SIGUSR1', function () {
+        var pos = levels.indexOf(api.log._level);
+
+        console.log('Got SIGUSR1. Attempting to decrease log level');
+
+        if (pos === (levels.length + 1)) {
+          console.log('Log level already set to the minimun. Doing nothing');
+        } else {
+          api.log.level(levels[pos + 1]);
+          console.log('Log level set to ' + levels[pos + 1]);
+        }
+      });
+
+      process.on('SIGUSR2', function () {
+        var pos = levels.indexOf(api.log._level);
+
+        console.log('Got SIGUSR2. Attempting to increase log level');
+
+        if (pos === 0) {
+          console.log('Log level already set to the maximun. Doing nothing');
+        } else {
+          api.log.level(levels[pos - 1]);
+          console.log('Log level set to ' + levels[pos - 1]);
+        }
+      });
     }
   });
 }
