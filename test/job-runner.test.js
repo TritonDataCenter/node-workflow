@@ -30,6 +30,7 @@ var FakeRunner = function () {
   this.uuid = uuid();
   this.run_interval = 1000;
   this.log = new Logger(logger);
+  this.slots = this.forks = 10;
 };
 
 FakeRunner.prototype.childUp = function (job_uuid, child_pid) {
@@ -42,6 +43,26 @@ FakeRunner.prototype.childDown = function (job_uuid, child_pid) {
   // For real, we also want to send sigterm to the child process on job's
   // termination, therefore here we may need to upgrade on DB too.
   delete self.child_processes[child_pid];
+};
+
+FakeRunner.prototype.getSlot = function () {
+  var self = this;
+  if (self.slots === 0) {
+    return false;
+  } else {
+    self.slots -= 1;
+    return true;
+  }
+};
+
+FakeRunner.prototype.releaseSlot = function () {
+  var self = this;
+  if (self.slots >= self.forks) {
+    return false;
+  } else {
+    self.slots += 1;
+    return true;
+  }
 };
 
 var runner = new FakeRunner();
