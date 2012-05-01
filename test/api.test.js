@@ -141,8 +141,7 @@ test('POST /workflows duplicated wf name', function (t) {
     t.ok(err);
     t.equal(err.statusCode, 409);
     t.equal(err.code, 'InvalidArgument');
-    t.ok(obj.message);
-    t.ok(obj.message.match(/Workflow\.name/g));
+    t.ok(err.message.match(/Workflow\.name/g));
     t.end();
   });
 });
@@ -165,10 +164,9 @@ test('POST /workflows task missing body', function (t) {
     }]
   }, function (err, req, res, obj) {
     t.ok(err);
-    t.equal(err.statusCode, 409);
-    t.equal(err.name, 'ConflictError');
-    t.ok(obj.message);
-    t.equal(obj.message, 'Task body is required');
+    t.equal(err.statusCode, 409, 'error status code');
+    t.equal(err.name, 'ConflictError', 'error name');
+    t.equal(err.body, 'Task body is required', 'error body');
     t.end();
   });
 });
@@ -207,9 +205,8 @@ test('GET /workflows/:uuid 404', function (t) {
     function (err, req, res, obj) {
       t.ok(err);
       t.equal(err.statusCode, 404);
-      t.equal(obj.code, 'ResourceNotFound');
-      t.ok(obj.message);
-      t.ok(obj.message.match(/does not exist/g));
+      t.equal(err.code, 'ResourceNotFound');
+      t.ok(err.message.match(/does not exist/g));
       t.end();
     });
 });
@@ -316,8 +313,7 @@ test('PUT /workflows/:uuid missing task body', function (t) {
     t.ok(err);
     t.equal(err.statusCode, 409);
     t.equal(err.name, 'ConflictError');
-    t.ok(obj.message);
-    t.equal(obj.message, 'Task body is required');
+    t.equal(err.body, 'Task body is required');
     t.end();
   });
 
@@ -349,8 +345,7 @@ test('GET /jobs empty', function (t) {
       t.ok(err);
       t.equal(err.statusCode, 409);
       t.equal(err.name, 'ConflictError');
-      t.ok(obj.message);
-      t.ok(obj.message.match(/execution/gi));
+      t.ok(err.message.match(/execution/gi));
       t.end();
     });
   });
@@ -370,8 +365,7 @@ test('POST /jobs', function (t) {
       t.ok(err);
       t.equal(err.statusCode, 409);
       t.equal(err.name, 'ConflictError');
-      t.ok(obj.message);
-      t.ok(obj.message.match(/opts\.workflow/gi));
+      t.ok(err.message.match(/opts\.workflow/gi));
       t.end();
     });
   });
@@ -382,7 +376,7 @@ test('POST /jobs', function (t) {
       t.ok(err);
       t.equal(err.statusCode, 404);
       t.equal(obj.code, 'ResourceNotFound');
-      t.ok(obj.message);
+      t.ok(err.message);
       t.end();
     });
   });
@@ -411,9 +405,8 @@ test('POST /jobs', function (t) {
       t.ok(err);
       t.equal(err.statusCode, 409);
       t.equal(obj.code, 'InvalidArgument');
-      t.ok(obj.message);
       t.equal(
-        obj.message,
+        err.message,
         'Another job with the same target and params is already queued');
       t.end();
     });
