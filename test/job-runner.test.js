@@ -617,13 +617,9 @@ test('a canceled job', function (t) {
       backend.runJob(job.uuid, runner.uuid, function (err, job) {
         t.ifError(err, 'backend.runJob error');
         setTimeout(function () {
-          backend.updateJobProperty(
-            job.uuid,
-            'execution',
-            'canceled',
-            function (err) {
-              t.ifError(err, 'updateJobProperty error');
-            });
+          wf_job_runner.cancel('canceled', function (err) {
+            t.ifError(err, 'cancel job runner error');
+          });
         }, 750);
         wf_job_runner.run(function (err) {
           t.ifError(err, 'wf_job_runner run error');
