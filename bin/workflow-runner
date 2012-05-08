@@ -71,16 +71,16 @@ if (process.argv.length < 3) {
         [runner.log, runner.backend.log].forEach(increaseLevel);
       });
 
-      process.on('SIGTERM', function () {
-        console.log('Got SIGTERM. Waiting for child processes to finish');
+      process.on('SIGINT', function () {
+        console.log('Got SIGINT. Waiting for child processes to finish');
         runner.quit(function () {
           console.log('All child processes finished. Exiting now.');
           process.exit(0);
         });
       });
 
-      process.on('SIGINT', function () {
-        console.log('Got SIGINT. Finishing child processes');
+      process.on('SIGTERM', function () {
+        console.log('Got SIGTERM. Finishing child processes');
         runner.kill(function () {
           console.log('All child processes finished. Exiting now.');
           process.exit(0);
