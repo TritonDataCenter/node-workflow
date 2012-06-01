@@ -101,6 +101,7 @@ test('a task which succeeds on 1st retry', function (t) {
     t.ifError(msg.error, 'task error');
     t.ok(msg.job);
     t.equal(msg.cmd, 'run');
+    t.equal(msg.task_name, task.name);
     t.end();
   });
 
@@ -132,6 +133,7 @@ test('a task which succeeds on 2nd retry', function (t) {
     t.ok(msg.job);
     t.ok(msg.job.foo);
     t.equal(msg.cmd, 'run');
+    t.equal(msg.task_name, task.name);
     t.end();
   });
 });
@@ -157,6 +159,7 @@ test('a task which fails and has no "fallback"', function (t) {
     t.equal(msg.error, 'Task body error', 'task error');
     t.ok(msg.job);
     t.equal(msg.cmd, 'error');
+    t.equal(msg.task_name, task.name);
     t.end();
   });
 });

@@ -258,6 +258,7 @@ test('run a job which fails without "onerror"', function (t) {
           t.ifError(err, 'get job error');
           t.equal(job.execution, 'failed', 'job execution');
           t.equal(job.chain_results[0].error, 'Fail task error');
+          t.ok(job.chain_results[0].name, 'Task name on message');
           t.end();
         });
       });
