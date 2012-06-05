@@ -357,7 +357,8 @@ test('GET /jobs empty', function (t) {
 test('POST /jobs', function (t) {
   var aJob = {
     target: '/foo/bar',
-    foo: 'bar'
+    foo: 'bar',
+    chicken: 'arise!'
   };
 
   t.test('without worfklow uuid', function (t) {
@@ -392,7 +393,7 @@ test('POST /jobs', function (t) {
       t.ok(util.isArray(obj.chain_results));
       t.ok(util.isArray(obj.onerror));
       t.equal(obj.workflow_uuid, wf_uuid);
-      t.equivalent(obj.params, {foo: 'bar'});
+      t.equivalent(obj.params, {foo: 'bar', chicken: 'arise!'});
       t.equal(obj.target, '/foo/bar');
       t.equal(res.headers.location, '/jobs/' + obj.uuid);
       job_uuid = obj.uuid;
@@ -412,6 +413,18 @@ test('POST /jobs', function (t) {
     });
   });
 
+
+  t.test('with duplicated target and different params', function (t) {
+    aJob.chicken = 'egg';
+    client.post('/jobs', aJob, function (err, req, res, obj) {
+      t.ifError(err);
+      t.ok(obj);
+      t.equivalent(obj.params, {foo: 'bar', chicken: 'egg'});
+      t.end();
+    });
+  });
+
+
   t.end();
 });
 
@@ -420,22 +433,42 @@ test('GET /jobs not empty', function (t) {
 
   t.test('without execution filter', function (t) {
     client.get('/jobs', function (err, req, res, obj) {
-      t.ifError(err);
-      t.equal(res.statusCode, 200);
-      t.ok(obj.length);
-      t.equal(obj.length, 1);
-      t.equal(obj[0].uuid, job_uuid);
+      t.ifError(err, 'get jobs error');
+      t.equal(res.statusCode, 200, 'get jobs status code');
+      t.ok(obj.length, 'obj is an array');
+      t.equal(obj.length, 2, 'total jobs found');
       t.end();
     });
   });
 
   t.test('with execution filter', function (t) {
     client.get('/jobs?execution=queued', function (err, req, res, obj) {
-      t.ifError(err);
-      t.equal(res.statusCode, 200);
-      t.ok(obj.length);
-      t.equal(obj.length, 1);
-      t.equal(obj[0].uuid, job_uuid);
+      t.ifError(err, 'get jobs error');
+      t.equal(res.statusCode, 200, 'get jobs status code');
+      t.ok(obj.length, 'obj is an array');
+      t.equal(obj.length, 2, 'total jobs found');
+      t.end();
+    });
+  });
+
+
+  t.test('with execution and params filter', function (t) {
+    client.get('/jobs?execution=queued&foo=bar', function (err, req, res, obj) {
+      t.ifError(err, 'get jobs error');
+      t.equal(res.statusCode, 200, 'get jobs status code');
+      t.ok(obj.length, 'obj is an array');
+      t.equal(obj.length, 2, 'total jobs found');
+      t.end();
+    });
+  });
+
+
+  t.test('with params filter', function (t) {
+    client.get('/jobs?chicken=egg', function (err, req, res, obj) {
+      t.ifError(err, 'get jobs error');
+      t.equal(res.statusCode, 200, 'get jobs status code');
+      t.ok(obj.length, 'obj is an array');
+      t.equal(obj.length, 1, 'total jobs found');
       t.end();
     });
   });
