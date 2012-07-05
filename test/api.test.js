@@ -166,7 +166,7 @@ test('POST /workflows task missing body', function (t) {
     t.ok(err);
     t.equal(err.statusCode, 409, 'error status code');
     t.equal(err.name, 'ConflictError', 'error name');
-    t.equal(err.body, 'Task body is required', 'error body');
+    t.equal(err.body.message, 'Task body is required', 'error body');
     t.end();
   });
 });
@@ -313,7 +313,7 @@ test('PUT /workflows/:uuid missing task body', function (t) {
     t.ok(err);
     t.equal(err.statusCode, 409);
     t.equal(err.name, 'ConflictError');
-    t.equal(err.body, 'Task body is required');
+    t.equal(err.body.message, 'Task body is required');
     t.end();
   });
 
