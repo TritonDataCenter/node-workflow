@@ -5,7 +5,8 @@ var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
     WorkflowRunner = require('../lib/runner'),
-    Factory = require('../lib/index').Factory;
+    Factory = require('../lib/index').Factory,
+    exists = fs.exists || path.exists;
 
 var backend, identifier, runner, factory;
 
@@ -325,7 +326,7 @@ test('stale jobs', function (t) {
 test('teardown', function (t) {
     var cfg_file = path.resolve(__dirname, '../workflow-indentifier');
     runner.backend.quit(function () {
-        path.exists(cfg_file, function (exist) {
+        exists(cfg_file, function (exist) {
             if (exist) {
                 fs.unlink(cfg_file, function (err) {
                     t.ifError(err);
