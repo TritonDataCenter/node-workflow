@@ -9,10 +9,10 @@ var cfg = path.resolve(__dirname, './config.json'),
                config;
 
 module.exports = {
-  config: function () {
-    if (!config) {
-      config = JSON.parse(fs.readFileSync(cfg_file, 'utf-8'));
+    config: function () {
+        if (!config) {
+            config = JSON.parse(fs.readFileSync(cfg_file, 'utf-8'));
+        }
+        return config;
     }
-    return config;
-  }
 };

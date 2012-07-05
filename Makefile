@@ -17,7 +17,7 @@ JS_FILES	:= $(shell ls *.js) $(shell find lib test -name '*.js')
 JSL_CONF_NODE	 = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES	 = $(JS_FILES)
-JSSTYLE_FLAGS    = -o indent=2,doxygen,unparenthesized-return=0
+JSSTYLE_FLAGS    = -o indent=4,doxygen,unparenthesized-return=0
 # SMF_MANIFESTS	 = smf/manifests/bapi.xml
 
 #
