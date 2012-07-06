@@ -560,7 +560,9 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 job: job,
                 trace: false,
                 sandbox: {
-                    uuid: 'node-uuid'
+                    modules: {
+                        uuid: 'node-uuid'
+                    }
                 }
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');

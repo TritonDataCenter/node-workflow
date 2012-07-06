@@ -27,6 +27,17 @@ var task = {
     'body': 'Fake body'
 };
 
+
+var sandbox = {
+    'modules': {
+        'http': 'http',
+        'uuid': 'node-uuid'
+    },
+    'foo': 'bar',
+    'bool': true,
+    'aNumber': 5
+};
+
 test('throws on missing opts', function (t) {
     t.throws(function () {
         return new WorkflowTaskRunner();
@@ -91,6 +102,47 @@ test('a task which succeeds on 1st retry', function (t) {
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task
+    });
+
+    t.ok(wf_task_runner.uuid);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    wf_task_runner.runTask(function (msg) {
+        t.ok(msg.result);
+        t.ifError(msg.error, 'task error');
+        t.ok(msg.job);
+        t.equal(msg.cmd, 'run');
+        t.equal(msg.task_name, task.name);
+        t.end();
+    });
+
+});
+
+
+test('sandbox modules and variables', function (t) {
+    // Or javascriptlint will complain regarding undefined variables:
+    task.body = 'function (job, cb) {\n' +
+        'if (typeof (uuid) !== \'function\') {\n' +
+            'return cb(\'node-uuid module is not defined\');\n' +
+        '}\n' +
+        'if (typeof (foo) !== \'string\') {\n' +
+            'return cb(\'sandbox value is not defined\');\n' +
+        '}\n' +
+        'if (typeof (bool) !== \'boolean\') {\n' +
+            'return cb(\'sandbox value is not defined\');\n' +
+        '}\n' +
+        'if (typeof (aNumber) !== \'number\') {\n' +
+            'return cb(\'sandbox value is not defined\');\n' +
+        '}\n' +
+        'return cb(null);\n' +
+    '}';
+
+    job.chain.push(task);
+
+    var wf_task_runner = new WorkflowTaskRunner({
+        job: job,
+        task: task,
+        sandbox: sandbox
     });
 
     t.ok(wf_task_runner.uuid);
