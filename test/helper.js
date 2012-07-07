@@ -2,7 +2,7 @@
 
 var path = require('path'),
     fs = require('fs'),
-    existsSync = fs.existsSync || path.existsSync;
+    existsSync = fs.existsSync || fs.existsSync;
 
 var cfg = path.resolve(__dirname, './config.json'),
     cfg_file = existsSync(cfg) ? cfg :
