@@ -525,3 +525,47 @@ test('a task which fails and is canceled', function (t) {
     });
 
 });
+
+
+test('a task which calls job.info', function (t) {
+    task.body = function (job, cb) {
+        job.info('an info string');
+        return cb(null);
+    }.toString();
+
+    job.chain.push(task);
+
+    var wf_task_runner = new WorkflowTaskRunner({
+        job: job,
+        task: task
+    });
+
+    t.ok(wf_task_runner.uuid);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    // The callback will be called twice: the first time for info(),
+    // the second time to finish the task
+
+    var firstTime = true;
+
+    wf_task_runner.runTask(function (msg) {
+        t.ifError(msg.error, 'task error');
+        t.ok(msg.job);
+        t.equal(msg.task_name, task.name);
+
+        if (firstTime) {
+            t.ok(msg.info, 'info present');
+            t.notOk(msg.result, 'result not present');
+            t.equal(msg.cmd, 'info', 'info cmd');
+            t.equal(msg.info, 'an info string', 'info string');
+            firstTime = false;
+            return;
+        }
+
+        t.ok(msg.result, 'result present');
+        t.notOk(msg.info, 'info not present');
+        t.equal(msg.cmd, 'run', 'run cmd');
+        t.end();
+    });
+
+});
