@@ -23,7 +23,7 @@ var Backend = require(helper.config().backend.module),
     backend = new Backend(helper.config().backend.opts),
     factory, wf_job_runner;
 
-var okWf, failWf, timeoutWf, reQueueWf, reQueuedJob, elapsed;
+var okWf, failWf, timeoutWf, reQueueWf, infoWf, reQueuedJob, elapsed;
 
 var FakeRunner = function () {
     this.child_processes = {};
@@ -144,7 +144,26 @@ test('setup', function (t) {
                         t.ifError(err, 'ReQueue wf error');
                         t.ok(wf, 'ReQueue wf ok');
                         reQueueWf = wf;
-                        t.end();
+
+                        // infoWf
+                        factory.workflow({
+                            name: 'Info wf',
+                            chain: [ {
+                                name: 'Info Task',
+                                retry: 1,
+                                body: function (job, cb) {
+                                    job.info('recording some info');
+                                    return cb(null);
+                                }
+                            }],
+                            timeout: 60
+                        }, function (err, wf) {
+                            t.ifError(err, 'Info wf error');
+                            t.ok(wf, 'Info wf ok');
+                            infoWf = wf;
+
+                            t.end();
+                        });
                     });
                 });
             });
@@ -644,6 +663,45 @@ test('a canceled job', function (t) {
         });
     });
 
+});
+
+
+test('a job can call job.info()', function (t) {
+    factory.job({
+        workflow: infoWf.uuid,
+        exec_after: '2012-01-03T12:54:05.788Z'
+    }, function (err, job) {
+        t.ifError(err, 'job error');
+        t.ok(job, 'run job ok');
+        wf_job_runner = new WorkflowJobRunner({
+            runner: runner,
+            backend: backend,
+            job: job,
+            trace: false
+        });
+        t.ok(wf_job_runner, 'wf_job_runner ok');
+        backend.runJob(job.uuid, runner.uuid, function (err, job) {
+            t.ifError(err, 'backend.runJob error');
+            wf_job_runner.run(function (err) {
+                var uuid = job.uuid;
+                t.ifError(err, 'wf_job_runner run error');
+                backend.getJob(job.uuid, function (err, j) {
+                    t.ifError(err, 'backend.getJob error');
+                    t.equal(j.execution, 'succeeded');
+                    t.equal(j.chain_results.length, 1);
+                    t.equal(j.chain_results[0].result, 'OK');
+
+                    backend.getInfo(uuid, function (err, info) {
+                        t.ifError(err, 'backend.getInfo error');
+                        t.equal(info.length, 1);
+                        t.equal(info[0].data, 'recording some info');
+                        t.end();
+                    });
+                });
+            });
+
+        });
+    });
 });
 
 
