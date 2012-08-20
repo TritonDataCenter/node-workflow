@@ -1,7 +1,7 @@
 {
   "name": "wf",
   "description": "Tasks Workflows orchestration API and runners",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/kusor/node-workflow.git"
@@ -12,7 +12,8 @@
     "Trent Mick",
     "Josh Wilsdon",
     "Bryan Cantrill",
-    "Andrés Rodríquez"
+    "Andrés Rodríquez",
+    "Rob Gulewich"
   ],
   "bin": {
     "workflow-api": "./bin/workflow-api",

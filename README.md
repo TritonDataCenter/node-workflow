@@ -2,7 +2,7 @@
 
 - Repository: <git://github.com/kusor/node-workflow.git>
 - Browsing: <https://github.com/kusor/node-workflow>
-- Who: Pedro Palazón Candel, Trent Mick, Mark Cavage
+- Who: [Pedro Palazón Candel](https://github.com/kusor), [Trent Mick](https://github.com/trentm), [Mark Cavage](https://github.com/mcavage), [Josh Wilsdon](https://github.com/joshwilsdon), [Rob Gulewich](https://github.com/rgulewich)
 - Docs: <http://kusor.github.com/node-workflow/>
 - Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 
@@ -49,7 +49,7 @@ with:
 
     ./bin/workflow-runner path/to/config.json
 
-(The `examples` directory contains the file `config.json.sample` which can be
+(The `test` directory contains the file `config.json.sample` which can be
 used as reference).
 
 You can create `workflows` and `jobs` either by using the provided REST API(s),
@@ -71,11 +71,7 @@ See demo section below for more details about both approaches.
 
 # Development
 
-Pre-requirements:
-
-- Working Redis Server. (Version 2.4.+).
-
-# Clone the repo and build the deps:
+## Clone the repo and build the deps:
 
     git clone git://github.com/kusor/node-workflow.git
     cd node-workflow
