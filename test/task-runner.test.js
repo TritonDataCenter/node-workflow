@@ -529,7 +529,7 @@ test('a task which fails and is canceled', function (t) {
 
 test('a task which calls job.info', function (t) {
     task.body = function (job, cb) {
-        job.info('an info string');
+        job.log.info('an info string');
         return cb(null);
     }.toString();
 
@@ -557,7 +557,7 @@ test('a task which calls job.info', function (t) {
             t.ok(msg.info, 'info present');
             t.notOk(msg.result, 'result not present');
             t.equal(msg.cmd, 'info', 'info cmd');
-            t.equal(msg.info, 'an info string', 'info string');
+            t.equal(msg.info.msg, 'an info string', 'info string');
             firstTime = false;
             return;
         }

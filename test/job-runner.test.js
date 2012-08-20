@@ -152,7 +152,7 @@ test('setup', function (t) {
                                 name: 'Info Task',
                                 retry: 1,
                                 body: function (job, cb) {
-                                    job.info('recording some info');
+                                    job.log.info('recording some info');
                                     return cb(null);
                                 }
                             }],
@@ -694,7 +694,7 @@ test('a job can call job.info()', function (t) {
                     backend.getInfo(uuid, function (err, info) {
                         t.ifError(err, 'backend.getInfo error');
                         t.equal(info.length, 1);
-                        t.equal(info[0].data, 'recording some info');
+                        t.equal(info[0].data.msg, 'recording some info');
                         t.end();
                     });
                 });

@@ -23,6 +23,7 @@ failTask = {
     retry: 1,
     name: 'Fail Task',
     body: function (job, cb) {
+        job.log.info('recording some info');
         return cb('Fail task error');
     }
 },
