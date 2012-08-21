@@ -27,7 +27,16 @@ failTask = {
         return cb('Fail task error');
     }
 },
-okWf, failWf, theJob;
+failTaskWithError = {
+    retry: 1,
+    name: 'Fail Task with error',
+    body: function (job, cb) {
+        job.log.info('recording some info');
+        return cb(new Error('Fail task error'));
+    }
+
+},
+okWf, failWf, theJob, failWfWithError;
 
 var helper = require('./helper');
 
@@ -87,11 +96,21 @@ test('setup', function (t) {
                 t.ifError(err, 'Fail wf error');
                 t.ok(wf, 'Fail wf OK');
                 failWf = wf;
-                backend.getRunners(function (err, runners) {
-                    t.ifError(err, 'get runners error');
-                    t.ok(runners[identifier], 'runner id ok');
-                    t.ok(new Date(runners[identifier]), 'runner timestamp ok');
-                    t.end();
+                factory.workflow({
+                    name: 'Fail wf with error',
+                    chain: [failTaskWithError],
+                    timeout: 60
+                }, function (err, wf) {
+                    t.ifError(err, 'Fail wf with error');
+                    t.ok(wf, 'Fail wf with error OK');
+                    failWfWithError = wf;
+                    backend.getRunners(function (err, runners) {
+                        t.ifError(err, 'get runners error');
+                        t.ok(runners[identifier], 'runner id ok');
+                        t.ok(new Date(runners[identifier]),
+                            'runner timestamp ok');
+                        t.end();
+                    });
                 });
             });
         });
@@ -196,6 +215,33 @@ test('run job which fails', function (t) {
                     t.ifError(err, 'get job error');
                     t.equal(job.execution, 'failed', 'job execution');
                     t.equal(job.chain_results[0].error, 'Fail task error');
+                    t.end();
+                });
+            });
+        }, 9000);
+    });
+});
+
+
+test('run job which fails with error instance', function (t) {
+    var aJob;
+    factory.job({
+        workflow: failWfWithError.uuid,
+        exec_after: '2012-01-03T12:54:05.788Z'
+    }, function (err, job) {
+        t.ifError(err, 'job error');
+        t.ok(job, 'job ok');
+        aJob = job;
+        runner.run();
+        setTimeout(function () {
+            runner.quit(function () {
+                backend.getJob(aJob.uuid, function (err, job) {
+                    t.ifError(err, 'get job error');
+                    t.equal(job.execution, 'failed', 'job execution');
+                    t.ok(job.chain_results[0].error.name);
+                    t.ok(job.chain_results[0].error.message);
+                    t.equal(job.chain_results[0].error.message,
+                        'Fail task error');
                     t.end();
                 });
             });

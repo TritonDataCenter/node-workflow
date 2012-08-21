@@ -31,7 +31,8 @@ var task = {
 var sandbox = {
     'modules': {
         'http': 'http',
-        'uuid': 'node-uuid'
+        'uuid': 'node-uuid',
+        'restify': 'restify'
     },
     'foo': 'bar',
     'bool': true,
@@ -577,4 +578,76 @@ test('a task which calls job.info', function (t) {
         t.end();
     });
 
+});
+
+
+// GH-82: Support cb(new Error()) on tasks callbacks to provide useful info,
+// the same than when we call with restify.Error() instances:
+test('a task which fails with restify.Error', function (t) {
+    // Not really needed, already on the sandbox
+    var restify = require('restify'),
+        wf_task_runner;
+
+    task.body = function (job, cb) {
+        var error = new restify.ConflictError('Task body error');
+        return cb(error);
+    }.toString();
+
+    task.fallback = null;
+    task.retry = 1;
+    task.timeout = 1000;
+
+    job.chain = [task];
+
+    wf_task_runner = new WorkflowTaskRunner({
+        job: job,
+        task: task,
+        sandbox: sandbox
+    });
+
+    t.ok(wf_task_runner.uuid);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    wf_task_runner.runTask(function (msg) {
+        t.ifError(msg.result);
+        t.ok(msg.error);
+        t.ok(msg.error.message);
+        t.equal(msg.error.message, 'Task body error');
+        t.ok(msg.error.httpCode);
+        t.equal(msg.cmd, 'error');
+        t.equal(msg.task_name, task.name);
+        t.end();
+    });
+});
+
+test('a task which fails with generic (not restify) Error', function (t) {
+
+    task.body = function (job, cb) {
+        return cb(new ReferenceError('Task body error'));
+    }.toString();
+
+    task.fallback = null;
+    task.retry = 1;
+    task.timeout = 1000;
+
+    job.chain = [task];
+
+    var wf_task_runner = new WorkflowTaskRunner({
+        job: job,
+        task: task
+    });
+
+    t.ok(wf_task_runner.uuid);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    wf_task_runner.runTask(function (msg) {
+        t.ifError(msg.result);
+        t.ok(msg.error);
+        t.ok(msg.error.message);
+        t.equal(msg.error.message, 'Task body error');
+        t.ok(msg.error.name);
+        t.equal(msg.cmd, 'error');
+        t.equal(msg.task_name, task.name);
+        t.end();
+    });
 });
