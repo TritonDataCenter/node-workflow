@@ -530,6 +530,7 @@ test('a task which fails and is canceled', function (t) {
 test('a task which calls job.info', function (t) {
     task.body = function (job, cb) {
         job.log.info('an info string');
+        job.log.info('a second info string');
         return cb(null);
     }.toString();
 
@@ -543,22 +544,30 @@ test('a task which calls job.info', function (t) {
     t.ok(wf_task_runner.uuid);
     t.equal(typeof (wf_task_runner.body), 'function');
 
-    // The callback will be called twice: the first time for info(),
-    // the second time to finish the task
+    // The callback will be called three times: two for job.log.info(),
+    // plus the third time to finish the task
 
-    var firstTime = true;
+    var num = 0;
 
     wf_task_runner.runTask(function (msg) {
         t.ifError(msg.error, 'task error');
         t.ok(msg.job);
         t.equal(msg.task_name, task.name);
+        num++;
 
-        if (firstTime) {
+        if (num === 1) {
             t.ok(msg.info, 'info present');
             t.notOk(msg.result, 'result not present');
             t.equal(msg.cmd, 'info', 'info cmd');
             t.equal(msg.info.msg, 'an info string', 'info string');
-            firstTime = false;
+            return;
+        }
+
+        if (num === 2) {
+            t.ok(msg.info, 'info present');
+            t.notOk(msg.result, 'result not present');
+            t.equal(msg.cmd, 'info', 'info cmd');
+            t.equal(msg.info.msg, 'a second info string', 'info string');
             return;
         }
 
