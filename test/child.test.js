@@ -35,10 +35,13 @@ test('unkown message', function (t) {
         t.ifError(msg.job);
         t.ok(msg.error);
         t.equal(msg.error, 'unknown message');
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
-    child.on('exit', function (code) {
-        t.equal(code, 0);
+    child.on('exit', function (code, signal) {
+        t.equal(code, 1);
         t.end();
     });
 
@@ -56,10 +59,13 @@ test('message without job', function (t) {
         t.ifError(msg.job);
         t.ok(msg.error);
         t.equal(msg.error, 'unknown message');
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
@@ -75,10 +81,13 @@ test('message without task', function (t) {
         t.ifError(msg.job);
         t.ok(msg.error);
         t.equal(msg.error, 'unknown message');
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
@@ -94,10 +103,13 @@ test('message with invalid task', function (t) {
         t.ifError(msg.job);
         t.ok(msg.error);
         t.ok(msg.error.match(/opt\.task\.body/));
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
@@ -121,10 +133,13 @@ test('message with successful task', function (t) {
         t.ok(msg.result);
         t.equal(msg.cmd, 'run');
         t.ok(msg.job);
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
@@ -148,10 +163,13 @@ test('message with failed task', function (t) {
         t.ifError(msg.result);
         t.equal(msg.cmd, 'error');
         t.ok(msg.job);
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
@@ -183,10 +201,13 @@ test('cancel message', function (t) {
         t.ifError(msg.result);
         t.equal(msg.cmd, 'cancel');
         t.ok(msg.job);
+        if (child.exitCode === null) {
+            child.kill();
+        }
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 0);
+        t.equal(code, 1);
         t.end();
     });
 
