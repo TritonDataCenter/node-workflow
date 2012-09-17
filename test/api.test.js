@@ -27,6 +27,7 @@ config.logger = {
 
 var helper = require('./helper');
 
+var REQ_ID = uuid();
 // --- Tests
 
 test('throws on missing opts', function (t) {
@@ -108,11 +109,12 @@ test('POST /workflows', function (t) {
             }.toString()
         }]
     }, function (err, req, res, obj) {
-        t.ifError(err);
-        t.ok(obj.uuid);
-        t.ok(util.isArray(obj.chain));
-        t.ok(util.isArray(obj.onerror));
-        t.equal(res.headers.location, '/workflows/' + obj.uuid);
+        t.ifError(err, 'POST /workflows error');
+        t.ok(obj.uuid, 'Workflow UUID ok');
+        t.ok(Array.isArray(obj.chain), 'Workflow chain is an Array');
+        t.ok(Array.isArray(obj.onerror), 'Workflow onerror is an Array');
+        t.equal(res.headers.location, '/workflows/' + obj.uuid, 'Location ok');
+        t.equal(obj.uuid, res.headers['x-request-id'], 'x-request-id ok');
         wf_uuid = obj.uuid;
         t.end();
     });
@@ -120,6 +122,7 @@ test('POST /workflows', function (t) {
 
 
 test('POST /workflows duplicated wf name', function (t) {
+    client.headers['x-request-id'] = REQ_ID;
     client.post('/workflows', {
         name: 'A workflow',
         chain: [ {
@@ -142,6 +145,7 @@ test('POST /workflows duplicated wf name', function (t) {
         t.equal(err.statusCode, 409);
         t.equal(err.code, 'InvalidArgument');
         t.ok(err.message.match(/Workflow\.name/g));
+        t.equal(REQ_ID, res.headers['x-request-id']);
         t.end();
     });
 });
@@ -366,7 +370,7 @@ test('POST /jobs', function (t) {
             t.ok(err);
             t.equal(err.statusCode, 409);
             t.equal(err.name, 'ConflictError');
-            t.ok(err.message.match(/opts\.workflow/gi));
+            t.ok(err.message.match(/j\.workflow/gi));
             t.end();
         });
     });
@@ -383,6 +387,7 @@ test('POST /jobs', function (t) {
     });
 
     t.test('job ok', function (t) {
+        delete client.headers['x-request-id'];
         aJob.workflow = wf_uuid;
         client.post('/jobs', aJob, function (err, req, res, obj) {
             t.ifError(err);
@@ -396,6 +401,7 @@ test('POST /jobs', function (t) {
             t.equivalent(obj.params, {foo: 'bar', chicken: 'arise!'});
             t.equal(obj.target, '/foo/bar');
             t.equal(res.headers.location, '/jobs/' + obj.uuid);
+            t.equal(obj.uuid, res.headers['x-request-id'], 'x-request-id ok');
             job_uuid = obj.uuid;
             t.end();
         });
