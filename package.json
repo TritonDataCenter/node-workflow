@@ -1,7 +1,7 @@
 {
   "name": "wf",
   "description": "Tasks Workflows orchestration API and runners",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/kusor/node-workflow.git"
@@ -32,8 +32,11 @@
   "devDependencies": {
     "tap": "~0.2.0"
   },
+  "optionalDependencies": {
+    "dtrace-provider": "0.2.0"
+  },
   "engines": {
-    "node": ">=0.6"
+    "node": ">=0.8"
   }
 }
 

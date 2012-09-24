@@ -4,7 +4,8 @@ var util = require('util'),
     uuid = require('node-uuid'),
     WorkflowJobRunner = require('../lib/job-runner'),
     Logger = require('bunyan'),
-    Factory = require('../lib/index').Factory;
+    Factory = require('../lib/index').Factory,
+    createDTrace = require('../lib/index').CreateDTrace;
 
 var helper = require('./helper');
 
@@ -18,6 +19,8 @@ var logger = {
         stream: process.stdout
     }]
 };
+
+var DTRACE = createDTrace('workflow');
 
 var Backend = require(helper.config().backend.module),
     backend = new Backend(helper.config().backend.opts),
@@ -223,6 +226,18 @@ test('throws on incorrect opts.sandbox', function (t) {
 });
 
 
+test('throws on missing opts.dtrace', function (t) {
+    t.throws(function () {
+        return new WorkflowJobRunner({
+            runner: runner,
+            backend: backend,
+            job: {}
+        });
+    }, new TypeError('opts.dtrace (Object) required'));
+    t.end();
+});
+
+
 test('run job ok', function (t) {
     factory.job({
         workflow: okWf.uuid,
@@ -234,7 +249,8 @@ test('run job ok', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false
+            trace: false,
+            dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -266,7 +282,8 @@ test('run a job which fails without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false
+            trace: false,
+            dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -297,7 +314,8 @@ test('run a job which re-queues itself', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false
+            trace: false,
+            dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -327,7 +345,8 @@ test('run a previously re-queued job', function (t) {
         runner: runner,
         backend: backend,
         job: reQueuedJob,
-        trace: false
+        trace: false,
+        dtrace: DTRACE
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
     backend.runJob(reQueuedJob.uuid, runner.uuid, function (err, job) {
@@ -362,7 +381,8 @@ test('run a job which time out without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false
+            trace: false,
+            dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -416,7 +436,8 @@ test('a failed workflow with successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false
+                trace: false,
+                dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             t.equal(wf_job_runner.timeout, null, 'no runner timeout');
@@ -485,7 +506,8 @@ test('a failed workflow with a non successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false
+                trace: false,
+                dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -532,7 +554,8 @@ test('a job cannot access undefined sandbox modules', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false
+                trace: false,
+                dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -582,7 +605,8 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                     modules: {
                         uuid: 'node-uuid'
                     }
-                }
+                },
+                dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -637,7 +661,8 @@ test('a canceled job', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false
+                trace: false,
+                dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -677,7 +702,8 @@ test('a job can call job.info()', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false
+            trace: false,
+            dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {

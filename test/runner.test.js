@@ -6,7 +6,8 @@ var util = require('util'),
     uuid = require('node-uuid'),
     WorkflowRunner = require('../lib/runner'),
     Factory = require('../lib/index').Factory,
-    exists = fs.exists || path.exists;
+    exists = fs.exists || path.exists,
+    createDTrace = require('../lib/index').CreateDTrace;
 
 var backend, identifier, runner, factory;
 
@@ -40,6 +41,7 @@ okWf, failWf, theJob, failWfWithError;
 
 var helper = require('./helper');
 
+var DTRACE = createDTrace('workflow');
 
 test('throws on missing opts', function (t) {
     t.throws(function () {
@@ -57,8 +59,17 @@ test('throws on missing backend', function (t) {
 });
 
 
-test('setup', function (t) {
+test('throws on missing dtrace', function (t) {
     config = helper.config();
+    t.throws(function () {
+        return new WorkflowRunner(config);
+    }, new TypeError('opts.dtrace (Object) required'));
+    t.end();
+});
+
+
+test('setup', function (t) {
+    config.dtrace = DTRACE;
     identifier = config.runner.identifier;
     config.logger = {
         streams: [ {
@@ -120,7 +131,8 @@ test('setup', function (t) {
 
 test('runner identifier', function (t) {
     var cfg = {
-        backend: helper.config().backend
+        backend: helper.config().backend,
+        dtrace: DTRACE
     }, aRunner = new WorkflowRunner(cfg),
     identifier;
     // run getIdentifier twice, one to create the file,
@@ -259,7 +271,8 @@ test('inactive runners', function (t) {
             identifier: theUUID,
             forks: 2,
             run_interval: 6
-        }
+        },
+        dtrace: DTRACE
     },
     anotherRunner = new WorkflowRunner(cfg);
     t.ok(anotherRunner, 'another runner ok');
@@ -302,7 +315,8 @@ test('stale jobs', function (t) {
             identifier: theUUID,
             forks: 2,
             run_interval: 6
-        }
+        },
+        dtrace: DTRACE
     },
     anotherRunner = new WorkflowRunner(cfg),
     aJob;
