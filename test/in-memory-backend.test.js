@@ -27,6 +27,14 @@ test('setup', function (t) {
 });
 
 
+test('Is an EventEmitter', function (t) {
+    backend.on('error', function (e) {
+        t.ok(e, 'Error emitted');
+        t.end();
+    });
+    backend.emit('error', new Error('Emit Error'));
+});
+
 test('add a workflow', function (t) {
     factory.workflow({
         name: 'A workflow',
