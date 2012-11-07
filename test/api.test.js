@@ -71,8 +71,10 @@ test('setup', function (t) {
         client = restify.createJsonClient({
             log: api.log,
             url: 'http://127.0.0.1:' + helper.config().api.port,
-            type: 'json',
-            version: '*'
+            version: '*',
+            retryOptions: {
+                retry: 0
+            }
         });
         t.ok(client, 'client ok');
         t.end();
@@ -143,7 +145,7 @@ test('POST /workflows duplicated wf name', function (t) {
     }, function (err, req, res, obj) {
         t.ok(err);
         t.equal(err.statusCode, 409);
-        t.equal(err.code, 'InvalidArgument');
+        t.equal(err.restCode, 'InvalidArgument');
         t.ok(err.message.match(/Workflow\.name/g));
         t.equal(REQ_ID, res.headers['x-request-id']);
         t.end();
@@ -209,7 +211,7 @@ test('GET /workflows/:uuid 404', function (t) {
         function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(err.code, 'ResourceNotFound');
+            t.equal(err.restCode, 'ResourceNotFound');
             t.ok(err.message.match(/does not exist/g));
             t.end();
         });
@@ -283,8 +285,8 @@ test('PUT /workflows/:uuid 404', function (t) {
     }, function (err, req, res, obj) {
         t.ok(err);
         t.equal(err.statusCode, 404);
-        t.equal(obj.code, 'ResourceNotFound');
-        t.ok(obj.message);
+        t.equal(err.restCode, 'ResourceNotFound');
+        t.ok(err.message);
         t.end();
     });
 });
@@ -380,7 +382,7 @@ test('POST /jobs', function (t) {
         client.post('/jobs', aJob, function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
+            t.equal(err.restCode, 'ResourceNotFound');
             t.ok(err.message);
             t.end();
         });
@@ -411,7 +413,7 @@ test('POST /jobs', function (t) {
         client.post('/jobs', aJob, function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 409);
-            t.equal(obj.code, 'InvalidArgument');
+            t.equal(err.restCode, 'InvalidArgument');
             t.equal(
               err.message,
               'Another job with the same target and params is already queued');
@@ -499,7 +501,7 @@ test('GET /jobs/:uuid', function (t) {
         client.get('/jobs/' + uuid(), function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
+            t.equal(err.restCode, 'ResourceNotFound');
             t.ok(obj.message);
             t.end();
         });
@@ -516,8 +518,8 @@ test('POST /jobs/:uuid/info', function (t) {
         }, function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
-            t.ok(obj.message);
+            t.equal(err.restCode, 'ResourceNotFound');
+            t.ok(err.message);
             t.equal(obj.message, 'Job does not exist. Cannot Update.');
             t.end();
         });
@@ -542,9 +544,9 @@ test('GET /jobs/:uuid/info', function (t) {
         client.get('/jobs/' + uuid() + '/info', function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
-            t.ok(obj.message);
-            t.equal(obj.message, 'Job does not exist. Cannot get info.');
+            t.equal(err.restCode, 'ResourceNotFound');
+            t.ok(err.message);
+            t.equal(err.message, 'Job does not exist. Cannot get info.');
             t.end();
         });
     });
@@ -570,8 +572,8 @@ test('POST /jobs/:uuid/cancel', function (t) {
           function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
-            t.ok(obj.message);
+            t.equal(err.restCode, 'ResourceNotFound');
+            t.ok(err.message);
             t.end();
           });
     });
@@ -607,8 +609,8 @@ test('DELETE /workflows/:uuid 404', function (t) {
         function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
-            t.equal(obj.code, 'ResourceNotFound');
-            t.ok(obj.message);
+            t.equal(err.restCode, 'ResourceNotFound');
+            t.ok(err.message);
             t.end();
         });
 });

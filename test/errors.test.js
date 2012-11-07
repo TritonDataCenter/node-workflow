@@ -16,7 +16,6 @@ test('errors defined', function (t) {
 
 test('errors to RestErrors', function (t) {
     var nfError, nfRestError, errors = [
-        wf.BackendInternalError,
         wf.BackendInvalidArgumentError,
         wf.BackendMissingParameterError,
         wf.BackendPreconditionFailedError,
@@ -27,7 +26,7 @@ test('errors to RestErrors', function (t) {
         t.equal(typeof (nfError), 'object');
         nfRestError = nfError.toRestError;
         t.equal(typeof (nfRestError), 'object');
-        t.equal(nfError.statusCode, nfRestError.statusCode);
+        t.equal(nfError.restCode.replace(/^Backend/, ''), nfRestError.restCode);
         t.equal(nfError.message, nfRestError.message);
     });
     t.end();

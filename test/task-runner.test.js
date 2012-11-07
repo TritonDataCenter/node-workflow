@@ -613,7 +613,7 @@ test('a task which fails with restify.Error', function (t) {
         t.ok(msg.error);
         t.ok(msg.error.message);
         t.equal(msg.error.message, 'Task body error');
-        t.ok(msg.error.httpCode);
+        t.ok(msg.error.statusCode);
         t.equal(msg.cmd, 'error');
         t.equal(msg.task_name, task.name);
         t.end();
