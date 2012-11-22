@@ -32,7 +32,7 @@ var REQ_ID = uuid();
 
 test('throws on missing opts', function (t) {
     t.throws(function () {
-        return new API();
+        return API();
     }, new TypeError('opts (Object) required'));
     t.end();
 });
@@ -40,7 +40,7 @@ test('throws on missing opts', function (t) {
 
 test('throws on missing backend', function (t) {
     t.throws(function () {
-        return new API(config);
+        return API(config);
     }, new TypeError('opts.backend (Object) required'));
     t.end();
 });
@@ -50,7 +50,7 @@ test('throws on missing opts.api', function (t) {
     config.backend = helper.config().backend;
 
     t.throws(function () {
-        return new API(config);
+        return API(config);
     }, new TypeError('opts.api (Object) required'));
     t.end();
 });
@@ -61,7 +61,7 @@ test('throws on missing opts.api', function (t) {
 // right after you've ran some tests before but, it's handy here:
 test('setup', function (t) {
     config.api = helper.config().api;
-    api = new API(config);
+    api = API(config);
     t.ok(api, 'api ok');
     server = api.server;
     t.ok(server, 'server ok');

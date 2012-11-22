@@ -23,7 +23,7 @@ var logger = {
 var DTRACE = createDTrace('workflow');
 
 var Backend = require(helper.config().backend.module),
-    backend = new Backend(helper.config().backend.opts),
+    backend = Backend(helper.config().backend.opts),
     factory, wf_job_runner;
 
 var okWf, failWf, timeoutWf, reQueueWf, infoWf, reQueuedJob, elapsed;
@@ -177,7 +177,7 @@ test('setup', function (t) {
 
 test('throws on missing opts', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner();
+        return WorkflowJobRunner();
     }, new TypeError('opts (Object) required'));
     t.end();
 });
@@ -185,7 +185,7 @@ test('throws on missing opts', function (t) {
 
 test('throws on missing opts.runner', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner({});
+        return WorkflowJobRunner({});
     }, new TypeError('opts.runner (Object) required'));
     t.end();
 });
@@ -193,7 +193,7 @@ test('throws on missing opts.runner', function (t) {
 
 test('throws on missing opts.backend', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner({
+        return WorkflowJobRunner({
             runner: runner
         });
     }, new TypeError('opts.backend (Object) required'));
@@ -204,7 +204,7 @@ test('throws on missing opts.backend', function (t) {
 
 test('throws on missing opts.job', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner({
+        return WorkflowJobRunner({
             runner: runner,
             backend: backend
         });
@@ -215,7 +215,7 @@ test('throws on missing opts.job', function (t) {
 
 test('throws on incorrect opts.sandbox', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner({
+        return WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: {},
@@ -228,7 +228,7 @@ test('throws on incorrect opts.sandbox', function (t) {
 
 test('throws on missing opts.dtrace', function (t) {
     t.throws(function () {
-        return new WorkflowJobRunner({
+        return WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: {}
@@ -245,7 +245,7 @@ test('run job ok', function (t) {
     }, function (err, job) {
         t.ifError(err, 'job error');
         t.ok(job, 'run job ok');
-        wf_job_runner = new WorkflowJobRunner({
+        wf_job_runner = WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: job,
@@ -278,7 +278,7 @@ test('run a job which fails without "onerror"', function (t) {
     }, function (err, job) {
         t.ifError(err, 'job error');
         t.ok(job, 'job ok');
-        wf_job_runner = new WorkflowJobRunner({
+        wf_job_runner = WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: job,
@@ -310,7 +310,7 @@ test('run a job which re-queues itself', function (t) {
     }, function (err, job) {
         t.ifError(err, 'job error');
         t.ok(job, 'run job ok');
-        wf_job_runner = new WorkflowJobRunner({
+        wf_job_runner = WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: job,
@@ -341,7 +341,7 @@ test('run a job which re-queues itself', function (t) {
 });
 
 test('run a previously re-queued job', function (t) {
-    wf_job_runner = new WorkflowJobRunner({
+    wf_job_runner = WorkflowJobRunner({
         runner: runner,
         backend: backend,
         job: reQueuedJob,
@@ -377,7 +377,7 @@ test('run a job which time out without "onerror"', function (t) {
     }, function (err, job) {
         t.ifError(err, 'job error');
         t.ok(job, 'job ok');
-        wf_job_runner = new WorkflowJobRunner({
+        wf_job_runner = WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: job,
@@ -432,7 +432,7 @@ test('a failed workflow with successful "onerror"', function (t) {
         }, function (err, job) {
             t.ifError(err, 'job error');
             t.ok(job, 'job ok');
-            wf_job_runner = new WorkflowJobRunner({
+            wf_job_runner = WorkflowJobRunner({
                 runner: runner,
                 backend: backend,
                 job: job,
@@ -502,7 +502,7 @@ test('a failed workflow with a non successful "onerror"', function (t) {
         }, function (err, job) {
             t.ifError(err, 'job error');
             t.ok(job, 'job ok');
-            wf_job_runner = new WorkflowJobRunner({
+            wf_job_runner = WorkflowJobRunner({
                 runner: runner,
                 backend: backend,
                 job: job,
@@ -550,7 +550,7 @@ test('a job cannot access undefined sandbox modules', function (t) {
         }, function (err, job) {
             t.ifError(err, 'job error');
             t.ok(job, 'job ok');
-            wf_job_runner = new WorkflowJobRunner({
+            wf_job_runner = WorkflowJobRunner({
                 runner: runner,
                 backend: backend,
                 job: job,
@@ -596,7 +596,7 @@ test('a job can access explicitly defined sandbox modules', function (t) {
         }, function (err, job) {
             t.ifError(err, 'job error');
             t.ok(job, 'job ok');
-            wf_job_runner = new WorkflowJobRunner({
+            wf_job_runner = WorkflowJobRunner({
                 runner: runner,
                 backend: backend,
                 job: job,
@@ -657,7 +657,7 @@ test('a canceled job', function (t) {
         }, function (err, job) {
             t.ifError(err, 'job error');
             t.ok(job, 'job ok');
-            wf_job_runner = new WorkflowJobRunner({
+            wf_job_runner = WorkflowJobRunner({
                 runner: runner,
                 backend: backend,
                 job: job,
@@ -698,7 +698,7 @@ test('a job can call job.info()', function (t) {
     }, function (err, job) {
         t.ifError(err, 'job error');
         t.ok(job, 'run job ok');
-        wf_job_runner = new WorkflowJobRunner({
+        wf_job_runner = WorkflowJobRunner({
             runner: runner,
             backend: backend,
             job: job,

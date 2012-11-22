@@ -17,7 +17,7 @@ var helper = require('./helper'),
 
 test('setup', function (t) {
     console.time('In Memory Backend');
-    backend = new WorkflowInMemoryBackend(config.backend.opts);
+    backend = WorkflowInMemoryBackend(config.backend.opts);
     t.ok(backend, 'backend ok');
     backend.init(function () {
         factory = Factory(backend);

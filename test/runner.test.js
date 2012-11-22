@@ -45,7 +45,7 @@ var DTRACE = createDTrace('workflow');
 
 test('throws on missing opts', function (t) {
     t.throws(function () {
-        return new WorkflowRunner();
+        return WorkflowRunner();
     }, new TypeError('opts (Object) required'));
     t.end();
 });
@@ -53,7 +53,7 @@ test('throws on missing opts', function (t) {
 
 test('throws on missing backend', function (t) {
     t.throws(function () {
-        return new WorkflowRunner(config);
+        return WorkflowRunner(config);
     }, new TypeError('opts.backend (Object) required'));
     t.end();
 });
@@ -62,7 +62,7 @@ test('throws on missing backend', function (t) {
 test('throws on missing dtrace', function (t) {
     config = helper.config();
     t.throws(function () {
-        return new WorkflowRunner(config);
+        return WorkflowRunner(config);
     }, new TypeError('opts.dtrace (Object) required'));
     t.end();
 });
@@ -80,7 +80,7 @@ test('setup', function (t) {
             path: path.resolve(__dirname, './test.runner.log')
         }]
     };
-    runner = new WorkflowRunner(config);
+    runner = WorkflowRunner(config);
     t.ok(runner);
     t.ok(runner.backend, 'backend ok');
     backend = runner.backend;
@@ -133,7 +133,7 @@ test('runner identifier', function (t) {
     var cfg = {
         backend: helper.config().backend,
         dtrace: DTRACE
-    }, aRunner = new WorkflowRunner(cfg),
+    }, aRunner = WorkflowRunner(cfg),
     identifier;
     // run getIdentifier twice, one to create the file,
     // another to just read it:
@@ -274,7 +274,7 @@ test('inactive runners', function (t) {
         },
         dtrace: DTRACE
     },
-    anotherRunner = new WorkflowRunner(cfg);
+    anotherRunner = WorkflowRunner(cfg);
     t.ok(anotherRunner, 'another runner ok');
     // Init the new runner, then update it to make inactive
     anotherRunner.init(function (err) {
@@ -318,7 +318,7 @@ test('stale jobs', function (t) {
         },
         dtrace: DTRACE
     },
-    anotherRunner = new WorkflowRunner(cfg),
+    anotherRunner = WorkflowRunner(cfg),
     aJob;
     t.ok(anotherRunner, 'another runner ok');
 
