@@ -40,7 +40,7 @@ var sandbox = {
 };
 
 test('setup', function (t) {
-    console.time('Tasks not using eval');
+    console.time('Tasks using eval');
     t.end();
 });
 
@@ -84,14 +84,16 @@ test('throws on opts.task.body not a function', function (t) {
     t.throws(function () {
         return new WorkflowTaskRunner({
             job: job,
-            task: task
+            task: task,
+            use_eval: true
         });
     }, new TypeError('opt.task.body (String) must be a Function source'));
     task.body = '5 === 5';
     t.throws(function () {
         return new WorkflowTaskRunner({
             job: job,
-            task: task
+            task: task,
+            use_eval: true
         });
     }, new TypeError('opt.task.body (String) must be a Function source'));
     t.end();
@@ -107,7 +109,8 @@ test('a task which succeeds on 1st retry', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -147,7 +150,8 @@ test('sandbox modules and variables', function (t) {
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task,
-        sandbox: sandbox
+        sandbox: sandbox,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -178,7 +182,8 @@ test('a task which succeeds on 2nd retry', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -205,7 +210,8 @@ test('a task which fails and has no "fallback"', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -232,7 +238,8 @@ test('a task which fails and succeeds "fallback"', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -259,7 +266,8 @@ test('a task which fails and "fallback" fails too', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -295,7 +303,8 @@ test('a task which fails after two retries and has no "fallback"',
 
         var wf_task_runner = new WorkflowTaskRunner({
             job: job,
-            task: task
+            task: task,
+            use_eval: true
         });
 
         t.ok(wf_task_runner.uuid);
@@ -331,7 +340,8 @@ test('a task which time out and succeeds "fallback"', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -373,7 +383,8 @@ test('a task which times out and fallback does too', function (t) {
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task,
-        trace: false
+        trace: false,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid, 'uuid ok');
@@ -402,7 +413,8 @@ test('a task which succeeds and re-queues the workflow', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -434,7 +446,8 @@ test('a task which times out and has no fallback', function (t) {
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task,
-        trace: false
+        trace: false,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid, 'uuid ok');
@@ -468,7 +481,8 @@ test('a task which timeout and is canceled', function (t) {
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task,
-        trace: false
+        trace: false,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid, 'uuid ok');
@@ -509,7 +523,8 @@ test('a task which fails and is canceled', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -543,7 +558,8 @@ test('a task which calls job.info', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -606,7 +622,8 @@ test('a task which fails with restify.Error', function (t) {
     wf_task_runner = new WorkflowTaskRunner({
         job: job,
         task: task,
-        sandbox: sandbox
+        sandbox: sandbox,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -638,7 +655,8 @@ test('a task which fails with generic (not restify) Error', function (t) {
 
     var wf_task_runner = new WorkflowTaskRunner({
         job: job,
-        task: task
+        task: task,
+        use_eval: true
     });
 
     t.ok(wf_task_runner.uuid);
@@ -658,6 +676,6 @@ test('a task which fails with generic (not restify) Error', function (t) {
 
 
 test('teardown', function (t) {
-    console.timeEnd('Tasks not using eval');
+    console.timeEnd('Tasks using eval');
     t.end();
 });

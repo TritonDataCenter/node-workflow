@@ -61,6 +61,7 @@ test('throws on missing backend', function (t) {
 
 test('throws on missing dtrace', function (t) {
     config = helper.config();
+    config.use_eval = true;
     t.throws(function () {
         return WorkflowRunner(config);
     }, new TypeError('opts.dtrace (Object) required'));
@@ -69,7 +70,7 @@ test('throws on missing dtrace', function (t) {
 
 
 test('setup', function (t) {
-    console.time('Not using eval');
+    console.time('Using eval');
     config.dtrace = DTRACE;
     identifier = config.runner.identifier;
     config.logger = {
@@ -387,7 +388,7 @@ test('stale jobs', function (t) {
 
 test('teardown', function (t) {
     var cfg_file = path.resolve(__dirname, '../workflow-indentifier');
-    console.timeEnd('Not using eval');
+    console.timeEnd('Using eval');
     runner.backend.quit(function () {
         exists(cfg_file, function (exist) {
             if (exist) {
