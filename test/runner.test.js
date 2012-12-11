@@ -69,6 +69,7 @@ test('throws on missing dtrace', function (t) {
 
 
 test('setup', function (t) {
+    console.time('Runner');
     config.dtrace = DTRACE;
     identifier = config.runner.identifier;
     config.logger = {
@@ -386,6 +387,7 @@ test('stale jobs', function (t) {
 
 test('teardown', function (t) {
     var cfg_file = path.resolve(__dirname, '../workflow-indentifier');
+    console.timeEnd('Runner');
     runner.backend.quit(function () {
         exists(cfg_file, function (exist) {
             if (exist) {

@@ -29,23 +29,10 @@ var Backend = require(helper.config().backend.module),
 var okWf, failWf, timeoutWf, reQueueWf, infoWf, reQueuedJob, elapsed;
 
 var FakeRunner = function () {
-    this.child_processes = {};
     this.uuid = uuid();
     this.run_interval = 1000;
     this.log = new Logger(logger);
     this.slots = this.forks = 10;
-};
-
-FakeRunner.prototype.childUp = function (job_uuid, child_pid) {
-    var self = this;
-    self.child_processes[child_pid] = job_uuid;
-};
-
-FakeRunner.prototype.childDown = function (job_uuid, child_pid) {
-    var self = this;
-    // For real, we also want to send sigterm to the child process on job's
-    // termination, therefore here we may need to upgrade on DB too.
-    delete self.child_processes[child_pid];
 };
 
 FakeRunner.prototype.getSlot = function () {
@@ -581,9 +568,9 @@ test('a job can access explicitly defined sandbox modules', function (t) {
     factory.workflow({
         name: 'explicitly defined sandbox',
         chain: [ {
-            name: 'A name',
+            name: 'A task with explicitly defined sandbox',
             body: function (job, cb) {
-                job.uuid = uuid();
+                job.an_uuid = uuid();
                 return cb(null);
             }
         }]
@@ -613,11 +600,11 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 t.ifError(err, 'backend.runJob error');
                 wf_job_runner.run(function (err) {
                     t.ifError(err, 'wf_job_runner run error');
-                    backend.getJob(job.uuid, function (err, job) {
+                    backend.getJob(job.uuid, function (err, ajob) {
                         t.ifError(err);
-                        t.ok(job);
-                        t.equal(job.execution, 'succeeded');
-                        t.ifError(job.chain_results[0].error);
+                        t.ok(ajob);
+                        t.equal(ajob.execution, 'succeeded');
+                        t.ifError(ajob.chain_results[0].error);
                         t.end();
                     });
                 });
