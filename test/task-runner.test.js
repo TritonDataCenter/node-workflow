@@ -41,7 +41,7 @@ var sandbox = {
 
 test('throws on missing opts', function (t) {
     t.throws(function () {
-        return new WorkflowTaskRunner();
+        return WorkflowTaskRunner();
     }, new TypeError('opts (Object) required'));
     t.end();
 });
@@ -49,7 +49,7 @@ test('throws on missing opts', function (t) {
 
 test('throws on missing opts.job', function (t) {
     t.throws(function () {
-        return new WorkflowTaskRunner({});
+        return WorkflowTaskRunner({});
     }, new TypeError('opts.job (Object) required'));
     t.end();
 });
@@ -57,7 +57,7 @@ test('throws on missing opts.job', function (t) {
 
 test('throws on missing opts.task', function (t) {
     t.throws(function () {
-        return new WorkflowTaskRunner({job: job});
+        return WorkflowTaskRunner({job: job});
     }, new TypeError('opts.task (Object) required'));
     t.end();
 });
@@ -65,7 +65,7 @@ test('throws on missing opts.task', function (t) {
 
 test('throws on incorrect opts.sandbox', function (t) {
     t.throws(function () {
-        return new WorkflowTaskRunner({
+        return WorkflowTaskRunner({
             job: job,
             task: task,
             sandbox: 'foo'
@@ -77,14 +77,14 @@ test('throws on incorrect opts.sandbox', function (t) {
 
 test('throws on opts.task.body not a function', function (t) {
     t.throws(function () {
-        return new WorkflowTaskRunner({
+        return WorkflowTaskRunner({
             job: job,
             task: task
         });
     }, new TypeError('opt.task.body (String) must be a Function source'));
     task.body = '5 === 5';
     t.throws(function () {
-        return new WorkflowTaskRunner({
+        return WorkflowTaskRunner({
             job: job,
             task: task
         });
@@ -100,12 +100,12 @@ test('a task which succeeds on 1st retry', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -140,13 +140,13 @@ test('sandbox modules and variables', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task,
         sandbox: sandbox
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -172,12 +172,12 @@ test('a task which succeeds on 2nd retry', function (t) {
     task.retry = 2;
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -199,12 +199,12 @@ test('a task which fails and has no "fallback"', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -226,12 +226,12 @@ test('a task which fails and succeeds "fallback"', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
     t.equal(typeof (wf_task_runner.fallback), 'function');
 
@@ -253,12 +253,12 @@ test('a task which fails and "fallback" fails too', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
     t.equal(typeof (wf_task_runner.fallback), 'function');
 
@@ -289,12 +289,12 @@ test('a task which fails after two retries and has no "fallback"',
 
         job.chain.push(task);
 
-        var wf_task_runner = new WorkflowTaskRunner({
+        var wf_task_runner = WorkflowTaskRunner({
             job: job,
             task: task
         });
 
-        t.ok(wf_task_runner.uuid);
+        t.ok(wf_task_runner.name);
         t.equal(typeof (wf_task_runner.body), 'function');
 
         wf_task_runner.runTask(function (msg) {
@@ -325,12 +325,12 @@ test('a task which time out and succeeds "fallback"', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
     t.equal(typeof (wf_task_runner.fallback), 'function');
 
@@ -366,13 +366,13 @@ test('a task which times out and fallback does too', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task,
         trace: false
     });
 
-    t.ok(wf_task_runner.uuid, 'uuid ok');
+    t.ok(wf_task_runner.name, 'uuid ok');
     t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
     t.equal(typeof (wf_task_runner.fallback), 'function', 'fallback ok');
     t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
@@ -396,12 +396,12 @@ test('a task which succeeds and re-queues the workflow', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -427,13 +427,13 @@ test('a task which times out and has no fallback', function (t) {
     task.fallback = null;
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task,
         trace: false
     });
 
-    t.ok(wf_task_runner.uuid, 'uuid ok');
+    t.ok(wf_task_runner.name, 'uuid ok');
     t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
     t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
 
@@ -461,13 +461,13 @@ test('a task which timeout and is canceled', function (t) {
     task.fallback = null;
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task,
         trace: false
     });
 
-    t.ok(wf_task_runner.uuid, 'uuid ok');
+    t.ok(wf_task_runner.name, 'uuid ok');
     t.equal(typeof (wf_task_runner.body), 'function', 'body ok');
     t.equal(wf_task_runner.timeout, 1000, 'timeout ok');
 
@@ -503,12 +503,12 @@ test('a task which fails and is canceled', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
     t.equal(typeof (wf_task_runner.fallback), 'function');
 
@@ -537,12 +537,12 @@ test('a task which calls job.info', function (t) {
 
     job.chain.push(task);
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     // The callback will be called three times: two for job.log.info(),
@@ -554,7 +554,7 @@ test('a task which calls job.info', function (t) {
         t.ifError(msg.error, 'task error');
         t.ok(msg.job);
         t.equal(msg.task_name, task.name);
-        num++;
+        num += 1;
 
         if (num === 1) {
             t.ok(msg.info, 'info present');
@@ -599,13 +599,13 @@ test('a task which fails with restify.Error', function (t) {
 
     job.chain = [task];
 
-    wf_task_runner = new WorkflowTaskRunner({
+    wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task,
         sandbox: sandbox
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
@@ -632,12 +632,12 @@ test('a task which fails with generic (not restify) Error', function (t) {
 
     job.chain = [task];
 
-    var wf_task_runner = new WorkflowTaskRunner({
+    var wf_task_runner = WorkflowTaskRunner({
         job: job,
         task: task
     });
 
-    t.ok(wf_task_runner.uuid);
+    t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
     wf_task_runner.runTask(function (msg) {
