@@ -25,8 +25,8 @@
         "bunyan": "0.16.7",
         "async": "0.1.22",
         "backoff": "1.2.0",
-        "clone": "0.1.1",
-        "restify": "git://github.com/mcavage/node-restify.git#d688b4a",
+        "clone": "0.1.5",
+        "restify": "git://github.com/mcavage/node-restify.git#30ca043",
         "sigyan": "0.2.0"
     },
     "scripts": {
