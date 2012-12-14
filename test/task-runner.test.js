@@ -122,21 +122,33 @@ test('a task which succeeds on 1st retry', function (t) {
 
 test('sandbox modules and variables', function (t) {
     // Or javascriptlint will complain regarding undefined variables:
-    task.body = 'function (job, cb) {\n' +
-        'if (typeof (uuid) !== \'function\') {\n' +
-            'return cb(\'node-uuid module is not defined\');\n' +
-        '}\n' +
-        'if (typeof (foo) !== \'string\') {\n' +
-            'return cb(\'sandbox value is not defined\');\n' +
-        '}\n' +
-        'if (typeof (bool) !== \'boolean\') {\n' +
-            'return cb(\'sandbox value is not defined\');\n' +
-        '}\n' +
-        'if (typeof (aNumber) !== \'number\') {\n' +
-            'return cb(\'sandbox value is not defined\');\n' +
-        '}\n' +
-        'return cb(null);\n' +
-    '}';
+    var foo, bool, aNumber, restify;
+    var task_body = function (job, cb) {
+        if (typeof (uuid) !== 'function') {
+            return cb('node-uuid module is not defined');
+        }
+        if (typeof (foo) !== 'string') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (bool) !== 'boolean') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (aNumber) !== 'number') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (restify.createJsonClient) !== 'function') {
+            return cb('restify.createJsonClient is not defined');
+        }
+        var client = restify.createJsonClient({
+            url: 'http://127.0.0.1'
+        });
+        if (typeof (client.url) !== 'object') {
+            return cb('restify is defined but cannot create a client');
+        }
+        return cb(null);
+    };
+
+    task.body = task_body.toString();
 
     job.chain.push(task);
 
