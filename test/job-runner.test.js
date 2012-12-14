@@ -249,7 +249,6 @@ test('run job ok', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false,
             dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -282,7 +281,6 @@ test('run a job which fails without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false,
             dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -314,7 +312,6 @@ test('run a job which re-queues itself', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false,
             dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -345,7 +342,6 @@ test('run a previously re-queued job', function (t) {
         runner: runner,
         backend: backend,
         job: reQueuedJob,
-        trace: false,
         dtrace: DTRACE
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -381,7 +377,6 @@ test('run a job which time out without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false,
             dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -436,7 +431,6 @@ test('a failed workflow with successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false,
                 dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -506,7 +500,6 @@ test('a failed workflow with a non successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false,
                 dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -554,7 +547,6 @@ test('a job cannot access undefined sandbox modules', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false,
                 dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -600,7 +592,6 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false,
                 sandbox: {
                     modules: {
                         uuid: 'node-uuid'
@@ -661,7 +652,6 @@ test('a canceled job', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                trace: false,
                 dtrace: DTRACE
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
@@ -702,7 +692,6 @@ test('a job can call job.info()', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            trace: false,
             dtrace: DTRACE
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');

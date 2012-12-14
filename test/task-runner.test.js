@@ -380,8 +380,7 @@ test('a task which times out and fallback does too', function (t) {
 
     var wf_task_runner = WorkflowTaskRunner({
         job: job,
-        task: task,
-        trace: false
+        task: task
     });
 
     t.ok(wf_task_runner.name, 'uuid ok');
@@ -441,8 +440,7 @@ test('a task which times out and has no fallback', function (t) {
 
     var wf_task_runner = WorkflowTaskRunner({
         job: job,
-        task: task,
-        trace: false
+        task: task
     });
 
     t.ok(wf_task_runner.name, 'uuid ok');
@@ -475,8 +473,7 @@ test('a task which timeout and is canceled', function (t) {
 
     var wf_task_runner = WorkflowTaskRunner({
         job: job,
-        task: task,
-        trace: false
+        task: task
     });
 
     t.ok(wf_task_runner.name, 'uuid ok');
