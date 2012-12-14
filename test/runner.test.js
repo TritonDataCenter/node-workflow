@@ -1,13 +1,13 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
-var util = require('util'),
-    path = require('path'),
-    fs = require('fs'),
-    test = require('tap').test,
-    uuid = require('node-uuid'),
-    WorkflowRunner = require('../lib/runner'),
-    Factory = require('../lib/index').Factory,
-    exists = fs.exists || path.exists,
-    createDTrace = require('../lib/index').CreateDTrace;
+var util = require('util');
+var path = require('path');
+var fs = require('fs');
+var test = require('tap').test;
+var uuid = require('node-uuid');
+var WorkflowRunner = require('../lib/runner');
+var Factory = require('../lib/index').Factory;
+var exists = fs.exists || path.exists;
+var createDTrace = require('../lib/index').CreateDTrace;
 
 var backend, identifier, runner, factory;
 
@@ -19,16 +19,16 @@ var okTask = {
     body: function (job, cb) {
         return cb(null);
     }
-},
-failTask = {
+};
+var failTask = {
     retry: 1,
     name: 'Fail Task',
     body: function (job, cb) {
         job.log.info('recording some info');
         return cb('Fail task error');
     }
-},
-failTaskWithError = {
+};
+var failTaskWithError = {
     retry: 1,
     name: 'Fail Task with error',
     body: function (job, cb) {
@@ -36,8 +36,21 @@ failTaskWithError = {
         return cb(new Error('Fail task error'));
     }
 
-},
-okWf, failWf, theJob, failWfWithError;
+};
+var taskWithModules = {
+    name: 'OK Task with modules',
+    retry: 1,
+    body: function (job, cb) {
+        if (typeof (uuid) !== 'function') {
+            return cb('node-uuid module is not defined');
+        }
+        return cb(null);
+    },
+    modules: {
+        uuid: 'node-uuid'
+    }
+};
+var okWf, failWf, theJob, failWfWithError;
 
 var helper = require('./helper');
 
@@ -92,7 +105,7 @@ test('setup', function (t) {
         // okWf:
         factory.workflow({
             name: 'OK wf',
-            chain: [okTask],
+            chain: [okTask, taskWithModules],
             timeout: 60
         }, function (err, wf) {
             t.ifError(err, 'ok wf error');
@@ -203,6 +216,8 @@ test('run job', function (t) {
                     t.ifError(err, 'run job get job error');
                     t.equal(job.execution, 'succeeded', 'job execution');
                     t.equal(job.chain_results[0].result, 'OK');
+                    console.log(util.inspect(job.chain_results, false, 8));
+                    t.equal(job.chain_results[1].result, 'OK');
                     t.end();
                 });
             });

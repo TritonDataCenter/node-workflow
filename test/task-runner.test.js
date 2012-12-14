@@ -663,3 +663,55 @@ test('a task which fails with generic (not restify) Error', function (t) {
         t.end();
     });
 });
+
+
+test('a task which defines its own modules', function (t) {
+    // Or javascriptlint will complain regarding undefined variables:
+    var foo, bool, aNumber, restify, http;
+    var task_body = function (job, cb) {
+        if (typeof (uuid) !== 'function') {
+            return cb('node-uuid module is not defined');
+        }
+        if (typeof (foo) !== 'string') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (bool) !== 'boolean') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (aNumber) !== 'number') {
+            return cb('sandbox value is not defined');
+        }
+        if (typeof (restify) !== 'undefined') {
+            return cb('restify should be overriden by task modules');
+        }
+        if (typeof (http) !== 'undefined') {
+            return cb('http should be overriden by task modules');
+        }
+        return cb(null);
+    };
+
+    task.body = task_body.toString();
+    task.modules = {
+        'uuid': 'node-uuid'
+    };
+
+    job.chain.push(task);
+
+    var wf_task_runner = WorkflowTaskRunner({
+        job: job,
+        task: task,
+        sandbox: sandbox
+    });
+
+    t.ok(wf_task_runner.name);
+    t.equal(typeof (wf_task_runner.body), 'function');
+
+    wf_task_runner.runTask(function (msg) {
+        t.ok(msg.result);
+        t.ifError(msg.error, 'task error');
+        t.ok(msg.job);
+        t.equal(msg.cmd, 'run');
+        t.equal(msg.task_name, task.name);
+        t.end();
+    });
+});
