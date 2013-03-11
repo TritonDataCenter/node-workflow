@@ -22,11 +22,11 @@
     "main": "lib/index.js",
     "dependencies": {
         "node-uuid": "1.4.0",
-        "bunyan": "0.16.7",
+        "bunyan": "0.18.3",
         "async": "0.1.22",
         "backoff": "1.2.0",
-        "clone": "0.1.5",
-        "restify": "git://github.com/mcavage/node-restify.git#30ca043",
+        "clone": "0.1.6",
+        "restify": "2.3.3",
         "sigyan": "0.2.0"
     },
     "scripts": {
@@ -36,7 +36,7 @@
         "tap": "~0.3"
     },
     "optionalDependencies": {
-        "dtrace-provider": "0.2.4"
+        "dtrace-provider": "0.2.8"
     },
     "engines": {
         "node": ">=0.8"
