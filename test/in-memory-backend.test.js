@@ -3,7 +3,6 @@ var test = require('tap').test,
     uuid = require('node-uuid'),
     SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
-    async = require('async'),
     Factory = require('../lib/index').Factory,
     WorkflowInMemoryBackend = require('../lib/workflow-in-memory-backend');
 

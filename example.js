@@ -1,27 +1,28 @@
-// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2013 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 
 // First part of the example: You create workflows, add tasks, queue jobs
 // anywhere in your code using NodeJS.
 
 var assert = require('assert');
-
+var util = require('util');
+var wf = require('./lib/index');
 // With modules, it would be require('workflow');
-var Factory = require('./lib/index').Factory,
-    WorkflowRedisBackend = require('./lib/workflow-redis-backend');
+var Factory = wf.Factory;
+var Backend = wf.Backend;
 
 var backend, factory;
 
 // Some globals:
 var aWorkflow, aJob;
 
-// We'll use 'async' module to simplify definitions a bit, and avoid nesting
+// We'll use 'vasync' module to simplify definitions a bit, and avoid nesting
 // stuff for clarity:
-var async = require('async');
+var vasync = require('vasync');
 
 // Our serie of functions to execute:
-var series = [
+var pipeline = [
 
-    function (callback) {
+    function createWorkflow(_, callback) {
         // A workflow definition:
         factory.workflow({
             name: 'Sample Workflow',
@@ -82,10 +83,10 @@ var series = [
             callback(null, workflow);
         });
     },
-    function (callback) {
+    function createJob(_, callback) {
         // A Job based on the workflow:
         factory.job({
-            workflow: aWorkflow,
+            workflow: aWorkflow.uuid,
             exec_after: '2012-01-03T12:54:05.788Z'
         }, function (err, job) {
             if (err) {
@@ -100,31 +101,15 @@ var series = [
 
 
 function main() {
-    // A DB for testing, flushed before and right after we're done with tests
-    var TEST_DB_NUM = 15;
-
-    backend = new WorkflowRedisBackend({
-        port: 6379,
-        host: '127.0.0.1',
-        db: TEST_DB_NUM
-    });
+    backend = Backend({});
 
     backend.init(function () {
-
-        backend.client.flushdb(function (err, res) {
-            assert.ifError(err);
-            assert.equal('OK', res);
-        });
-
-        backend.client.dbsize(function (err, res) {
-            assert.ifError(err);
-            assert.equal(0, res);
-        });
-
         factory = Factory(backend);
         assert.ok(factory);
 
-        async.series(series, function (err, results) {
+        vasync.pipeline({
+            funcs: pipeline
+        }, function (err, results) {
             if (err) {
                 console.error(err);
                 return;
@@ -141,7 +126,7 @@ function main() {
             assert.ok(aJob);
             // We need the UUID in order to be able to check Job Status
             assert.ok(aJob.uuid);
-            console.log(aJob);
+            console.log(util.inspect(results.operations, false, 8));
         });
     });
 }
