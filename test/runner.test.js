@@ -37,6 +37,13 @@ var failTaskWithError = {
     }
 
 };
+var failTaskWithJobRetry = {
+    retry: 1,
+    name: 'Fail Task with job retry',
+    body: function (job, cb) {
+        return cb('retry');
+    }
+};
 var taskWithModules = {
     name: 'OK Task with modules',
     retry: 1,
@@ -50,7 +57,7 @@ var taskWithModules = {
         uuid: 'node-uuid'
     }
 };
-var okWf, failWf, theJob, failWfWithError;
+var okWf, failWf, theJob, failWfWithError, failWfWithRetry;
 
 var helper = require('./helper');
 
@@ -128,12 +135,22 @@ test('setup', function (t) {
                     t.ifError(err, 'Fail wf with error');
                     t.ok(wf, 'Fail wf with error OK');
                     failWfWithError = wf;
-                    backend.getRunners(function (err, runners) {
-                        t.ifError(err, 'get runners error');
-                        t.ok(runners[identifier], 'runner id ok');
-                        t.ok(new Date(runners[identifier]),
-                            'runner timestamp ok');
-                        t.end();
+                    factory.workflow({
+                        name: 'Fail wf with retry',
+                        chain: [failTaskWithJobRetry],
+                        timeout: 60,
+                        max_attempts: 3
+                    }, function (err, wf) {
+                        t.ifError(err, 'Fail wf with retry');
+                        t.ok(wf, 'Fail wf with retry OK');
+                        failWfWithRetry = wf;
+                        backend.getRunners(function (err, runners) {
+                            t.ifError(err, 'get runners error');
+                            t.ok(runners[identifier], 'runner id ok');
+                            t.ok(new Date(runners[identifier]),
+                                'runner timestamp ok');
+                            t.end();
+                        });
                     });
                 });
             });
@@ -174,6 +191,28 @@ test('runner run job now', function (t) {
     // Set to the future, so it shouldn't run:
     d.setTime(d.getTime() + 10000);
     t.ok(!runner.runNow({exec_after: d.toISOString()}));
+    t.end();
+});
+
+
+test('runner next run', function (t) {
+    var d = Date.now();
+    var job = {
+        started: d,
+        elapsed: 1.23,
+        max_delay: 7000,
+        initial_delay: 1000,
+        num_attempts: 0
+    };
+    t.equal(new Date(runner.nextRun(job)).getTime(), d + 1230 + 1000);
+    job.num_attempts++;
+    t.equal(new Date(runner.nextRun(job)).getTime(), d + 1230 + 2000);
+    job.num_attempts++;
+    t.equal(new Date(runner.nextRun(job)).getTime(), d + 1230 + 4000);
+    job.num_attempts++;
+    t.equal(new Date(runner.nextRun(job)).getTime(), d + 1230 + 7000);
+    job.num_attempts++;
+    t.equal(new Date(runner.nextRun(job)).getTime(), d + 1230 + 7000);
     t.end();
 });
 
@@ -273,6 +312,45 @@ test('run job which fails with error instance', function (t) {
                 });
             });
         }, 9000);
+    });
+});
+
+
+test('a job that is retried', function (t) {
+    var aJob;
+    factory.job({
+        workflow: failWfWithRetry.uuid,
+        exec_after: '2012-01-03T12:54:05.788Z'
+    }, function (err, job) {
+        t.ifError(err, 'job error');
+        t.ok(job, 'job ok');
+        aJob = job;
+        runner.run();
+        setTimeout(function () {
+            runner.quit(function () {
+                backend.getJob(aJob.uuid, function (err, job) {
+                    t.ifError(err, 'get job error');
+                    t.equal(job.execution, 'retried', 'job execution');
+                    t.equal(job.chain_results[0].error, 'retry', 'error');
+                    var prevJob = job;
+                    backend.getJob(job.next_attempt, function (err, job) {
+                        t.ifError(err, 'get job error');
+                        t.equal(job.execution, 'retried', 'job execution');
+                        t.equal(job.chain_results[0].error, 'retry', 'error');
+                        t.equal(prevJob.uuid, job.prev_attempt);
+                        var midJob = job;
+                        backend.getJob(job.next_attempt, function (err, job) {
+                            t.ifError(err, 'get job error');
+                            t.equal(job.execution, 'retried', 'job execution');
+                            t.equal(job.chain_results[0].error, 'retry');
+                            t.equal(midJob.uuid, job.prev_attempt);
+                            t.notOk(job.next_attempt);
+                            t.end();
+                        });
+                    });
+                });
+            });
+        }, 20000);
     });
 });
 
