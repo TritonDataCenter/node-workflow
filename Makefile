@@ -32,7 +32,7 @@ setup: $(NPM)
 
 .PHONY: test
 test: setup $(TAP)
-	$(TAP) test/*.test.js
+	TAP_TIMEOUT=80 $(TAP) test/*.test.js
 
 .PHONY: coverage
 coverage: $(TAP)
