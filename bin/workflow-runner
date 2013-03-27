@@ -6,7 +6,7 @@ var path = require('path'),
     fs = require('fs'),
     util = require('util'),
     Logger = require('bunyan'),
-    WorkflowRunner = require('../lib/runner'),
+    WorkflowRunner = require('../lib/').Runner,
     levels = [Logger.TRACE, Logger.DEBUG, Logger.INFO,
               Logger.WARN, Logger.ERROR, Logger.FATAL];
 
@@ -28,7 +28,7 @@ if (process.argv.length < 3) {
         console.dir(e);
         process.exit(1);
       }
-      var runner = new WorkflowRunner(config);
+      var runner = WorkflowRunner(config);
       runner.init(function (err) {
         if (err) {
           console.error('Error initializing runner:');
