@@ -57,7 +57,7 @@ Create a new workflow.
 - `chain[]`: The tasks to add to the workflow. Optional. Multiple values
   allowed.
 - `onerror[]`: The tasks to add to the workflow fallback. Optional.
-  Multiple values allowed. 
+  Multiple values allowed.
 - `timeout`: Optional timeout, in seconds, for the workflow execution.
 
 ### Every `task` may be composed of:
@@ -173,7 +173,8 @@ execution status are retrieved.
 
 ### HTTP Parameters.
 
-- `execution`: Optional, one of `suceeded`, `failed`, `running` or `queued`.
+- `execution`: Optional, one of `succeeded`, `failed`, `running`, 'canceled'
+  or `queued`.
 
 ### Status Codes
 
