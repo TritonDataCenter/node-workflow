@@ -321,8 +321,6 @@ test('register runner', function (t) {
             t.ifError(err, 'register runner error');
             backend.getRunner(runnerId, function (err, timestamp) {
                 t.ifError(err, 'backend get runner error');
-                console.log(typeof (d));
-                console.log(typeof (timestamp));
                 t.equivalent(d, timestamp);
                 t.end();
             });

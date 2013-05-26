@@ -191,6 +191,26 @@ test('GET /workflows not empty', function (t) {
 });
 
 
+test('Search /workflows by wf name', function (t) {
+    client.get('/workflows?name=' + encodeURIComponent('A workflow'),
+        function (err, req, res, obj) {
+            t.ifError(err);
+            t.equal(res.statusCode, 200);
+            t.equal(obj.length, 1);
+            t.ok(obj[0].uuid);
+            t.ok(util.isArray(obj[0].chain));
+            t.ok(util.isArray(obj[0].onerror));
+            client.get('/workflows?name=whatever',
+                function (err, req, res, obj) {
+                    t.ifError(err);
+                    t.equal(res.statusCode, 200);
+                    t.equivalent([], obj);
+                    t.end();
+                });
+        });
+});
+
+
 test('GET /workflows/:uuid', function (t) {
     client.get(
         '/workflows/' + wf_uuid,
