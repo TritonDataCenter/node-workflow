@@ -420,34 +420,38 @@ available.</p>
 relevant sections included:</p>
 
 <pre><code>{ 
-  backend: {
-    module: '../lib/workflow-redis-backend',
-    opts: {
-      port: 6379,
-      host: '127.0.0.1',
-      db: 14 
+  "backend": {
+    "module": "../lib/workflow-redis-backend",
+    "opts": {
+      "port": 6379,
+      "host": "127.0.0.1",
+      "db": 14 
     } 
   },
-  api: {
-    port: 8080
+  "api": {
+    "port": 8080
   },
-  runner: {
-    identifier: 'cd925eef-93fb-4bfe-a820-2aaedf9fc006',
-    forks: 10,
-    run_interval: 60,
-    sandbox: {
-      restify: 'restify',
-      uuid: 'node-uuid',
-      util: 'util'
-    } 
+  "runner": {
+    "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
+    "forks": 2,
+    "run_interval": 6,
+    "sandbox": {
+        "modules": {
+            "http": "http",
+            "uuid": "node-uuid"
+        },
+        "foo": "bar",
+        "bool": true,
+        "aNumber": 5
+    }
   },
-  logger: {
-    streams: [ {
-      level: 'info',
-      stream: process.stdout
+  "logger": {
+    "streams": [ {
+      "level": "info",
+      "stream": "process.stdout"
     }, {
-      level: 'debug',
-      path: './some-file.log'
+      "level": "debug",
+      "path": "./some-file.log"
     }]
   } 
 }
@@ -494,10 +498,11 @@ search for new queued jobs to process, search for <em>stale</em> jobs from other
 if a given runner hasn't reported it's healthy since <code>3 * run_interval</code>, it'll be
 considered inactive by other runners, and all the associated jobs will be canceled.
 (If nothing is given, 120 seconds is the default value for <code>run_interval</code>).</li>
-<li><code>sandbox</code>: node.js modules we want to make available for the VM where we run
-our tasks. Note that the key for each member will be the way you can refer to such
-object from your tasks <code>body</code> and <code>fallback</code> functions, while the value is what
-the system will use to require the module. For example: <code>{uuid: 'node-uuid'}</code>.
+<li><code>sandbox</code>: any variables and node.js modules we want to make available for the VM
+where we run our tasks. Note that the key for each member will be the way you can
+refer to such object from your tasks <code>body</code> and <code>fallback</code> functions, while the
+value is what the system will use to require the module. 
+For example: <code>{uuid: 'node-uuid'}</code>.
 Remember that, by default, only <a href="http://nodejs.org/docs/latest/api/timers.html">global node timers</a>
 will be available for tasks if nothing is given.</li>
 </ul>
