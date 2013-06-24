@@ -2,7 +2,7 @@
 
 - Repository: <git://github.com/kusor/node-workflow.git>
 - Browsing: <https://github.com/kusor/node-workflow>
-- Who: [Pedro Palazón Candel](https://github.com/kusor), [Trent Mick](https://github.com/trentm), [Mark Cavage](https://github.com/mcavage), [Josh Wilsdon](https://github.com/joshwilsdon), [Rob Gulewich](https://github.com/rgulewich), [Andrés Rodríguez](https://github.com/cachafla).
+- Who: [Pedro Palazón Candel](https://github.com/kusor), [Trent Mick](https://github.com/trentm), [Mark Cavage](https://github.com/mcavage), [Josh Wilsdon](https://github.com/joshwilsdon), [Rob Gulewich](https://github.com/rgulewich), [Andrés Rodríguez](https://github.com/cachafla), [Fred Kuo](https://github.com/fkuo).
 - Docs: <http://kusor.github.com/node-workflow/>
 - Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 

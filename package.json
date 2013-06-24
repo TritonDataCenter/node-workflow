@@ -13,7 +13,8 @@
         "Josh Wilsdon",
         "Bryan Cantrill",
         "Andrés Rodríquez",
-        "Rob Gulewich"
+        "Rob Gulewich",
+        "Fred Kuo"
     ],
     "bin": {
         "workflow-api": "./bin/workflow-api",
