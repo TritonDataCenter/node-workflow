@@ -44,6 +44,13 @@ var failTaskWithJobRetry = {
         return cb('retry');
     }
 };
+var failTaskWithJobWait = {
+    retry: 1,
+    name: 'Fail Task with job wait',
+    body: function (job, cb) {
+        return cb('wait');
+    }
+};
 var taskWithModules = {
     name: 'OK Task with modules',
     retry: 1,
@@ -112,7 +119,7 @@ test('setup', function (t) {
         // okWf:
         factory.workflow({
             name: 'OK wf',
-            chain: [okTask, taskWithModules],
+            chain: [okTask, failTaskWithJobWait, taskWithModules],
             timeout: 60
         }, function (err, wf) {
             t.ifError(err, 'ok wf error');
@@ -248,6 +255,28 @@ test('run job', function (t) {
     // Let's remove the idleness of the runner so it will pick the job
     backend.wakeUpRunner(runner.identifier, function (err) {
         t.ifError(err, 'wake up runner error');
+        runner.run();
+        setTimeout(function () {
+            runner.quit(function () {
+                backend.getJob(theJob.uuid, function (err, job) {
+                    t.ifError(err, 'run job get job error');
+                    t.equal(job.execution, 'waiting', 'job execution');
+                    t.equal(job.chain_results[0].result, 'OK');
+                    console.log(util.inspect(job.chain_results, false, 8));
+                    t.equal(job.chain_results[1].result, 'OK');
+                    theJob = job;
+                    t.end();
+                });
+            });
+        }, 10000);
+    });
+});
+
+
+test('re-run waiting job', function (t) {
+    backend.resumeJob(theJob, function (err, job) {
+        t.ifError(err, 'resume job error');
+        theJob = job;
         runner.run();
         setTimeout(function () {
             runner.quit(function () {

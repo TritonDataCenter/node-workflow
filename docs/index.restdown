@@ -317,40 +317,69 @@ results, and the runner will save back those results into the backend, either
 finishing the job, or re-queueing it for another runner which may fetch it in
 order to continue its execution at a later time.
 
+## Using tasks to re-queue, retry or put jobs to wait
+
+There are some **special errors** which can be used from tasks bodies to modify
+the jobs execution status without making them fail. These are `queue`, `wait`
+and `retry`.
+
+If you use any of the aforementioned keywords as the error returned by a task
+body, instead of fail the job, you'll modify its status to either `queued`,
+`waiting` or `retried`.
+
+Usually, you may want to re-queue a job together with a modification of the
+`exec_after` job property, so its execution will be delayed in time.
+
+Retry can be used at any point of a job before it fails to make another attempt
+of running the complete job, not a single task.
+
+Finally, `waiting` is available targeting those cases where a task fires an
+action into a third party system, and we don't want to keep polling the remote
+system from our task body until such remote action has finished. Instead, we
+can simply tell the job to *hold on* until something else tells it to continue.
+The remote system can then resume the job making a POST request to
+`/jobs/:job_uuid/resume`, which will bring the job status back to `queued` and,
+therefore, executed by the runner from where it left the next time it has slots
+available.
+
 # Configuration options
 
 The following is an example configuration for node-workflow, with all the
 relevant sections included:
 
     { 
-      backend: {
-        module: '../lib/workflow-redis-backend',
-        opts: {
-          port: 6379,
-          host: '127.0.0.1',
-          db: 14 
+      "backend": {
+        "module": "../lib/workflow-redis-backend",
+        "opts": {
+          "port": 6379,
+          "host": "127.0.0.1",
+          "db": 14 
         } 
       },
-      api: {
-        port: 8080
+      "api": {
+        "port": 8080
       },
-      runner: {
-        identifier: 'cd925eef-93fb-4bfe-a820-2aaedf9fc006',
-        forks: 10,
-        run_interval: 60,
-        sandbox: {
-          restify: 'restify',
-          uuid: 'node-uuid',
-          util: 'util'
-        } 
+      "runner": {
+        "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
+        "forks": 2,
+        "run_interval": 6,
+        "sandbox": {
+            "modules": {
+                "http": "http",
+                "uuid": "node-uuid"
+            },
+            "foo": "bar",
+            "bool": true,
+            "aNumber": 5
+        }
       },
-      logger: {
-        streams: [ {
-          level: 'info',
-          stream: process.stdout
+      "logger": {
+        "streams": [ {
+          "level": "info",
+          "stream": "process.stdout"
         }, {
-          level: 'debug',
-          path: './some-file.log'
+          "level": "debug",
+          "path": "./some-file.log"
         }]
       } 
     }
@@ -394,10 +423,11 @@ Configuration for workflow runners. None of the options on this section is requi
   if a given runner hasn't reported it's healthy since `3 * run_interval`, it'll be
   considered inactive by other runners, and all the associated jobs will be canceled.
   (If nothing is given, 120 seconds is the default value for `run_interval`).
-- `sandbox`: node.js modules we want to make available for the VM where we run
-  our tasks. Note that the key for each member will be the way you can refer to such
-  object from your tasks `body` and `fallback` functions, while the value is what
-  the system will use to require the module. For example: `{uuid: 'node-uuid'}`.
+- `sandbox`: any variables and node.js modules we want to make available for the VM
+  where we run our tasks. Note that the key for each member will be the way you can
+  refer to such object from your tasks `body` and `fallback` functions, while the
+  value is what the system will use to require the module. 
+  For example: `{uuid: 'node-uuid'}`.
   Remember that, by default, only [global node timers](http://nodejs.org/docs/latest/api/timers.html)
   will be available for tasks if nothing is given.
 
@@ -458,6 +488,4 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-<a href="http://github.com/kusor/node-workflow">
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">
-</a>
+<style>#forkongithub a{background:#600;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#000;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/kusor/node-workflow">Fork me on GitHub</a></span>
