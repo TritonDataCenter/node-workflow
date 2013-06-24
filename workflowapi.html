@@ -38,6 +38,7 @@
     <li><div><a href="#PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
     <li><div><a href="#DELETE-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
     <li><div><a href="#POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></a></div></li>
+    <li><div><a href="#POST-/jobs/:job_uuid/resume"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/resume</span></span></a></div></li>
     <li><div><a href="#GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
     <li><div><a href="#POST-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
     <li><div><a href="#PUT-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
@@ -114,7 +115,7 @@ removed only if the job is removed.</p>
 <li><code>chain[]</code>: The tasks to add to the workflow. Optional. Multiple values
 allowed.</li>
 <li><code>onerror[]</code>: The tasks to add to the workflow fallback. Optional.
-Multiple values allowed. </li>
+Multiple values allowed.</li>
 <li><code>timeout</code>: Optional timeout, in seconds, for the workflow execution.</li>
 </ul>
 
@@ -248,7 +249,8 @@ execution status are retrieved.</p>
 <h3>HTTP Parameters.</h3>
 
 <ul>
-<li><code>execution</code>: Optional, one of <code>suceeded</code>, <code>failed</code>, <code>running</code> or <code>queued</code>.</li>
+<li><code>execution</code>: Optional, one of <code>succeeded</code>, <code>failed</code>, <code>running</code>, 'canceled'
+or <code>queued</code>.</li>
 </ul>
 
 <h3>Status Codes</h3>
@@ -361,6 +363,32 @@ cancelable.</p>
 
 <p>Same than for <code>POST /jobs</code>.</p>
 
+<h2 id="POST-/jobs/:job_uuid/resume"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/resume</span></span></h2>
+
+<p>Resumes a job's execution previously set to waiting by any of the Job tasks.
+The job should be on <em>waiting</em> status in order to resume it.</p>
+
+<p>Note that <em>resume</em> the jobs means to set its status from <em>waiting</em> to <em>queued</em>
+again so, it will run once one of the runners  has a free slot to pick it.</p>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li><code>job_uuid</code>: The job's UUID.</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>404 Not Found</code>: There's no job with the provided <code>job_uuid</code>.</li>
+<li><code>409 Conflict</code>: The job is not waiting and cannot be resumed.</li>
+<li><code>200 OK</code>: Successfully resumed job.</li>
+</ul>
+
+<h3> Response Body</h3>
+
+<p>Same than for <code>POST /jobs</code>.</p>
+
 <h2 id="GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
 
 <p>Detailed information for the given job. A task may result into a 3rd
@@ -420,9 +448,7 @@ every <code>POST</code> request will result in a new member being appended.</p>
 
 <p>Response with status code <code>405 Method Not Allowed</code>.</p>
 
-<p><a href="http://github.com/kusor/node-workflow">
-<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/e6bef7a091f5f3138b8cd40bc3e114258dd68ddf/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub">
-</a></p>
+<p><style>#forkongithub a{background:#600;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#000;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/kusor/node-workflow">Fork me on GitHub</a></span></p>
 
     </div>
 </div> <!-- end of #main -->
