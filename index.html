@@ -208,8 +208,8 @@ job's <code>target</code> in order to allow or not creation and queueing of a ne
 
 <p>In the case a job has failed for a given target and parameters, you may want to
 create a new one after some time. This is perfectly possible since the previous
-job uniqueness checks are made only versus "running" or "queued" jobs, not versus
-"finished" jobs, whatever is their result.</p>
+job uniqueness checks are made only versus "running", "waiting" or "queued" jobs,
+not versus "finished" jobs, whatever is their result.</p>
 
 <p>Same than the workflow plus:</p>
 
@@ -217,13 +217,16 @@ job uniqueness checks are made only versus "running" or "queued" jobs, not versu
 <li>Results for each one of the tasks (we need to decide about tasks results format)</li>
 <li>The job target, when given.</li>
 <li>The job parameters, when necessary.</li>
-<li>The job status (something like "queued", "running", "finished" may work).
+<li>The job status (something like "queued", "running", "retried", "finished",
+"waiting").
 Note that a job is running while a task is being executed. It's perfectly
 possible to change job status to "queued" once a task has been completed, and
 leave the job there to be picked by a runner at some later moment.</li>
 <li>When to run the job. May we want to delay execution in time?.</li>
-<li><p>Any additional property a task may want to save with the job to be used by
-a subsequent task.</p>
+<li>Any additional property a task may want to save with the job to be used by
+a subsequent task.</li>
+<li><p><code>locks</code>: (Since 0.9.3) Optional. Special property containing a String which
+will be used to build a Regular Expression. See below.</p>
 
 <pre><code>factory.job({
   workflow: aWorkflow,
@@ -237,6 +240,36 @@ a subsequent task.</p>
 });
 </code></pre></li>
 </ul>
+
+<h3>Locking other jobs using <code>job.lock</code> property</h3>
+
+<p>(Since 0.9.3)</p>
+
+<p>There are some situations where it's not enough locking just jobs having same
+parameters and target and, due to whatever the reason, you want to lock the
+creation of any job with arbitrary targets.</p>
+
+<p>For example, if you're using a job to backup some data, you probably don't
+want anything else modifying that information and, for sure, you don't want
+any other job removing it.</p>
+
+<p>On these cases, we can provide the <code>job.lock</code> property with our job, and set
+that value to a string which will be used later to build a regular expression.</p>
+
+<p>For example, let's say we want to prevent the creation of any jobs with a 
+target finished either on "modify" or "destroy" until our current job has
+been finished. We can provide our "backup" job the following property:</p>
+
+<pre><code>locks: '(modify|destroy)$'
+</code></pre>
+
+<p>That value will be compared against targets of any new job we attempt to create
+from the moment we added our "backup" job and until it has been finished. If
+target for the new jobs matches the Regular Expression built from this string,
+any attempt to create a new job will result into the error:</p>
+
+<pre><code>'Job target is currently locked by another job'
+</code></pre>
 
 <h1 id="workflow-api-and-rest-api">Workflow API and REST API.</h1>
 
@@ -561,7 +594,7 @@ different possibilities for tasks fallbacks, retries, timeouts ...</p>
 
 <h1 id="license">LICENSE</h1>
 
-<p>The MIT License (MIT) Copyright (c) 2012 Pedro Palazón Candel</p>
+<p>The MIT License (MIT) Copyright (c) 2013 Pedro Palazón Candel</p>
 
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 
