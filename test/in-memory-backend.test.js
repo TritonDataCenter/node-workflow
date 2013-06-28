@@ -126,7 +126,8 @@ test('create job', function (t) {
         params: {
             foo: 'bar',
             chicken: 'arise!'
-        }
+        },
+        locks: 'something$'
     }, function (err, job) {
         t.ifError(err, 'create job error');
         t.ok(job, 'create job ok');
@@ -157,6 +158,21 @@ test('duplicated job target', function (t) {
         }
     }, function (err, job) {
         t.ok(err, 'duplicated job error');
+        t.end();
+    });
+});
+
+
+test('locked job target', function (t) {
+    factory.job({
+        workflow: aWorkflow.uuid,
+        target: '/foo/something',
+        params: {
+            foo: 'bar',
+            chicken: 'arise!'
+        }
+    }, function (err, job) {
+        t.ok(err, 'locked job error');
         t.end();
     });
 });
@@ -286,6 +302,22 @@ test('finish job', function (t) {
 });
 
 
+// Now that the job with the lock run, this shouldn't be locked
+test('unlocked job target', function (t) {
+    factory.job({
+        workflow: aWorkflow.uuid,
+        target: '/foo/something',
+        params: {
+            foo: 'bar',
+            chicken: 'arise!'
+        }
+    }, function (err, job) {
+        t.ifError(err, 'unlocked job error');
+        t.ok(job);
+        t.end();
+    });
+});
+
 test('re queue job', function (t) {
     backend.runJob(anotherJob.uuid, runnerId, function (err, job) {
         t.ifError(err, 're queue job run job error');
@@ -411,7 +443,7 @@ test('get all jobs', function (t) {
           (typeof (jobs[0].params) === 'object' &&
            !util.isArray(jobs[0].params)),
           'job params ok');
-        t.equal(jobs.length, 2);
+        t.equal(jobs.length, 3);
         t.end();
     });
 });
@@ -421,7 +453,7 @@ test('get all jobs searching by params', function (t) {
     backend.getJobs({foo: 'bar'}, function (err, jobs) {
         t.ifError(err, 'get all jobs error');
         t.ok(jobs, 'jobs ok');
-        t.equal(jobs.length, 2);
+        t.equal(jobs.length, 3);
         t.end();
     });
 });
@@ -431,7 +463,7 @@ test('get some jobs searching by params', function (t) {
     backend.getJobs({foo: 'bar', chicken: 'arise!'}, function (err, jobs) {
         t.ifError(err, 'get all jobs error');
         t.ok(jobs, 'jobs ok');
-        t.equal(jobs.length, 1);
+        t.equal(jobs.length, 2);
         t.end();
     });
 });
@@ -469,7 +501,7 @@ test('get queued jobs', function (t) {
     backend.getJobs({execution: 'queued'}, function (err, jobs) {
         t.ifError(err, 'get queued jobs error');
         t.ok(jobs, 'jobs ok');
-        t.equal(jobs.length, 1);
+        t.equal(jobs.length, 2);
         t.equal(jobs[0].execution, 'queued');
         t.ok(util.isArray(jobs[0].chain), 'jobs chain ok');
         t.ok(util.isArray(jobs[0].onerror), 'jobs onerror ok');
