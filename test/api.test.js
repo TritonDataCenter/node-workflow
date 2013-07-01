@@ -11,7 +11,7 @@ var test = require('tap').test,
 
 
 // --- Globals
-var api, server, client, backend, wf_uuid, job_uuid;
+var api, server, client, backend, wf_uuid, job_uuid, theJob;
 
 var config = {};
 
@@ -425,6 +425,7 @@ test('POST /jobs', function (t) {
             t.equal(res.headers.location, '/jobs/' + obj.uuid);
             t.equal(obj.uuid, res.headers['request-id'], 'request-id ok');
             job_uuid = obj.uuid;
+            theJob = obj;
             t.end();
         });
     });
@@ -611,6 +612,84 @@ test('POST /jobs/:uuid/cancel', function (t) {
     });
     t.end();
 });
+
+
+
+test('POST /jobs/:uuid/resume', function (t) {
+    t.test('with unexisting job', function (t) {
+        client.post('/jobs/' + uuid() + '/resume', {
+            results: 'OK'
+        }, function (err, req, res, obj) {
+            t.ok(err);
+            t.equal(err.statusCode, 404);
+            t.equal(err.restCode, 'ResourceNotFound');
+            t.ok(err.message);
+            t.end();
+        });
+    });
+
+    t.test('with non waiting job', function (t) {
+        client.post('/jobs/' + job_uuid + '/resume', {
+            results: 'OK'
+        }, function (err, req, res, obj) {
+            t.ok(err);
+            t.equal(err.statusCode, 409);
+            t.equal(err.restCode, 'ConflictError');
+            t.ok(err.message);
+            t.equal(obj.message, 'Only waiting jobs can be resumed');
+            t.end();
+        });
+    });
+
+    t.test('with waiting job OK', function (t) {
+        theJob.chain_results.push({
+            result: 'waiting',
+            error: '',
+            name: theJob.chain[0].name,
+            started_at: new Date().toISOString(),
+            finished_at: new Date().toISOString()
+        });
+        theJob.execution = 'waiting';
+        backend.updateJob(theJob,
+            { req_id: job_uuid },
+            function (err, job) {
+                t.ifError(err);
+                client.post('/jobs/' + job_uuid + '/resume', {
+                    result: 'Remote app run task OK'
+                }, function (err, req, res, obj) {
+                    t.ifError(err);
+                    t.ok(obj);
+                    t.equal(200, res.statusCode);
+                    t.equal(obj.execution, 'queued');
+                    t.equal(obj.chain_results[0].result,
+                        'Remote app run task OK');
+                    t.end();
+                });
+            });
+    });
+
+    t.test('with waiting job error', function (t) {
+        backend.updateJobProperty(job_uuid,
+            'execution',
+            'waiting',
+            { req_id: job_uuid },
+            function (err) {
+                t.ifError(err);
+                client.post('/jobs/' + job_uuid + '/resume', {
+                    error: 'External task: the job failed'
+                }, function (err, req, res, obj) {
+                    t.ifError(err);
+                    t.ok(obj);
+                    t.equal(200, res.statusCode);
+                    t.equal(obj.execution, 'failed');
+                    t.equal(obj.chain_results[0].error,
+                        'External task: the job failed');
+                    t.end();
+                });
+            });
+    });
+});
+
 
 
 test('DELETE /workflows/:uuid', function (t) {

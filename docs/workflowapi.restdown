@@ -277,12 +277,19 @@ Same than for `POST /jobs`.
 Resumes a job's execution previously set to waiting by any of the Job tasks.
 The job should be on *waiting* status in order to resume it.
 
-Note that *resume* the jobs means to set its status from *waiting* to *queued*
+Depending on the given parameters, the job will be either *re-queued* or flag
+as *failed*. The `chain_results` entry for the task which set the job to `waiting`
+will be updated with the given `result` or `error` messages.
+
+Note that, on success, *resume* the job means to set its status from *waiting* to *queued*
 again so, it will run once one of the runners  has a free slot to pick it.
 
 ### HTTP Parameters.
 
 - `job_uuid`: The job's UUID.
+- `result`: Result message for the remote task, when it run OK. Optional. Default *"OK"*.
+- `error`: Error message for the remote task. Optional. Note that providing any value
+  for this parameter means you want to fail the job.
 
 ### Status Codes
 
