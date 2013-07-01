@@ -368,13 +368,20 @@ cancelable.</p>
 <p>Resumes a job's execution previously set to waiting by any of the Job tasks.
 The job should be on <em>waiting</em> status in order to resume it.</p>
 
-<p>Note that <em>resume</em> the jobs means to set its status from <em>waiting</em> to <em>queued</em>
+<p>Depending on the given parameters, the job will be either <em>re-queued</em> or flag
+as <em>failed</em>. The <code>chain_results</code> entry for the task which set the job to <code>waiting</code>
+will be updated with the given <code>result</code> or <code>error</code> messages.</p>
+
+<p>Note that, on success, <em>resume</em> the job means to set its status from <em>waiting</em> to <em>queued</em>
 again so, it will run once one of the runners  has a free slot to pick it.</p>
 
 <h3>HTTP Parameters.</h3>
 
 <ul>
 <li><code>job_uuid</code>: The job's UUID.</li>
+<li><code>result</code>: Result message for the remote task, when it run OK. Optional. Default <em>"OK"</em>.</li>
+<li><code>error</code>: Error message for the remote task. Optional. Note that providing any value
+for this parameter means you want to fail the job.</li>
 </ul>
 
 <h3>Status Codes</h3>
