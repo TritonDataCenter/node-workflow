@@ -127,6 +127,24 @@ will be failed with 'workflow timeout' error.
         });
 
 
+### Workflow chain and onerror MD5
+
+Starting with version `0.9.4` MD5 hashes are calculated for the stringified version
+of both, workflow `chain` and, when present, workflow `onerror` members:
+
+    wf.chain_md5 = crypto.createHash('md5').update(
+                JSON.stringify(clone(wf.chain))).digest('hex');
+
+    wf.onerror_md5 = crypto.createHash('md5').update(
+                JSON.stringify(clone(wf.onerror))).digest('hex');
+
+Both properties can be used to compare local workflow code against the version
+of that code stored into the backend, in order to detect if it's required to
+perform any modification.
+
+Note these `chain_md5` and `onerror_md5` properties are not propagated into jobs
+created from the workflow.
+
 ## Job properties
 
 While a Workflow is something "abstract", a Job may "operate" over a concrete target.

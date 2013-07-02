@@ -115,6 +115,8 @@ test('POST /workflows', function (t) {
         t.ok(obj.uuid, 'Workflow UUID ok');
         t.ok(Array.isArray(obj.chain), 'Workflow chain is an Array');
         t.ok(Array.isArray(obj.onerror), 'Workflow onerror is an Array');
+        t.ok(obj.chain_md5, 'Workflow chain_md5');
+        t.ok(obj.onerror_md5, 'Workflow onerror_md5');
         t.equal(res.headers.location, '/workflows/' + obj.uuid, 'Location ok');
         t.equal(obj.uuid, res.headers['request-id'], 'request-id ok');
         wf_uuid = obj.uuid;
