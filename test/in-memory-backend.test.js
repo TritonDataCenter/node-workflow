@@ -51,13 +51,15 @@ test('add a workflow', function (t) {
             body: function (job, cb) {
                 return cb('Workflow error');
             }
-        }]
+        }],
+        arbitrary: 'Arbitrary property'
     }, function (err, workflow) {
         t.ifError(err, 'add workflow error');
         t.ok(workflow, 'add workflow ok');
         aWorkflow = workflow;
         t.ok(workflow.chain[0].uuid, 'add workflow chain task');
         t.ok(workflow.onerror[0].uuid, 'add workflow onerror task');
+        t.ok(workflow.arbitrary);
         t.end();
     });
 });
@@ -127,7 +129,8 @@ test('create job', function (t) {
             foo: 'bar',
             chicken: 'arise!'
         },
-        locks: 'something$'
+        locks: 'something$',
+        whatever: 'test arbitrary job properties'
     }, function (err, job) {
         t.ifError(err, 'create job error');
         t.ok(job, 'create job ok');
@@ -139,6 +142,8 @@ test('create job', function (t) {
         t.ok(
           (typeof (job.params) === 'object' && !util.isArray(job.params)),
           'params ok');
+        t.ok(job.whatever);
+        t.ok(job.arbitrary);
         aJob = job;
         backend.getJobProperty(aJob.uuid, 'target', function (err, val) {
             t.ifError(err, 'get job property error');
