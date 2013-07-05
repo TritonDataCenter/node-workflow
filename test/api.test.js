@@ -109,7 +109,8 @@ test('POST /workflows', function (t) {
             body: function (job, cb) {
                 return cb(null);
             }.toString()
-        }]
+        }],
+        bar: 'baz'
     }, function (err, req, res, obj) {
         t.ifError(err, 'POST /workflows error');
         t.ok(obj.uuid, 'Workflow UUID ok');
@@ -117,6 +118,7 @@ test('POST /workflows', function (t) {
         t.ok(Array.isArray(obj.onerror), 'Workflow onerror is an Array');
         t.ok(obj.chain_md5, 'Workflow chain_md5');
         t.ok(obj.onerror_md5, 'Workflow onerror_md5');
+        t.ok(obj.bar, 'workflow extra params');
         t.equal(res.headers.location, '/workflows/' + obj.uuid, 'Location ok');
         t.equal(obj.uuid, res.headers['request-id'], 'request-id ok');
         wf_uuid = obj.uuid;
@@ -423,6 +425,7 @@ test('POST /jobs', function (t) {
             t.ok(util.isArray(obj.onerror));
             t.equal(obj.workflow_uuid, wf_uuid);
             t.equivalent(obj.params, {foo: 'bar', chicken: 'arise!'});
+            t.ok(obj.foo, 'extra params');
             t.equal(obj.target, '/foo/bar');
             t.equal(res.headers.location, '/jobs/' + obj.uuid);
             t.equal(obj.uuid, res.headers['request-id'], 'request-id ok');

@@ -145,6 +145,7 @@ perform any modification.
 Note these `chain_md5` and `onerror_md5` properties are not propagated into jobs
 created from the workflow.
 
+
 ## Job properties
 
 While a Workflow is something "abstract", a Job may "operate" over a concrete target.
@@ -221,6 +222,29 @@ target for the new jobs matches the Regular Expression built from this string,
 any attempt to create a new job will result into the error:
 
     'Job target is currently locked by another job'
+
+
+## Adding extra properties to workflows and jobs through API methods
+
+While it's possible to add any arbitrary property to a workflow or a job,
+(as far as the backend supports it), API methods performs a filter to only
+allow known attributes. In order to be able to add new attributes using the
+API, you need to specify these as an Array of attribute names added to the
+`api` config section as follows:
+
+    {
+        "backend": {
+            "module": "..",
+            "opts": {
+            }
+        },
+        "api": {
+            "port": 8080,
+            "wf_extra_params": ["bar"],
+            "job_extra_params": ["foo"]
+        },
+        "runner": { ... }
+    }
 
 
 # Workflow API and REST API.
