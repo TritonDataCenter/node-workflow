@@ -31,6 +31,7 @@
     <li><div><a href="#Task-properties"><span class="method name"><span class="name">Task properties</span></span></a></div></li>
     <li><div><a href="#Workflow-properties"><span class="method name"><span class="name">Workflow properties</span></span></a></div></li>
     <li><div><a href="#Job-properties"><span class="method name"><span class="name">Job properties</span></span></a></div></li>
+    <li><div><a href="# Adding-extra-properties-to-workflows-and-jobs-through-API-methods"><span class="method name"><span class="name"> Adding extra properties to workflows and jobs through API methods</span></span></a></div></li>
   </ul></li>
   <li><div><a href="#workflow-api-and-rest-api">Workflow API and REST API.</a></div></li>
   <li><div><a href="#workflow-runners"> Workflow Runners</a></div>
@@ -288,6 +289,29 @@ target for the new jobs matches the Regular Expression built from this string,
 any attempt to create a new job will result into the error:</p>
 
 <pre><code>'Job target is currently locked by another job'
+</code></pre>
+
+<h2 id=" Adding-extra-properties-to-workflows-and-jobs-through-API-methods"><span class="method name"><span class="name"> Adding extra properties to workflows and jobs through API methods</span></span></h2>
+
+<p>While it's possible to add any arbitrary property to a workflow or a job,
+(as far as the backend supports it), API methods performs a filter to only
+allow known attributes. In order to be able to add new attributes using the
+API, you need to specify these as an Array of attribute names added to the
+<code>api</code> config section as follows:</p>
+
+<pre><code>{
+    "backend": {
+        "module": "..",
+        "opts": {
+        }
+    },
+    "api": {
+        "port": 8080,
+        "wf_extra_params": ["bar"],
+        "job_extra_params": ["foo"]
+    },
+    "runner": { ... }
+}
 </code></pre>
 
 <h1 id="workflow-api-and-rest-api">Workflow API and REST API.</h1>
