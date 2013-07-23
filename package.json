@@ -27,7 +27,7 @@
         "vasync": "1.3.3",
         "backoff": "1.2.0",
         "clone": "0.1.6",
-        "restify": "2.3.5",
+        "restify": "2.5.1",
         "sigyan": "0.2.0"
     },
     "scripts": {
