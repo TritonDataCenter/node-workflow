@@ -56,10 +56,11 @@
 
 
 <p>This document describes the HTTP REST API for workflows and tasks, and for the
-creation of Jobs and tracking their execution progres.</p>
+creation of Jobs and tracking their execution progress.</p>
 
 <p><strong>This API speaks only JSON</strong>. For every request. For all the HTTP methods.
-This means that any <code>POST</code> or <code>PUT</code> request <code>Content-Type</code> <strong>must be JSON</strong>.</p>
+This means that any <code>POST</code> or <code>PUT</code> request, the <code>Content-Type</code> <strong>must be
+JSON</strong>.</p>
 
 <p>(See <a href="index.html">node-workflow</a> docs for information on the whole module,
 not just the REST API).</p>
@@ -76,14 +77,14 @@ not just the REST API).</p>
 <li><code>/jobs/:uuid/info</code></li>
 </ul>
 
-<p><code>/workflows</code> accept any of the HTTP verbs for the usual CRUD
-but <code>/jobs</code> will not accept <code>PUT</code>, given the only way to modify a Job once it
-has been created is through execution.</p>
+<p><code>/workflows</code> accept any of the HTTP verbs for the usual CRUD, but <code>/jobs</code> will
+not accept <code>PUT</code> since the only way to modify a Job once it has been created is
+through the job's execution.</p>
 
-<p>For the same reason, <code>/jobs/:uuid/info</code> will not accept neither <code>POST</code>
-requests, since the staus information for a Job is created when the Job itself
-is created, neither <code>DELETE</code>, given the status information for a job will be
-removed only if the job is removed.</p>
+<p>For the same reason, <code>/jobs/:uuid/info</code> will not accept neither <code>POST</code> (since the
+staus information for a Job is created when the Job itself is created), nor
+<code>DELETE</code> (given the status information for a job will be removed only if the job
+is removed).</p>
 
 <h2 id="GET-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows</span></span></h2>
 
@@ -96,13 +97,13 @@ removed only if the job is removed.</p>
 <h3>Status Codes</h3>
 
 <ul>
-<li><code>200 OK</code>: A list of existing workflows is returned, even if there isn't
-        any workflow, which will result on an empty array.</li>
+<li><code>200 OK</code>: A list of existing workflows is returned. If there are no workflows,
+        an empty array is returned.</li>
 </ul>
 
 <h3> Response Body</h3>
 
-<p>An array of workflow objects, (see <code>POST /workflows</code>).</p>
+<p>An array of workflow objects (see <code>POST /workflows</code>).</p>
 
 <h2 id="POST-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/workflows</span></span></h2>
 
@@ -111,42 +112,42 @@ removed only if the job is removed.</p>
 <h3>HTTP Parameters</h3>
 
 <ul>
-<li><code>name</code>: The workflow name. Required.</li>
-<li><code>chain[]</code>: The tasks to add to the workflow. Optional. Multiple values
+<li><code>name</code>: Required. The workflow name.</li>
+<li><code>chain[]</code>: Optional. The tasks to add to the workflow. Multiple values
 allowed.</li>
-<li><code>onerror[]</code>: The tasks to add to the workflow fallback. Optional.
-Multiple values allowed.</li>
-<li><code>timeout</code>: Optional timeout, in seconds, for the workflow execution.</li>
+<li><code>onerror[]</code>: Optional. The tasks to add to the workflow fallback. Multiple
+values allowed.</li>
+<li><code>timeout</code>: Optional. Timeout in seconds for workflow execution.</li>
 </ul>
 
 <h3>Every <code>task</code> may be composed of:</h3>
 
 <ul>
-<li><code>name</code>: The task name. Optional.</li>
+<li><code>name</code>: Optional. The task name.</li>
 <li><code>body</code>: Required. A string enclosing a JavaScript function definition.
 The function <strong>must</strong> take the parameters <code>job</code> and <code>cb</code>, where <code>cb</code> is a
-callback to be called by the function when its execution is finished, either
-without any arguments, (<em>task succeed</em>), or with an error message, (<em>task
-failed</em>).</li>
+callback to be called by the function when its execution is finished. If the
+task succeeded, invoke the cb without arguments. If the task failed, invoke
+the cb with an error mssage.</li>
 <li><code>fallback</code>: Optional. A string enclosing a JavaScript function definition.
 The function <strong>must</strong> take the parameters <code>err</code>, <code>job</code> and <code>cb</code>, where <code>cb</code>
 is a callback to be called by the function when its execution fails;
 <code>err</code> is the error message returned by task <code>body</code>.</li>
-<li><code>retry</code>: Optional. Number of times to retry the task's body execution
-before either fail the task or call the <code>fallback</code> function, when given.</li>
-<li><code>timeout</code>: Optional timeout, in seconds, for the task execution.</li>
+<li><code>retry</code>: Optional. Number of times to retry the task's body before either
+failing the task, or calling the <code>fallback</code> function (when given).</li>
+<li><code>timeout</code>: Optional. Timeout in seconds for task execution.</li>
 </ul>
 
 <h3>Status Codes</h3>
 
 <ul>
-<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect
-Information about the missing/incorrect parameter will be included into
+<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect.
+Information about the missing/incorrect parameter will be included in the
 response body.</li>
 <li><code>201 Created</code>: Successful creation of the workflow. The workflow's JSON
-representation will be included into the response body, together with a
-<code>Location</code> header for the new resource. Generated workflow's <code>uuid</code> will be
-part of this <code>Location</code> and a member of the returned workflow JSON object.</li>
+representation will be included in the response body, together with a
+<code>Location</code> header for the new resource. A workflow's generated <code>uuid</code> will be
+part of this <code>Location</code>, and a member of the returned workflow JSON object.</li>
 </ul>
 
 <h4> Response Body:</h4>
@@ -156,11 +157,11 @@ part of this <code>Location</code> and a member of the returned workflow JSON ob
   name: 'The workflow name',
   chain: [:task, :task, ...],
   onerror: [:task, :task, ...],
-  timeout: 3600(secs)
+  timeout: 3600
 }
 </code></pre>
 
-<h4>Sample task on the response:</h4>
+<h4>Sample task in the response:</h4>
 
 <pre><code>{
   uuid: UUID,
@@ -180,7 +181,7 @@ part of this <code>Location</code> and a member of the returned workflow JSON ob
       return cb('Arise chicken, arise!');
     }
   }",
-  timeout: 360(secs)
+  timeout: 360
 }
 </code></pre>
 
@@ -200,23 +201,23 @@ part of this <code>Location</code> and a member of the returned workflow JSON ob
 returned as response body.</li>
 </ul>
 
-<p>Note this API will not keep track of <em>destroyed</em> workflows, therefore, when a
-request for such workflows is made, the HTTP Status code will be <code>404 Not Found</code>
+<p>Note this API will not keep track of <em>destroyed</em> workflows. When a request for
+destroyed workflows is made, the HTTP Status code will be <code>404 Not Found</code>
 instead of <code>410 Gone</code>.</p>
 
 <h3>Response body</h3>
 
-<p>Same than for <code>POST /workflows</code> + <code>wf_uuid</code>.</p>
+<p>Same as for <code>POST /workflows</code> + <code>wf_uuid</code>.</p>
 
 <h2 id="PUT-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
 
 <h3>HTTP Parameters</h3>
 
-<p>Same than for <code>POST /workflows</code>.</p>
+<p>Same as for <code>POST /workflows</code>.</p>
 
 <h3> Status Codes</h3>
 
-<p>Same than for <code>POST /workflows</code> with the addition of:</p>
+<p>Same as for <code>POST /workflows</code> with the addition of:</p>
 
 <ul>
 <li><code>404 Not Found</code>, when the provided <code>wf_uuid</code> cannot be found on the backend.</li>
@@ -224,7 +225,7 @@ instead of <code>410 Gone</code>.</p>
 
 <h3> Response body</h3>
 
-<p>Same than for <code>POST /workflows</code>.</p>
+<p>Same as for <code>POST /workflows</code>.</p>
 
 <h2 id="DELETE-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
 
@@ -242,21 +243,21 @@ instead of <code>410 Gone</code>.</p>
 
 <h2 id="GET-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs</span></span></h2>
 
-<p>Retrieve a list of jobs. Without <code>execution</code> HTTP parameter all the existing
-jobs will be retrieved. If <code>execution</code> is given, only the jobs on the given
+<p>Retrieve a list of jobs. Without an <code>execution</code> HTTP parameter, all the existing
+jobs will be retrieved. If <code>execution</code> is given, only the jobs with the given
 execution status are retrieved.</p>
 
 <h3>HTTP Parameters.</h3>
 
 <ul>
-<li><code>execution</code>: Optional, one of <code>succeeded</code>, <code>failed</code>, <code>running</code>, 'canceled'
+<li><code>execution</code>: Optional. One of <code>succeeded</code>, <code>failed</code>, <code>running</code>, 'canceled'
 or <code>queued</code>.</li>
 </ul>
 
 <h3>Status Codes</h3>
 
 <ul>
-<li><code>200 OK</code>: A list of existing jobs is returned, even when it's totally empty.</li>
+<li><code>200 OK</code>: A list of existing jobs is returned, even when it's empty.</li>
 </ul>
 
 <h2 id="POST-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs</span></span></h2>
@@ -264,13 +265,12 @@ or <code>queued</code>.</li>
 <h3>HTTP Parameters.</h3>
 
 <ul>
-<li><code>workflow</code>: Required. UUID of the workflow from which the new job will
-be created.</li>
-<li><code>exec_after</code>: Optional, ISO 8601 Date. Delay job execution until the provided
+<li><code>workflow</code>: Required. UUID of the workflow from which the new job will be
+created.</li>
+<li><code>exec_after</code>: Optional. ISO 8601 Date. Delay job execution until the provided
 time.</li>
 <li><code>target</code>: The job's target, intended to restrict the creation of another job
-with this same target and same extra parameters while this one execution hasn't
-finished.</li>
+with this same target and parameters until this job completes.</li>
 <li>Any extra <code>k/v</code> pairs of parameters desired, which will be passed to the job
 object as an object like <code>{k1: v1, k2: v2, ...}</code>.</li>
 </ul>
@@ -278,13 +278,13 @@ object as an object like <code>{k1: v1, k2: v2, ...}</code>.</li>
 <h3>Status Codes</h3>
 
 <ul>
-<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect
-Information about the missing/incorrect parameter will be included into
+<li><code>409 Conflict</code>: One of the required parameters is either missing or incorrect.
+Information about the missing/incorrect parameter will be included in the
 response body.</li>
-<li><code>201 Created</code>: Successful creation of the job. The job's JSON
-representation will be included into the response body, together with a
-<code>Location</code> header for the new resource. Generated job's <code>uuid</code> will be
-part of this <code>Location</code> and a member of the returned job JSON object.</li>
+<li><code>201 Created</code>: Successful creation of the job. The job's JSON representation
+will be included in the the response body together with a <code>Location</code> header
+for the new resource. The job's generated <code>uuid</code> will be part of this
+<code>Location</code>, and a member of the returned job JSON object.</li>
 </ul>
 
 <h3> Response Body</h3>
@@ -324,13 +324,13 @@ part of this <code>Location</code> and a member of the returned job JSON object.
 returned as response body.</li>
 </ul>
 
-<p>Note this API will not keep track of <em>destroyed</em> jobs, therefore, when a
-request for such tasks is made, the HTTP Status code will be <code>404 Not Found</code>
+<p>Note this API will not keep track of <em>destroyed</em> workflows. When a request for
+destroyed workflows is made, the HTTP Status code will be <code>404 Not Found</code>
 instead of <code>410 Gone</code>.</p>
 
 <h3> Response Body</h3>
 
-<p>Same than for <code>POST /jobs</code>.</p>
+<p>Same as for <code>POST /jobs</code>.</p>
 
 <h2 id="PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></h2>
 
@@ -342,8 +342,7 @@ instead of <code>410 Gone</code>.</p>
 
 <h2 id="POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></h2>
 
-<p>Cancel a job's execution. The job should not be finished in order to be
-cancelable.</p>
+<p>Cancel a job's execution. Only unfinished jobs can be canceled.</p>
 
 <h3>HTTP Parameters.</h3>
 
@@ -365,23 +364,24 @@ cancelable.</p>
 
 <h2 id="POST-/jobs/:job_uuid/resume"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/resume</span></span></h2>
 
-<p>Resumes a job's execution previously set to waiting by any of the Job tasks.
-The job should be on <em>waiting</em> status in order to resume it.</p>
+<p>Resumes a job's execution which was previously set to waiting by any of the Job
+tasks. The job should have a <em>waiting</em> status in order to resume it.</p>
 
-<p>Depending on the given parameters, the job will be either <em>re-queued</em> or flag
-as <em>failed</em>. The <code>chain_results</code> entry for the task which set the job to <code>waiting</code>
-will be updated with the given <code>result</code> or <code>error</code> messages.</p>
+<p>Depending on the given parameters, the job will be either <em>re-queued</em> or flagged
+as <em>failed</em>. The <code>chain_results</code> entry for the task which set the job to
+<code>waiting</code> will be updated with the given <code>result</code> or <code>error</code> messages.</p>
 
-<p>Note that, on success, <em>resume</em> the job means to set its status from <em>waiting</em> to <em>queued</em>
-again so, it will run once one of the runners  has a free slot to pick it.</p>
+<p>On success, <em>resume</em> the job will set its status from <em>waiting</em> to <em>queued</em>
+again. The job will run once one of the runners has a free slot to run it.</p>
 
 <h3>HTTP Parameters.</h3>
 
 <ul>
 <li><code>job_uuid</code>: The job's UUID.</li>
-<li><code>result</code>: Result message for the remote task, when it run OK. Optional. Default <em>"OK"</em>.</li>
-<li><code>error</code>: Error message for the remote task. Optional. Note that providing any value
-for this parameter means you want to fail the job.</li>
+<li><code>result</code>: Optional. Result message from the remote task if it runs okay.
+Defaults to <em>"OK"</em>.</li>
+<li><code>error</code>: Optional. Error message for the remote task. Note that providing any
+value for this parameter means you want to fail the job.</li>
 </ul>
 
 <h3>Status Codes</h3>
@@ -398,16 +398,15 @@ for this parameter means you want to fail the job.</li>
 
 <h2 id="GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
 
-<p>Detailed information for the given job. A task may result into a 3rd
-party application executing a process which may require some time/steps to
-finish. While our task is running and waiting for the finalization of such
-process, those 3rd party applications can publish information about progress
-using <code>POST /jobs/:job_uuid/info</code>; this information could then being used
-by other applications interested on job results using
-<code>GET /jobs/:job_uuid/info</code>.</p>
+<p>Detailed information about the given job. A task may cause a 3rd-party
+application to execute a process which may require some time to finish. While
+our task is running and waiting for the finalization of such a process, those
+3rd-party applications can publish information about progress using
+<code>POST /jobs/:job_uuid/info</code>; this information can then being used by other
+applications interested in job results using <code>GET /jobs/:job_uuid/info</code>.</p>
 
-<p>This information will consist into an arbitrary length array, where
-every <code>POST</code> request will result in a new member being appended.</p>
+<p>This information will consist of an arbitrary-length array, where every <code>POST</code>
+request will result in a new member being appended.</p>
 
 <h3>HTTP Parameters.</h3>
 
@@ -417,7 +416,7 @@ every <code>POST</code> request will result in a new member being appended.</p>
 
 <h3>Status Codes</h3>
 
-<p>Same than for <code>GET /jobs/:job_uuid</code>.</p>
+<p>Same as for <code>GET /jobs/:job_uuid</code>.</p>
 
 <h3> Response Body</h3>
 
@@ -432,7 +431,8 @@ every <code>POST</code> request will result in a new member being appended.</p>
 <h3>HTTP Parameters.</h3>
 
 <ul>
-<li><p><code>message</code>: Required. Object containing a message regarding operations progresses.</p>
+<li><p><code>message</code>: Required. Object containing a message regarding the progress of
+operations.</p>
 
 <p>{ '10%': 'Task completed step one' }</p></li>
 </ul>
@@ -441,7 +441,7 @@ every <code>POST</code> request will result in a new member being appended.</p>
 
 <h3>Status Codes</h3>
 
-<p>Same than for <code>GET /jobs/:job_uuid</code>.</p>
+<p>Same as for <code>GET /jobs/:job_uuid</code>.</p>
 
 <h3> Response Body</h3>
 

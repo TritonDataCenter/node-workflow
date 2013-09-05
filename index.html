@@ -60,37 +60,34 @@
 <div class="intro">
 
 
-<p>Either if you are building a completely new system composed of many discreet API
+<p>If you are building a completely new system composed of many discrete API
 applications, each of them with a clearly defined area of responsibility, or
-in the case you are trying to assemble a collaboration channel between an
-heterogeneous set of totally unrelated API applications, you need a way to
-orchestrate interactions between these applications.</p>
+if you are trying to assemble a collaboration channel between a heterogeneous
+set of unrelated API applications, you need a means to orchestrate interactions
+between these applications.</p>
 
-<p>So a workflow is effectively an orchestration.</p>
+<p>A workflow is effectively an orchestration. It gives you a way to decompose a
+complex series of operations down to a sequence of discrete tasks within a state
+machine.</p>
 
-<p>You want a workflow, because it gives you a way to decompose a complex series
-of operations down to a sequence of discreet tasks with a state machine.</p>
+<p>The sequence of tasks is more complex than just a series. Tasks can fail, and
+so you need to deal with timeouts, retries, "stuck" flows, and so forth.</p>
 
-<p>The sequence of tasks is more complex than just a series. The tasks of course
-can fail, and so you need to deal with timeouts, retries, "stuck" flows, etc.</p>
-
-<p>You can define a workflow and its tasks using an arbitrarily complex language.
-Or you can keep it simple by taking some assumptions:</p>
+<p>One way to define a workflow and its tasks is using an arbitrarily-complex
+language. Or you can keep it simple by making some assumptions:</p>
 
 <ul>
 <li>Code is the definition language.</li>
 <li>Tasks are independent. Can be used into different workflows.</li>
-<li>The only way of communication between tasks is the workflow. Tasks can add,
+<li>The only way to communicate between tasks is the workflow. Tasks can add,
 remove or modify properties of the workflow.</li>
 <li>If a task requires a specific property of the workflow to be present, the
 task can fail, or re-schedule itself within the workflow, or ...</li>
 </ul>
 
-<p>System needs to be designed with failures in mind. Tasks can fail and, as a
+<p>The system must be designed with failures in mind. Tasks can fail and, as a
 consequence, workflows may fail. You may want to recover from a task failure,
 or from a whole workflow failure.</p>
-
-<p>The system itself may also fail due to any unexpected reason.</p>
 
 <h2>node-workflow</h2>
 
@@ -103,49 +100,50 @@ concrete <code>jobs</code> with specific <code>targets</code> and <code>paramete
 <h1 id="terminology">Terminology</h1>
 
 <ul>
-<li><em>Task</em>: A single discreet operation, such as Send Email.</li>
+<li><em>Task</em>: A single discrete operation, such as Send Email.</li>
 <li><em>Workflow</em>: An abstract definition of a sequence of Tasks, including
-transition conditions, and branches.</li>
-<li><em>Job</em>: An instance of a Workflow containing all the required information
-to execute itself and, eventually, a target.</li>
+transition conditions and branches.</li>
+<li><em>Job</em>: The execution of a workflow. It is an instance of a Workflow,
+containing all the required information to execute itself.</li>
 </ul>
 
 <h1 id="system-components">System components</h1>
 
 <ul>
-<li>A workflow and task <strong>factory</strong>, where you can create tasks, workflows and queue
-jobs, using NodeJS.</li>
-<li>Alongside the <strong>factory</strong>, <strong>Workflow API</strong> will allow creation of tasks,
-workflows and jobs through a REST API using any other language, with JSON as
-the payload.</li>
-<li>An <strong>Status API</strong>, where you can check the status of a given job, get information
-about failures, ...</li>
-<li><strong>Job runners</strong>. You can have as many runners as you want. Runners can live
-everywhere. Once a runner "picks" a job, that job is flagged with the runner
-identifier - <em>locked</em> - so no other runner attempts to execute it. One runner
-can be composed of multiple associated processes to execute jobs.</li>
+<li>A workflow and task <strong>factory</strong> for creating tasks, workflows and queueing
+jobs. Uses node.js.</li>
+<li>Alongside the <strong>factory</strong>, the <strong>Workflow API</strong> allows the creation of tasks,
+workflows and jobs through a REST API, with JSON as the payload.</li>
+<li>A <strong>Status API</strong>, used to check the status of a given job, get information
+about failures, and so forth.</li>
+<li><strong>Job runners</strong>. These are what actually execute workflows. You can have as
+many runners as you want, and they can live anywhere on the network. Once a
+runner atomically takes a job, that job is flagged with the runner's unique
+identifier - <em>locked</em> - to prevent any other runner from executing it. One
+runner can be composed of multiple associated processes for executing jobs.</li>
 </ul>
 
-<p>The factory talks to a <strong>persistence layer</strong>, and saves workflows and tasks. Also,
-once a Job is created, it's saved with all the required information, including
-the tasks code at the moment of job creation. This will <strong>avoid any potential
-problems resulting of underlaying modifications of tasks once a Job has been
-queued</strong>.</p>
+<p>The factory talks to a <strong>persistence layer</strong>, and saves workflows and tasks.
+Once a Job is created, it's saved with all the information required for its
+execution, including the associated tasks' code at the moment of job creation.
+This will <strong>avoid any potential problems resulting from the modification of
+task code once a Job has already been queued</strong>.</p>
 
-<p>A runner itself may go dive nuts while a job is being executed, leaving the
-job into an unappropriated <em>"running"</em> status. When a runner starts, there
-shouldn't be any job flagged with the runner identifier and, furthermore,
-it shouldn't be on a running status. If that happens, the first thing a runner
-must do on restart is to pick any job into such invalid state and cancel it.</p>
+<p>A runner itself may unintentionally go nuts or crash while a job is being
+executed, leaving the job with an inappropriated <em>"running"</em> status. When a
+runner (re)starts, there shouldn't be any job flagged with that runner's
+unique identifier, nor should it have a running status. If that happens, the
+first thing a runner must do upon restart is pick any job with such an invalid
+state and cancel it.</p>
 
 <h2 id="Task-properties"><span class="method name"><span class="name">Task properties</span></span></h2>
 
 <ul>
-<li>A name,</li>
-<li>code to be executed,</li>
-<li>timeout,</li>
-<li>number of retries, when proceed</li>
-<li><p>a fall-back task to be executed when the task fails.</p>
+<li>Name.</li>
+<li>Code to be executed.</li>
+<li>Timeout.</li>
+<li>Number of retries.</li>
+<li><p>A fall-back task to be executed if the task fails.</p>
 
 <pre><code>{
   name: 'A Task',
@@ -167,16 +165,16 @@ must do on restart is to pick any job into such invalid state and cancel it.</p>
 </ul>
 
 <p>Note that a task's timeout shouldn't be bigger than the workflow timeout, but
-it really doesn't matter. If a task execution exceeds the workflow timeout it
-will be failed with 'workflow timeout' error.</p>
+it really doesn't matter. If a task's execution exceeds the workflow timeout, it
+will be failed with a 'workflow timeout' error.</p>
 
 <h2 id="Workflow-properties"><span class="method name"><span class="name">Workflow properties</span></span></h2>
 
 <ul>
-<li>A name.</li>
-<li>The 'chain' of tasks to be executed.</li>
+<li>Name.</li>
+<li>A 'chain' of tasks to be executed.</li>
 <li>A global timeout.</li>
-<li><p>Alternate error branch.</p>
+<li><p>An alternate error branch.</p>
 
 <pre><code>factory.workflow({
   name: 'Sample Workflow',
@@ -194,8 +192,9 @@ will be failed with 'workflow timeout' error.</p>
 
 <h3>Workflow chain and onerror MD5</h3>
 
-<p>Starting with version <code>0.9.4</code> MD5 hashes are calculated for the stringified version
-of both, workflow <code>chain</code> and, when present, workflow <code>onerror</code> members:</p>
+<p>Starting with version <code>0.9.4</code>, MD5 hashes are calculated for the stringified
+version of both the workflow <code>chain</code> and the workflow <code>onerror</code> members (when
+present):</p>
 
 <pre><code>wf.chain_md5 = crypto.createHash('md5').update(
             JSON.stringify(clone(wf.chain))).digest('hex');
@@ -204,49 +203,46 @@ wf.onerror_md5 = crypto.createHash('md5').update(
             JSON.stringify(clone(wf.onerror))).digest('hex');
 </code></pre>
 
-<p>Both properties can be used to compare local workflow code against the version
-of that code stored into the backend, in order to detect if it's required to
-perform any modification.</p>
+<p>Both properties can compared against the version of that code stored in the
+backend to detect if any modifications must be performed.</p>
 
 <p>Note these <code>chain_md5</code> and <code>onerror_md5</code> properties are not propagated into jobs
 created from the workflow.</p>
 
 <h2 id="Job-properties"><span class="method name"><span class="name">Job properties</span></span></h2>
 
-<p>While a Workflow is something "abstract", a Job may "operate" over a concrete target.
+<p>While a Workflow is something abstract, a Job can operate on a concrete target.
 For example, you can use a REST URI as the target of the job, or an LDAP DN, or
 whatever you need to make sure that the same job will not be queued twice.</p>
 
-<p>When jobs are created and queued, they will check if another job with the same
-target (and the same parameters) exists and, if that's the case, the job creation
-will fail.</p>
+<p>When jobs are created and queued, they check if another job with the same target
+(and the same parameters) exists. If so, the job creation will fail.</p>
 
 <p>Obviously, there are some cases where you may want the same job to be queued
-exactly for the same target; for example, POST to a given URI to create a new
-collection element. That's the reason job's <code>parameters</code> are also checked with
-job's <code>target</code> in order to allow or not creation and queueing of a new job.</p>
+for the same target; for example, POST to a given URI to create a new collection
+element. For that reason, a job's <code>parameters</code> are also checked with the job's
+<code>target</code> when creating a new job.</p>
 
-<p>In the case a job has failed for a given target and parameters, you may want to
-create a new one after some time. This is perfectly possible since the previous
-job uniqueness checks are made only versus "running", "waiting" or "queued" jobs,
-not versus "finished" jobs, whatever is their result.</p>
+<p>If a job has failed for a given target and parameters, you may want to
+create a new job after some time. This is possible since the uniqueness checks
+are only made against previous jobs which are "running" "waiting" or "queued",
+not versus "finished" jobs (regardless of their result).</p>
 
-<p>Same than the workflow plus:</p>
+<p>Same as the workflow, plus:</p>
 
 <ul>
-<li>Results for each one of the tasks (we need to decide about tasks results format)</li>
+<li>Results for each one of the tasks.</li>
 <li>The job target, when given.</li>
 <li>The job parameters, when necessary.</li>
 <li>The job status (something like "queued", "running", "retried", "finished",
-"waiting").
-Note that a job is running while a task is being executed. It's perfectly
+"waiting"). Note that a job is running while a task is being executed. It's
 possible to change job status to "queued" once a task has been completed, and
 leave the job there to be picked by a runner at some later moment.</li>
-<li>When to run the job. May we want to delay execution in time?.</li>
-<li>Any additional property a task may want to save with the job to be used by
+<li>When to run the job. Maybe we want to delay execution in time?.</li>
+<li>Any additional properties a task may want to save with the job, to be used by
 a subsequent task.</li>
-<li><p><code>locks</code>: (Since 0.9.3) Optional. Special property containing a String which
-will be used to build a Regular Expression. See below.</p>
+<li><p>Locks. Optional. A special property containing a string which will be used to
+build a Regular Expression. See below.</p>
 
 <pre><code>factory.job({
   workflow: aWorkflow,
@@ -265,39 +261,36 @@ will be used to build a Regular Expression. See below.</p>
 
 <p>(Since 0.9.3)</p>
 
-<p>There are some situations where it's not enough locking just jobs having same
-parameters and target and, due to whatever the reason, you want to lock the
-creation of any job with arbitrary targets.</p>
+<p>There are some situations where it's not enough to lock jobs solely having the
+same parameters and target. For whatever reason, you want to lock the creation
+of any job with arbitrary targets. E.g. if you're using a job to backup some
+data, you probably don't want anything else modifying or removing that
+information.</p>
 
-<p>For example, if you're using a job to backup some data, you probably don't
-want anything else modifying that information and, for sure, you don't want
-any other job removing it.</p>
-
-<p>On these cases, we can provide the <code>job.lock</code> property with our job, and set
+<p>In these cases, we can provide the <code>job.lock</code> property with our job, and set
 that value to a string which will be used later to build a regular expression.</p>
 
 <p>For example, let's say we want to prevent the creation of any jobs with a
-target finished either on "modify" or "destroy" until our current job has
-been finished. We can provide our "backup" job the following property:</p>
+target of "modify" or "destroy" until our current job has been finished. We can
+provide our "backup" job the following property:</p>
 
 <pre><code>locks: '(modify|destroy)$'
 </code></pre>
 
-<p>That value will be compared against targets of any new job we attempt to create
-from the moment we added our "backup" job and until it has been finished. If
-target for the new jobs matches the Regular Expression built from this string,
-any attempt to create a new job will result into the error:</p>
+<p>That value will be compared against the targets of any new job we attempt to
+create, from the moment we added our "backup" job until it has been finished.
+Any attempt to create a new job with a target that matches the above lock will
+result in the error:</p>
 
 <pre><code>'Job target is currently locked by another job'
 </code></pre>
 
 <h2 id=" Adding-extra-properties-to-workflows-and-jobs-through-API-methods"><span class="method name"><span class="name"> Adding extra properties to workflows and jobs through API methods</span></span></h2>
 
-<p>While it's possible to add any arbitrary property to a workflow or a job,
-(as far as the backend supports it), API methods performs a filter to only
-allow known attributes. In order to be able to add new attributes using the
-API, you need to specify these as an Array of attribute names added to the
-<code>api</code> config section as follows:</p>
+<p>While it's possible to add any arbitrary property to a workflow or a job
+(as far as the backend supports it), API methods filter out unknown attributes.
+In order to allow new attributes using the API, you need to specify these as an
+Array of attribute names added to the <code>api</code> config section, as follows:</p>
 
 <pre><code>{
     "backend": {
@@ -317,12 +310,11 @@ API, you need to specify these as an Array of attribute names added to the
 <h1 id="workflow-api-and-rest-api">Workflow API and REST API.</h1>
 
 <p>You can create <code>workflows</code> and <code>jobs</code> either by using the provided REST API(s),
-or by embedding this module's API into your own system(s).
-The former will be easier to get up and running, but you should use the latter
-when:</p>
+or by embedding this module's API into your own system(s). The former will be
+easier to get up and running, but you should use the latter when:</p>
 
 <ul>
-<li>You want to use the Worflow API in a (node.js) application that is not the
+<li>You want to use the Worflow API in a node.js application that is not the
 bundled REST API.</li>
 <li>You want to use a different backend storage system, or otherwise change the
 assumptions of the bundled REST API</li>
@@ -338,9 +330,9 @@ same configuration file we pass to our <code>WorkflowRunner</code>:</p>
 
 <h1 id="workflow-runners"> Workflow Runners</h1>
 
-<p>In order to execute the <code>jobs</code>, at least one <code>WorkflowRunner</code> must be up and
-ready to take jobs. An arbitrary number of <code>runners</code> can be used on any set of
-hosts; configuration must match.</p>
+<p>In order to execute <code>jobs</code>, at least one <code>WorkflowRunner</code> must be up and ready
+to take jobs. An arbitrary number of <code>runners</code> can be used on any set of
+hosts; their configurations must match.</p>
 
 <p>An example <code>WorkflowRunner</code> is provided with the package and can be started
 with:</p>
@@ -352,36 +344,36 @@ with:</p>
 many as needed, and all of them reporting health periodically.</p>
 
 <p>All runners will periodically query the backend for information about other
-runners and, in case they detect one of those runners has been inactive for a
+runners. If they detect one of those other runners has been inactive for a
 configurable period of time, they will check for stale jobs associated with
-the inactive runner and cancel those jobs.</p>
+that inactive runner and cancel those jobs.</p>
 
-<p>The first thing a runner does when it boots, is to register itself on the
-backend, (which is the same as report its health). At a configurable interval
+<p>The first thing a runner does when it boots is to register itself with the
+backend (which is the same as reporting its health). At a configurable interval
 a runner will try to pick queued jobs and execute them. Runners will report
 activity at this same interval.</p>
 
-<p>Every runner must have an unique identifier, which can be passed at runner's
-initialization, (or it will be auto-generated the first time the runner is
-created and saved for future runs).</p>
+<p>Every runner must have a unique identifier, which can either be passed in at the
+runner's initialization, or be auto-generated the first time the runner is
+created and saved for future runs.</p>
 
 <p>Runners will spawn child processes, one process per job. Max number of child
 processes is also configurable.</p>
 
 <h2 id=" How-runners-pick-and-execute-jobs"><span class="method name"><span class="name"> How runners pick and execute jobs</span></span></h2>
 
-<p>A runner will query the backend for queued jobs, (exactly the same number of
-them than available child processes to spawn). Once the runner gets a set of
+<p>A runner will query the backend for queued jobs (exactly the same number of
+jobs as available child processes to spawn). Once the runner gets a set of
 these queued jobs, it will try to obtain an exclusive lock on each job before
 processing it. When a job is locked by a runner, it will not be found by other
 runners searching for queued jobs.</p>
 
-<p>Once the runner has the exclusive lock over the job, it'll change job status
+<p>Once the runner has an exclusive lock over the job, it'll change job status
 from <em>queued</em> to <em>running</em>, and begin executing the associated tasks.</p>
 
 <p>In order to execute the job, the runner will spawn a child process, and pass
-it all the information about the job. (Child processes don't have access to
-the backend, just to the job, which must be a JSON object).</p>
+it all the information about the job; child processes don't have access to
+the backend, just to the job, which must be a JSON object.</p>
 
 <p>Note that everything must be executed within the acceptable amount of time
 provided for the job. If this time expires, the job execution will fail and
@@ -389,10 +381,10 @@ the <code>onerror</code> branch will be executed when given.</p>
 
 <h2 id="Task-execution:"><span class="method name"><span class="name">Task execution:</span></span></h2>
 
-<p>Workflow runner will then try to execute the <code>job</code> chain of tasks, in order.
-For every task, the runner will try to execute the task <code>body</code>, using NodeJS
-VM API. Every task will get as arguments the job and a callback. A task should
-call the callback once it's completed.</p>
+<p>A runner will then try to execute the <code>job</code> chain of tasks, in order. For every
+task, the runner will try to execute the task <code>body</code> using the node.js VM API,
+effectively as a separate process. Every task will get as arguments the job and
+a callback. A task should call the callback once it's completed.</p>
 
 <pre><code>// A task body:
 function(job, cb) {
@@ -411,30 +403,31 @@ function(job, cb) {
 <pre><code>cb('whatever the error reason');
 </code></pre>
 
-<p>These error messages will be available for the task's <code>fallback</code> function, in
-order to allow it to decide if can recover the task from a failure.</p>
+<p>These error messages will be available for the task's <code>onerror</code> function, in
+order to allow a task's fallback to decide if it can recover the task from a
+failure.</p>
 
 <p>It's also possible to set an specific timeout for every task execution.</p>
 
-<p>Either if a task fails, or if the task timeout is reached, the runner will
-check if we've exceeded the number of retries for the task and, if that's not
-the case, it'll try to execute the task again.</p>
+<p>If a task fails, or if the task timeout is reached, the runner will check if
+we've exceeded the number of retries for the task. If that's not the case,
+it'll try to execute the task again.</p>
 
 <p>Once the max number of retries for a task has been reached, the runner will
-check if the task has an <code>fallback</code> and, when that's the case, it'll
-call it with the error which caused the failure, as follows:</p>
+check if the task has a <code>fallback</code>. If that's the case, it'll call it with the
+error which caused the failure, as follows:</p>
 
 <pre><code>task.onerror(error, job, cb);
 </code></pre>
 
-<p>The same logic than for tasks bodies can be applied to <code>fallbacks</code>.</p>
+<p>The same logic as for task bodies can be applied to <code>fallbacks</code>.</p>
 
 <p>Note that <strong>tasks run sandboxed</strong>. Only the node modules we specify to the
 runner at initialization time, alongside with <code>setTimeout</code>, <code>clearTimeout</code>,
-<code>setInterval</code> and <code>clearInterval</code> global functions will be available for
-task <code>body</code> and <code>fallback</code> functions. (This is configurable).</p>
+<code>setInterval</code> and <code>clearInterval</code> global functions, will be available for
+task <code>body</code> and <code>fallback</code> functions (this will be configurable).</p>
 
-<p>All the tasks results will be saved sorted at the job's property
+<p>All the task results will be saved in order on the job's property
 <code>chain_results</code>. For every task, the results will be something like:</p>
 
 <pre><code>{
@@ -452,43 +445,42 @@ task <code>body</code> and <code>fallback</code> functions. (This is configurabl
 </code></pre>
 
 <p>If the task fails because its <code>fallback</code> failed, or because the task
-doesn't has such fallback, the job's <code>onerror</code> chain will be invoked if
+doesn't have such a fallback, the job's <code>onerror</code> chain will be invoked if
 present.</p>
 
-<p>The logic to execute the job's <code>onerror</code> chain is exactly the same than we've
+<p>The logic to execute the job's <code>onerror</code> chain is exactly the same as we've
 described here for the main <code>chain</code> of tasks.</p>
 
 <p>Once the job is finished, either successfully or right after a failure, or even
-in the case a task tells the runner to <em>re-queue</em> the job, due to whatever the
-reason, the child process running the job will communicate the runner the
-results, and the runner will save back those results into the backend, either
-finishing the job, or re-queueing it for another runner which may fetch it in
-order to continue its execution at a later time.</p>
+in the case a task tells the runner to <em>re-queue</em> the job, the child process
+running the job will communicate to runner the results. The runner will save
+back those results to the backend, and either finish the job, or re-queue it
+for another runner.</p>
 
 <h2 id="Using-tasks-to-re-queue,-retry-or-put-jobs-to-wait"><span class="method name"><span class="name">Using tasks to re-queue, retry or put jobs to wait</span></span></h2>
 
-<p>There are some <strong>special errors</strong> which can be used from tasks bodies to modify
-the jobs execution status without making them fail. These are <code>queue</code>, <code>wait</code>
+<p>There are some <strong>special errors</strong> which can be used in task bodies to modify
+a job's execution status without making it fail. These are <code>queue</code>, <code>wait</code>
 and <code>retry</code>.</p>
 
 <p>If you use any of the aforementioned keywords as the error returned by a task
-body, instead of fail the job, you'll modify its status to either <code>queued</code>,
-<code>waiting</code> or <code>retried</code>.</p>
+body, instead of failing the job it'll modify the job's status to either
+<code>queued</code>, <code>waiting</code> or <code>retried</code>.</p>
 
 <p>Usually, you may want to re-queue a job together with a modification of the
 <code>exec_after</code> job property, so its execution will be delayed in time.</p>
 
-<p>Retry can be used at any point of a job before it fails to make another attempt
-of running the complete job, not a single task.</p>
+<p>Retry can be used at any point in a job before it fails to make another attempt
+at running the complete job (not a single task).</p>
 
 <p>Finally, <code>waiting</code> is available targeting those cases where a task fires an
-action into a third party system, and we don't want to keep polling the remote
+action to a third party system, and we don't want to keep polling the remote
 system from our task body until such remote action has finished. Instead, we
 can simply tell the job to <em>hold on</em> until something else tells it to continue.
 The remote system can then resume the job making a POST request to
-<code>/jobs/:job_uuid/resume</code>, which will bring the job status back to <code>queued</code> and,
-therefore, executed by the runner from where it left the next time it has slots
-available.</p>
+<code>/jobs/:job_uuid/resume</code>, which will bring the job status back to <code>queued</code>,
+and then executed by the runner from where it entered waiting the next time that
+runner has slots available.</p>
 
 <h1 id="configuration-options">Configuration options</h1>
 
@@ -535,14 +527,14 @@ relevant sections included:</p>
 
 <h2 id="Backend"><span class="method name"><span class="name">Backend</span></span></h2>
 
-<p>Backend configuration has two main sections: <code>module</code> and <code>opts</code>. <code>module</code> value
-must be something we can use to load the backend module of choice by issuing
-<code>require(backend.module)</code>. It doesn't matter if it's a node.js npm module or a
-relative path to the module. The included module must be a class which inherits
-from <code>WorkflowBackend</code>.</p>
+<p>The backend configuration has two main sections: <code>module</code> and <code>opts</code>. The
+<code>module</code> value must be something we can use to load the backend module of
+choice by issuing <code>require(backend.module)</code>. It doesn't matter if it's a node.js
+npm module or a relative path to the module. The included module must be a class
+which inherits from <code>WorkflowBackend</code>.</p>
 
-<p>Then, the <code>opts</code> section is anything required by the chosen backend constructor
-to be initialized:</p>
+<p>The <code>opts</code> section is anything required by the chosen backend constructor to be
+initialized:</p>
 
 <pre><code>var BackendModule = require(config.backend.module);
 var backend = new BackendModule(config.backend.opts);
@@ -554,86 +546,90 @@ provided on this section.</p>
 <h2 id="API"><span class="method name"><span class="name">API</span></span></h2>
 
 <p>Anything you want to pass to <a href="http://mcavage.github.com/node-restify/#Creating-a-Server">restify.createServer</a>.
-restify's server logger configuration will be the same you provide for logger section.</p>
+restify's server logger configuration will be the same as you provide for the
+logger section.</p>
 
 <p>Note you can pass either a <code>port</code> number or a socket <code>path</code> here too.</p>
 
 <h2 id="Runner"><span class="method name"><span class="name">Runner</span></span></h2>
 
-<p>Configuration for workflow runners. None of the options on this section is required.</p>
+<p>The configuration for workflow runners. None of the options in this section is
+required.</p>
 
 <ul>
-<li><code>identifier</code>: Unique identifier for a runner. If none given, the first time
-a runner is started it will generate an UUID and store it on a file <code>workflow-runner</code>
-which will be reused on the subsequent boots.</li>
-<li><code>forks</code>: Number of child processes to be forked by the runner, which will also match
-the max number of jobs to run in parallel. (10 if nothing given).</li>
-<li><code>run_interval</code>: Integer. Time <strong>in seconds</strong> for the runner to: report it is active,
-search for new queued jobs to process, search for <em>stale</em> jobs from other runners. Also,
-3 times this value is what we'll take to decide if a runner is inactive. It's to say:
-if a given runner hasn't reported it's healthy since <code>3 * run_interval</code>, it'll be
-considered inactive by other runners, and all the associated jobs will be canceled.
-(If nothing is given, 120 seconds is the default value for <code>run_interval</code>).</li>
-<li><code>sandbox</code>: any variables and node.js modules we want to make available for the VM
-where we run our tasks. Note that the key for each member will be the way you can
-refer to such object from your tasks <code>body</code> and <code>fallback</code> functions, while the
-value is what the system will use to require the module. 
-For example: <code>{uuid: 'node-uuid'}</code>.
-Remember that, by default, only <a href="http://nodejs.org/docs/latest/api/timers.html">global node timers</a>
-will be available for tasks if nothing is given.</li>
+<li><code>identifier</code>: the unique identifier for a runner. If none is given, the first
+time a runner is started it will generate an UUID and store it in a file --
+<code>workflow-runner</code> -- which will be reused on the subsequent boots.</li>
+<li><code>forks</code>: the number of child processes to be forked by the runner, which will
+also match the maximum number of jobs to run in parallel by this runner. The
+default is ten forks.</li>
+<li><code>run_interval</code>: Integer. Time <strong>in seconds</strong> for the runner to: report it is
+active to the backend, search for new queued jobs to process, and search for
+<em>stale</em> jobs from other runners. Three times this value is what's used to
+decide if a runner is inactive; if a runner hasn't reported it's healthy since
+<code>3 * run_interval</code>, it'll be considered inactive by other runners, and all 
+associated jobs will be canceled. The default <code>run_interval</code> is 120 seconds.</li>
+<li><p><code>sandbox</code>: any variables and node.js modules we want to make available for the
+VM where we run our tasks. The key for each member will be the identifier for 
+referring to each object inside a task's <code>body</code> and <code>fallback</code> functions,
+while the value is what the system will use to require the module.
+For example: <code>{uuid: 'node-uuid'}</code>.</p>
+
+<p>Remember that, by default, only <a href="http://nodejs.org/docs/latest/api/timers.html">global node timers</a>
+will be available for tasks if nothing is given.</p></li>
 </ul>
 
 <h2 id="Logger"><span class="method name"><span class="name">Logger</span></span></h2>
 
-<p>Any streams you want to pass to <a href="https://github.com/trentm/node-bunyan#readme">node-bunyan</a>, used
-by both, <code>Runners</code> and <code>REST API</code>.</p>
+<p>Any streams you want to pass to <a href="https://github.com/trentm/node-bunyan#readme">node-bunyan</a>,
+used by both <code>Runners</code> and <code>REST API</code>.</p>
 
 <h1 id="demo">Demo</h1>
 
-<p>The <a href="https://github.com/kusor/node-workflow-example">workflow-example</a> repository
-contains everything needed to illustrate:</p>
+<p>The <a href="https://github.com/kusor/node-workflow-example">workflow-example</a>
+repository contains everything needed to illustrate:</p>
 
 <ul>
-<li>An example config file - <code>config.json.sample</code> which should be
-renamed to <code>config.json</code> and modified to properly match your local
-environment.</li>
+<li>An example config file <code>config.json.sample</code> which should be renamed to 
+<code>config.json</code>, and modified to properly match your local environment.</li>
 </ul>
 
-<p>Remember that, in order to process any <code>job</code> the <code>workflow-runner</code> needs
-to be initialized pointing to the aforementioned configuration file:</p>
+<p>Remember that, in order to process any <code>job</code> the <code>workflow-runner</code> needs to be
+initialized pointing to the aforementioned configuration file:</p>
 
 <pre><code>./node_modules/.bin/workflow-runner config.json
 </code></pre>
 
-<p>Also, in order to be able to run the API based example mentioned below, the
+<p>Also, in order to be able to run the API-based example mentioned below, the
 <code>workflow-api</code> HTTP server needs to be up and running too:</p>
 
 <pre><code>./node_modules/.bin/workflow-api config.json
 </code></pre>
 
-<p>Contents for the other files within the <a href="https://github.com/kusor/node-workflow-example">workflow-example</a> repository are:</p>
+<p>Contents for the other files within the <a href="https://github.com/kusor/node-workflow-example">workflow-example</a>
+repository are:</p>
 
 <ul>
 <li>An example of how to use node-workflow as a node module in order to create
 workflows, queue jobs and wait for the results. See <code>module.js</code>.</li>
-<li>Also, an example of how to achieve same goal using Workflow API instead of
+<li>An example of how to achieve the same goal using the Workflow API instead of
 the node module. See <code>api.js</code>.</li>
-<li>Both examples share the same workflow definition, contained at the file
+<li>Both examples share the same workflow definition, contained in the file
 <code>shared-workflow.js</code>. The beginning of the aforementioned files
 can be useful to understand the differences when trying to create a workflow
 using these different approaches.</li>
-<li>Finally, this directory also contains a file <code>node.js</code> which does
-exactly the same thing than the workflow/job does - create and star a gist
-using your github's username and password - but straight from NodeJS. This
+<li>Finally, this directory also contains the file <code>node.js</code>, which does
+exactly the same thing as the workflow/job does -- create and star a gist
+using your github's username and password -- but straight from node.js. This
 file is useful in order to understand the differences between writing code
-to be executed by NodeJS directly, and using it to create workflows and the
-associated tasks. Remember code withing tasks runs sandboxed using
+to be executed by node.js directly, and using it to create workflows and the
+associated tasks. Remember, code within tasks runs sandboxed using
 <a href="http://nodejs.org/docs/latest/api/vm.html">Node's VM API</a> and that tasks
-are totally independent, and run each one on its own child process.</li>
+are totally independent.</li>
 </ul>
 
-<p>Also, see <code>example.js</code> for more options when defining workflows and the
-different possibilities for tasks fallbacks, retries, timeouts ...</p>
+<p>See also <code>example.js</code> for more options when defining workflows and the different
+possibilities for task fallbacks, retries, timeouts, ...</p>
 
 <h1 id="license">LICENSE</h1>
 
