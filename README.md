@@ -8,26 +8,25 @@
 
 # Overview
 
-Either if you are building a completely new system composed of many discreet API
+If you are building a completely new system composed of many discrete API
 applications, each of them with a clearly defined area of responsibility, or
-in the case you are trying to assemble a collaboration channel between an
-heterogeneous set of totally unrelated API applications, you need a way to
-orchestrate interactions between these applications.
+if you are trying to assemble a collaboration channel between a heterogeneous
+set of unrelated API applications, you need a means to orchestrate interactions
+between these applications.
 
-So a workflow is effectively an orchestration.
+A workflow is effectively an orchestration. It gives you a way to decompose a
+complex series of operations down to a sequence of discrete tasks within a state
+machine.
 
-You want a workflow, because it gives you a way to decompose a complex series
-of operations down to a sequence of discreet tasks with a state machine.
+The sequence of tasks is more complex than just a series. Tasks can fail, and
+so you need to deal with timeouts, retries, "stuck" flows, and so forth.
 
-The sequence of tasks is more complex than just a series. The tasks of course
-can fail, and so you need to deal with timeouts, retries, "stuck" flows, etc.
-
-You can define a workflow and its tasks using an arbitrarily complex language.
-Or you can keep it simple by taking some assumptions:
+One way to define a workflow and its tasks is using an arbitrarily-complex
+language. Or you can keep it simple by making some assumptions:
 
 * Code is the definition language.
 * Tasks are independent. Can be used into different workflows.
-* The only way of communication between tasks is the workflow. Tasks can add,
+* The only way to communicate between tasks is the workflow. Tasks can add,
   remove or modify properties of the workflow.
 * If a task requires a specific property of the workflow to be present, the
   task can fail, or re-schedule itself within the workflow, or ...
@@ -40,9 +39,9 @@ concrete `jobs` with specific `targets` and `parameters` based on such
 
 ### Workflow Runners
 
-In order to execute the `jobs`, at least one `WorkflowRunner` must be up and
-ready to take jobs. An arbitrary number of `runners` can be used on any set of
-hosts; configuration must match.
+In order to execute `jobs`, at least one `WorkflowRunner` must be up and ready
+to take jobs. An arbitrary number of `runners` can be used on any set of hosts;
+their configuration must match.
 
 An example `WorkflowRunner` is provided with the package and can be started
 with:
@@ -53,14 +52,13 @@ with:
 used as reference).
 
 You can create `workflows` and `jobs` either by using the provided REST API(s),
-or by embedding this module's API into your own system(s).
-The former will be easier to get up and running, but you should use the latter
-when:
+or by embedding this module's API into your own system(s). The former will be
+easier to get up and running, but you should use the latter when:
 
 - You want to use the Worflow API in a (node.js) application that is not the
   bundled [REST API](http://kusor.github.com/node-workflow/workflowapi.html).
 - You want to use a different backend storage system, or otherwise change the
-  assumptions of the bundled REST API
+  assumptions of the bundled REST API.
 
 The package also provides a binary file to run the `WorkflowAPI` using the
 same configuration file we pass to our `WorkflowRunner`:
@@ -89,8 +87,8 @@ To run a Job Runner:
 
     ./bin/workflow-runner path/to/config.json
 
-Note that it's perfectly fine to run more than one Runner, either on the same
-or different machines, as far as they have access to Redis Server.
+Note that it's fine to run more than one Runner, either on the same or different
+machines, so long as they have access to the Redis Server.
 
 # Testing
 
@@ -110,49 +108,50 @@ called `.git/hooks/pre-commit` and `chmod +x` it:
 
     exit 0
 
-Obviously, if you've made a change not affecting source code files but, for
-example only docs, you can skip this hook by passing the option `--no-verify`
+If you've made a change that does not affect source code files, but (for
+example) only docs, you can skip this hook by passing the option `--no-verify`
 to the `git commit` command.
 
 # Demo
 
-The [workflow-example](https://github.com/kusor/node-workflow-example) repository contains everything needed to illustrate:
+The [workflow-example](https://github.com/kusor/node-workflow-example)
+repository contains everything needed to illustrate:
 
-- An example config file - `config.json.sample` which should be
-  renamed to `config.json` and modified to properly match your local
-  environment.
+- An example config file `config.json.sample` which should be renamed to 
+  `config.json`, and modified to properly match your local environment.
 
-Remember that, in order to process any `job` the `workflow-runner` needs
-to be initialized pointing to the aforementioned configuration file:
+Remember that, in order to process any `job` the `workflow-runner` needs to be
+initialized pointing to the aforementioned configuration file:
 
     ./node_modules/.bin/workflow-runner config.json
 
-Also, in order to be able to run the API based example mentioned below, the
+Also, in order to be able to run the API-based example mentioned below, the
 `workflow-api` HTTP server needs to be up and running too:
 
     ./node_modules/.bin/workflow-api config.json
 
-Contents for the other files within the [workflow-examples](https://github.com/kusor/node-workflow-example) repository are:
+Contents for the other files within the [workflow-example](https://github.com/kusor/node-workflow-example)
+repository are:
 
 - An example of how to use node-workflow as a node module in order to create
   workflows, queue jobs and wait for the results. See `module.js`.
-- Also, an example of how to achieve same goal using Workflow API instead of
+- An example of how to achieve the same goal using the Workflow API instead of
   the node module. See `api.js`.
-- Both examples share the same workflow definition, contained at the file
+- Both examples share the same workflow definition, contained in the file
   `shared-workflow.js`. The beginning of the aforementioned files
   can be useful to understand the differences when trying to create a workflow
   using these different approaches.
-- Finally, this directory also contains a file `node.js` which does
-  exactly the same thing than the workflow/job does - create and star a gist
-  using your github's username and password - but straight from NodeJS. This
+- Finally, this directory also contains the file `node.js`, which does
+  exactly the same thing as the workflow/job does -- create and star a gist
+  using your github's username and password -- but straight from node.js. This
   file is useful in order to understand the differences between writing code
-  to be executed by NodeJS directly, and using it to create workflows and the
-  associated tasks. Remember code withing tasks runs sandboxed using
+  to be executed by node.js directly, and using it to create workflows and the
+  associated tasks. Remember, code within tasks runs sandboxed using
   [Node's VM API](http://nodejs.org/docs/latest/api/vm.html) and that tasks
-  are totally independent, and run each one on its own child process.
+  are totally independent.
 
-Also, see `example.js` for more options when defining workflows and the
-different possibilities for tasks fallbacks, retries, timeouts ...
+See also `example.js` for more options when defining workflows and the different
+possibilities for task fallbacks, retries, timeouts, ...
 
 # Repository
 
