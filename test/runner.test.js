@@ -3,7 +3,7 @@ var util = require('util');
 var path = require('path');
 var fs = require('fs');
 var test = require('tap').test;
-var uuid = require('node-uuid');
+var uuid = require('libuuid');
 var WorkflowRunner = require('../lib/runner');
 var Factory = require('../lib/index').Factory;
 var exists = fs.exists || path.exists;
@@ -55,13 +55,13 @@ var taskWithModules = {
     name: 'OK Task with modules',
     retry: 1,
     body: function (job, cb) {
-        if (typeof (uuid) !== 'function') {
-            return cb('node-uuid module is not defined');
+        if (typeof (uuid.create) !== 'function') {
+            return cb('libuuid module is not defined');
         }
         return cb(null);
     },
     modules: {
-        uuid: 'node-uuid'
+        uuid: 'libuuid'
     }
 };
 var okWf, failWf, theJob, failWfWithError, failWfWithRetry;
@@ -386,7 +386,7 @@ test('a job that is retried', function (t) {
 
 test('inactive runners', function (t) {
     // Add another runner, which we'll set as inactive
-    var theUUID = uuid(),
+    var theUUID = uuid.create(),
     cfg = {
         backend: helper.config().backend,
         runner: {
@@ -430,7 +430,7 @@ test('inactive runners', function (t) {
 
 test('stale jobs', function (t) {
     // Add another runner, which we'll set as inactive
-    var theUUID = uuid(),
+    var theUUID = uuid.create(),
     cfg = {
         backend: helper.config().backend,
         runner: {
