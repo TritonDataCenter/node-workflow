@@ -1,7 +1,7 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('libuuid'),
+    uuid = require('node-uuid'),
     WorkflowTaskRunner = require('../lib/task-runner');
 
 var job = {
@@ -22,7 +22,7 @@ var job = {
 };
 
 var task = {
-    'uuid': uuid.create(),
+    'uuid': uuid(),
     'name': 'A name',
     'body': 'Fake body'
 };
@@ -31,7 +31,7 @@ var task = {
 var sandbox = {
     'modules': {
         'http': 'http',
-        'uuid': 'libuuid',
+        'uuid': 'node-uuid',
         'restify': 'restify'
     },
     'foo': 'bar',
@@ -124,8 +124,8 @@ test('sandbox modules and variables', function (t) {
     // Or javascriptlint will complain regarding undefined variables:
     var foo, bool, aNumber, restify;
     var task_body = function (job, cb) {
-        if (typeof (uuid.create) !== 'function') {
-            return cb('libuuid module is not defined');
+        if (typeof (uuid) !== 'function') {
+            return cb('node-uuid module is not defined');
         }
         if (typeof (foo) !== 'string') {
             return cb('sandbox value is not defined');
@@ -666,8 +666,8 @@ test('a task which defines its own modules', function (t) {
     // Or javascriptlint will complain regarding undefined variables:
     var foo, bool, aNumber, restify, http;
     var task_body = function (job, cb) {
-        if (typeof (uuid.create) !== 'function') {
-            return cb('libuuid module is not defined');
+        if (typeof (uuid) !== 'function') {
+            return cb('node-uuid module is not defined');
         }
         if (typeof (foo) !== 'string') {
             return cb('sandbox value is not defined');
@@ -689,7 +689,7 @@ test('a task which defines its own modules', function (t) {
 
     task.body = task_body.toString();
     task.modules = {
-        'uuid': 'libuuid'
+        'uuid': 'node-uuid'
     };
 
     job.chain.push(task);

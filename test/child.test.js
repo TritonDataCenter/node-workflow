@@ -1,7 +1,7 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('libuuid'),
+    uuid = require('node-uuid'),
     fork = require('child_process').fork;
 
 var job = {
@@ -22,7 +22,7 @@ var job = {
 };
 
 var task = {
-    'uuid': uuid.create(),
+    'uuid': uuid(),
     'name': 'A name',
     'body': 'Fake body'
 };

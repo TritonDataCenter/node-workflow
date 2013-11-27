@@ -1,7 +1,7 @@
-// Copyright 2013 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var test = require('tap').test,
-    uuid = require('libuuid'),
-    SOCKET = '/tmp/.' + uuid.create(),
+    uuid = require('node-uuid'),
+    SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
     Factory = require('../lib/index').Factory,
     WorkflowInMemoryBackend = require('../lib/workflow-in-memory-backend');
@@ -94,7 +94,7 @@ test('get workflow', function (t) {
         t.ifError(err, 'get workflow error');
         t.ok(workflow, 'get workflow ok');
         t.equivalent(workflow, aWorkflow);
-        backend.getWorkflow(uuid.create(), function (err, workflow) {
+        backend.getWorkflow(uuid(), function (err, workflow) {
             t.equal(typeof (err), 'object');
             t.equal(err.name, 'BackendResourceNotFoundError');
             t.ok(err.message.match(/uuid/gi), 'unexisting workflow error');
@@ -523,7 +523,7 @@ test('get queued jobs', function (t) {
 test('add job info', function (t) {
     t.test('to unexisting job', function (t) {
         backend.addInfo(
-          uuid.create(),
+          uuid(),
           {'10%': 'Task completed step one'},
           function (err) {
             t.ok(err);
@@ -558,7 +558,7 @@ test('add job info', function (t) {
 test('get job info', function (t) {
     t.test('from unexisting job', function (t) {
         backend.getInfo(
-            uuid.create(),
+            uuid(),
             function (err, info) {
                 t.ok(err);
                 t.equal(typeof (err), 'object');

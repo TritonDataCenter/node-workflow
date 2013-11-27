@@ -1,7 +1,7 @@
-// Copyright 2013 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('libuuid'),
+    uuid = require('node-uuid'),
     WorkflowJobRunner = require('../lib/job-runner'),
     Logger = require('bunyan'),
     Factory = require('../lib/index').Factory,
@@ -30,7 +30,7 @@ var okWf, failWf, timeoutWf, reQueueWf, infoWf, reQueuedJob, elapsed;
 
 var FakeRunner = function () {
     this.child_processes = {};
-    this.uuid = uuid.create();
+    this.uuid = uuid();
     this.run_interval = 1000;
     this.log = new Logger(logger);
     this.slots = this.forks = 10;
@@ -530,7 +530,7 @@ test('a job cannot access undefined sandbox modules', function (t) {
         chain: [ {
             name: 'A name',
             body: function (job, cb) {
-                job.uuid = uuid.create();
+                job.uuid = uuid();
                 return cb(null);
             }
         }]
@@ -575,7 +575,7 @@ test('a job can access explicitly defined sandbox modules', function (t) {
         chain: [ {
             name: 'A name',
             body: function (job, cb) {
-                job.uuid = uuid.create();
+                job.uuid = uuid();
                 return cb(null);
             }
         }]
@@ -594,7 +594,7 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 job: job,
                 sandbox: {
                     modules: {
-                        uuid: 'libuuid'
+                        uuid: 'node-uuid'
                     }
                 },
                 dtrace: DTRACE

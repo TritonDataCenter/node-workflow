@@ -1,7 +1,7 @@
-// Copyright 2013 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var test = require('tap').test,
-    uuid = require('libuuid'),
-    SOCKET = '/tmp/.' + uuid.create(),
+    uuid = require('node-uuid'),
+    SOCKET = '/tmp/.' + uuid(),
     util = require('util'),
     path = require('path'),
     fs = require('fs'),
@@ -27,7 +27,7 @@ config.logger = {
 
 var helper = require('./helper');
 
-var REQ_ID = uuid.create();
+var REQ_ID = uuid();
 // --- Tests
 
 test('throws on missing opts', function (t) {
@@ -229,7 +229,7 @@ test('GET /workflows/:uuid', function (t) {
 
 
 test('GET /workflows/:uuid 404', function (t) {
-    var a_uuid = uuid.create();
+    var a_uuid = uuid();
     client.get(
         '/workflows/' + a_uuid,
         function (err, req, res, obj) {
@@ -280,7 +280,7 @@ test('PUT /workflows/:uuid', function (t) {
 
 
 test('PUT /workflows/:uuid 404', function (t) {
-    var a_uuid = uuid.create();
+    var a_uuid = uuid();
     client.put('/workflows/' + a_uuid, {
         name: 'A workflow',
         chain: [ {
@@ -402,7 +402,7 @@ test('POST /jobs', function (t) {
     });
 
     t.test('with unexisting workflow uuid', function (t) {
-        aJob.workflow = uuid.create();
+        aJob.workflow = uuid();
         client.post('/jobs', aJob, function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
@@ -524,7 +524,7 @@ test('GET /jobs/:uuid', function (t) {
     });
 
     t.test('job not found', function (t) {
-        client.get('/jobs/' + uuid.create(), function (err, req, res, obj) {
+        client.get('/jobs/' + uuid(), function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
             t.equal(err.restCode, 'ResourceNotFound');
@@ -539,7 +539,7 @@ test('GET /jobs/:uuid', function (t) {
 
 test('POST /jobs/:uuid/info', function (t) {
     t.test('with unexisting job', function (t) {
-        client.post('/jobs/' + uuid.create() + '/info', {
+        client.post('/jobs/' + uuid() + '/info', {
             '10%': 'Task completed first step'
         }, function (err, req, res, obj) {
             t.ok(err);
@@ -567,8 +567,7 @@ test('POST /jobs/:uuid/info', function (t) {
 
 test('GET /jobs/:uuid/info', function (t) {
     t.test('with unexisting job uuid', function (t) {
-        client.get('/jobs/' + uuid.create() + '/info',
-            function (err, req, res, obj) {
+        client.get('/jobs/' + uuid() + '/info', function (err, req, res, obj) {
             t.ok(err);
             t.equal(err.statusCode, 404);
             t.equal(err.restCode, 'ResourceNotFound');
@@ -594,7 +593,7 @@ test('GET /jobs/:uuid/info', function (t) {
 test('POST /jobs/:uuid/cancel', function (t) {
     t.test('with unexisting job uuid', function (t) {
         client.post(
-          '/jobs/' + uuid.create() + '/cancel',
+          '/jobs/' + uuid() + '/cancel',
           {},
           function (err, req, res, obj) {
             t.ok(err);
@@ -623,7 +622,7 @@ test('POST /jobs/:uuid/cancel', function (t) {
 
 test('POST /jobs/:uuid/resume', function (t) {
     t.test('with unexisting job', function (t) {
-        client.post('/jobs/' + uuid.create() + '/resume', {
+        client.post('/jobs/' + uuid() + '/resume', {
             results: 'OK'
         }, function (err, req, res, obj) {
             t.ok(err);
@@ -709,7 +708,7 @@ test('DELETE /workflows/:uuid', function (t) {
 
 
 test('DELETE /workflows/:uuid 404', function (t) {
-    var a_uuid = uuid.create();
+    var a_uuid = uuid();
     client.del('/workflows/' + a_uuid,
         function (err, req, res, obj) {
             t.ok(err);
