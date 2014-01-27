@@ -1,4 +1,4 @@
-// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2014 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
@@ -71,6 +71,7 @@ FakeRunner.prototype.releaseSlot = function () {
 var runner = new FakeRunner();
 
 test('setup', function (t) {
+    var info;
     t.ok(backend, 'backend ok');
     backend.init(function () {
         factory = Factory(backend);
@@ -156,6 +157,7 @@ test('setup', function (t) {
                                 retry: 1,
                                 body: function (job, cb) {
                                     job.log.info('recording some info');
+                                    info('recording some info');
                                     return cb(null);
                                 }
                             }],
@@ -709,7 +711,7 @@ test('a job can call job.info()', function (t) {
                     backend.getInfo(uuid, function (err, info) {
                         t.ifError(err, 'backend.getInfo error');
                         t.equal(info.length, 1);
-                        t.equal(info[0].data.msg, 'recording some info');
+                        t.equal(info[0].data, 'recording some info');
                         t.end();
                     });
                 });

@@ -1,4 +1,4 @@
-// Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright 2014 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
 var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
@@ -122,7 +122,7 @@ test('a task which succeeds on 1st retry', function (t) {
 
 test('sandbox modules and variables', function (t) {
     // Or javascriptlint will complain regarding undefined variables:
-    var foo, bool, aNumber, restify;
+    var foo, bool, aNumber, restify, info;
     var task_body = function (job, cb) {
         if (typeof (uuid) !== 'function') {
             return cb('node-uuid module is not defined');
@@ -138,6 +138,9 @@ test('sandbox modules and variables', function (t) {
         }
         if (typeof (restify.createJsonClient) !== 'function') {
             return cb('restify.createJsonClient is not defined');
+        }
+        if (typeof (info) !== 'function') {
+            return cb('sandbox info() is not defined');
         }
         var client = restify.createJsonClient({
             url: 'http://127.0.0.1'
@@ -538,9 +541,10 @@ test('a task which fails and is canceled', function (t) {
 
 
 test('a task which calls job.info', function (t) {
+    var info;
     task.body = function (job, cb) {
         job.log.info('an info string');
-        job.log.info('a second info string');
+        info('a second info string');
         return cb(null);
     }.toString();
 
@@ -554,8 +558,9 @@ test('a task which calls job.info', function (t) {
     t.ok(wf_task_runner.name);
     t.equal(typeof (wf_task_runner.body), 'function');
 
-    // The callback will be called three times: two for job.log.info(),
-    // plus the third time to finish the task
+    // The callback will be called two times: once for info(),
+    // and the 2nd time to finish the task. It will not be called
+    // for job.log.info
 
     var num = 0;
 
@@ -569,15 +574,7 @@ test('a task which calls job.info', function (t) {
             t.ok(msg.info, 'info present');
             t.notOk(msg.result, 'result not present');
             t.equal(msg.cmd, 'info', 'info cmd');
-            t.equal(msg.info.msg, 'an info string', 'info string');
-            return;
-        }
-
-        if (num === 2) {
-            t.ok(msg.info, 'info present');
-            t.notOk(msg.result, 'result not present');
-            t.equal(msg.cmd, 'info', 'info cmd');
-            t.equal(msg.info.msg, 'a second info string', 'info string');
+            t.equal(msg.info, 'a second info string', 'info string');
             return;
         }
 
