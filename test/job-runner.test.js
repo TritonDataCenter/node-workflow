@@ -640,6 +640,13 @@ test('a canceled job', function (t) {
             body: function (job, cb) {
                 return cb('It should not run');
             }
+        }],
+        oncancel: [ {
+            name: 'On Cancel Task',
+            body: function (job, cb) {
+                job.cancelChainRun = true;
+                return cb(null);
+            }
         }]
     }, function (err, wf) {
         t.ifError(err, 'wf error');
@@ -673,6 +680,9 @@ test('a canceled job', function (t) {
                         t.ok(job.chain_results[0].error, 'task fails');
                         t.equal(job.onerror_results.length, 0,
                           'should not call onerror');
+                        // onCancel must run:
+                        t.ok(job.cancelChainRun);
+                        t.ok(job.oncancel_results.length);
                         t.end();
                     });
                 });

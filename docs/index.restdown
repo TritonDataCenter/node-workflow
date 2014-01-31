@@ -145,6 +145,20 @@ backend to detect if any modifications must be performed.
 Note these `chain_md5` and `onerror_md5` properties are not propagated into jobs
 created from the workflow.
 
+### onCancel optional chain
+
+Since version `0.9.9` it's also possible to add an optional `oncancel` chain of
+tasks, which will be run in the case a job is canceled. This chain should be
+used just to recover from a possible bad state caused when a given job is
+aborted in the middle of its execution.
+
+This `oncancel` property has the same format than `chain` and `onerror`, and
+will also have an associated `oncancel_md5` hash for quick content verifycation.
+
+Additionally, the results of the execution of this branch of tasks will be
+saved into the jobs' `oncancel_results` property.
+
+
 ## Job properties
 
 While a Workflow is something abstract, a Job can operate on a concrete target.
