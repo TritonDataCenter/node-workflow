@@ -28,24 +28,21 @@
   <li><div><a href="#terminology">Terminology</a></div></li>
   <li><div><a href="#system-components">System components</a></div>
   <ul>
-    <li><div><a href="#Task-properties"><span class="method name"><span class="name">Task properties</span></span></a></div></li>
-    <li><div><a href="#Workflow-properties"><span class="method name"><span class="name">Workflow properties</span></span></a></div></li>
-    <li><div><a href="#Job-properties"><span class="method name"><span class="name">Job properties</span></span></a></div></li>
-    <li><div><a href="# Adding-extra-properties-to-workflows-and-jobs-through-API-methods"><span class="method name"><span class="name"> Adding extra properties to workflows and jobs through API methods</span></span></a></div></li>
+    <li><div><a href="#task-properties">Task properties</a></div></li>
+    <li><div><a href="#workflow-properties">Workflow properties</a></div></li>
+    <li><div><a href="#job-properties">Job properties</a></div></li>
   </ul></li>
-  <li><div><a href="#workflow-api-and-rest-api">Workflow API and REST API.</a></div></li>
-  <li><div><a href="#workflow-runners"> Workflow Runners</a></div>
+  <li><div><a href="#workflow-api-and-rest-api">Workflow API and REST API.</a></div>
   <ul>
-    <li><div><a href="# How-runners-pick-and-execute-jobs"><span class="method name"><span class="name"> How runners pick and execute jobs</span></span></a></div></li>
-    <li><div><a href="#Task-execution:"><span class="method name"><span class="name">Task execution:</span></span></a></div></li>
-    <li><div><a href="#Using-tasks-to-re-queue,-retry-or-put-jobs-to-wait"><span class="method name"><span class="name">Using tasks to re-queue, retry or put jobs to wait</span></span></a></div></li>
+    <li><div><a href="#task-execution">Task execution:</a></div></li>
+    <li><div><a href="#using-tasks-to-re-queue-retry-or-put-jobs-to-wait">Using tasks to re-queue, retry or put jobs to wait</a></div></li>
   </ul></li>
   <li><div><a href="#configuration-options">Configuration options</a></div>
   <ul>
-    <li><div><a href="#Backend"><span class="method name"><span class="name">Backend</span></span></a></div></li>
-    <li><div><a href="#API"><span class="method name"><span class="name">API</span></span></a></div></li>
-    <li><div><a href="#Runner"><span class="method name"><span class="name">Runner</span></span></a></div></li>
-    <li><div><a href="#Logger"><span class="method name"><span class="name">Logger</span></span></a></div></li>
+    <li><div><a href="#backend">Backend</a></div></li>
+    <li><div><a href="#api">API</a></div></li>
+    <li><div><a href="#runner">Runner</a></div></li>
+    <li><div><a href="#logger">Logger</a></div></li>
   </ul></li>
   <li><div><a href="#demo">Demo</a></div></li>
   <li><div><a href="#license">LICENSE</a></div></li>
@@ -136,7 +133,7 @@ unique identifier, nor should it have a running status. If that happens, the
 first thing a runner must do upon restart is pick any job with such an invalid
 state and cancel it.</p>
 
-<h2 id="Task-properties"><span class="method name"><span class="name">Task properties</span></span></h2>
+<h2 id="task-properties">Task properties</h2>
 
 <ul>
 <li>Name.</li>
@@ -168,29 +165,27 @@ state and cancel it.</p>
 it really doesn't matter. If a task's execution exceeds the workflow timeout, it
 will be failed with a 'workflow timeout' error.</p>
 
-<h2 id="Workflow-properties"><span class="method name"><span class="name">Workflow properties</span></span></h2>
+<h2 id="workflow-properties">Workflow properties</h2>
 
-<ul>
-<li>Name.</li>
-<li>A 'chain' of tasks to be executed.</li>
-<li>A global timeout.</li>
-<li><p>An alternate error branch.</p>
+<p>- Name.
+- A 'chain' of tasks to be executed.
+- A global timeout.
+- An alternate error branch.</p>
 
-<pre><code>factory.workflow({
-  name: 'Sample Workflow',
-  chain: [aTask, anotherTask, aTaskWhichWillFail],
-  timeout: 300,
-  onError: [aFallbackTask]
-}, function(err, workflow) {
-  if (err) {
-    throw(err);
-  }
-  return workflow;
-});
-</code></pre></li>
-</ul>
+<pre><code>    factory.workflow({
+      name: 'Sample Workflow',
+      chain: [aTask, anotherTask, aTaskWhichWillFail],
+      timeout: 300,
+      onError: [aFallbackTask]
+    }, function(err, workflow) {
+      if (err) {
+        throw(err);
+      }
+      return workflow;
+    });
+</code></pre>
 
-<h3>Workflow chain and onerror MD5</h3>
+<h3 id="workflow-chain-and-onerror-md5">Workflow chain and onerror MD5</h3>
 
 <p>Starting with version <code>0.9.4</code>, MD5 hashes are calculated for the stringified
 version of both the workflow <code>chain</code> and the workflow <code>onerror</code> members (when
@@ -209,7 +204,20 @@ backend to detect if any modifications must be performed.</p>
 <p>Note these <code>chain_md5</code> and <code>onerror_md5</code> properties are not propagated into jobs
 created from the workflow.</p>
 
-<h2 id="Job-properties"><span class="method name"><span class="name">Job properties</span></span></h2>
+<h3 id="oncancel-optional-chain">onCancel optional chain</h3>
+
+<p>Since version <code>0.9.9</code> it's also possible to add an optional <code>oncancel</code> chain of
+tasks, which will be run in the case a job is canceled. This chain should be
+used just to recover from a possible bad state caused when a given job is
+aborted in the middle of its execution.</p>
+
+<p>This <code>oncancel</code> property has the same format than <code>chain</code> and <code>onerror</code>, and
+will also have an associated <code>oncancel_md5</code> hash for quick content verifycation.</p>
+
+<p>Additionally, the results of the execution of this branch of tasks will be
+saved into the jobs' <code>oncancel_results</code> property.</p>
+
+<h2 id="job-properties">Job properties</h2>
 
 <p>While a Workflow is something abstract, a Job can operate on a concrete target.
 For example, you can use a REST URI as the target of the job, or an LDAP DN, or
@@ -257,7 +265,7 @@ build a Regular Expression. See below.</p>
 </code></pre></li>
 </ul>
 
-<h3>Locking other jobs using <code>job.lock</code> property</h3>
+<h3 id="locking-other-jobs-using-joblock-property">Locking other jobs using <code>job.lock</code> property</h3>
 
 <p>(Since 0.9.3)</p>
 
@@ -285,7 +293,7 @@ result in the error:</p>
 <pre><code>'Job target is currently locked by another job'
 </code></pre>
 
-<h2 id=" Adding-extra-properties-to-workflows-and-jobs-through-API-methods"><span class="method name"><span class="name"> Adding extra properties to workflows and jobs through API methods</span></span></h2>
+<p>## Adding extra properties to workflows and jobs through API methods</p>
 
 <p>While it's possible to add any arbitrary property to a workflow or a job
 (as far as the backend supports it), API methods filter out unknown attributes.
@@ -328,7 +336,7 @@ same configuration file we pass to our <code>WorkflowRunner</code>:</p>
 
 <p>See <a href="workflowapi.html">REST API docs</a> for the details of available end-points.</p>
 
-<h1 id="workflow-runners"> Workflow Runners</h1>
+<p># Workflow Runners</p>
 
 <p>In order to execute <code>jobs</code>, at least one <code>WorkflowRunner</code> must be up and ready
 to take jobs. An arbitrary number of <code>runners</code> can be used on any set of
@@ -360,7 +368,7 @@ created and saved for future runs.</p>
 <p>Runners will spawn child processes, one process per job. Max number of child
 processes is also configurable.</p>
 
-<h2 id=" How-runners-pick-and-execute-jobs"><span class="method name"><span class="name"> How runners pick and execute jobs</span></span></h2>
+<p>## How runners pick and execute jobs</p>
 
 <p>A runner will query the backend for queued jobs (exactly the same number of
 jobs as available child processes to spawn). Once the runner gets a set of
@@ -379,7 +387,7 @@ the backend, just to the job, which must be a JSON object.</p>
 provided for the job. If this time expires, the job execution will fail and
 the <code>onerror</code> branch will be executed when given.</p>
 
-<h2 id="Task-execution:"><span class="method name"><span class="name">Task execution:</span></span></h2>
+<h2 id="task-execution">Task execution:</h2>
 
 <p>A runner will then try to execute the <code>job</code> chain of tasks, in order. For every
 task, the runner will try to execute the task <code>body</code> using the node.js VM API,
@@ -457,7 +465,7 @@ running the job will communicate to runner the results. The runner will save
 back those results to the backend, and either finish the job, or re-queue it
 for another runner.</p>
 
-<h2 id="Using-tasks-to-re-queue,-retry-or-put-jobs-to-wait"><span class="method name"><span class="name">Using tasks to re-queue, retry or put jobs to wait</span></span></h2>
+<h2 id="using-tasks-to-re-queue-retry-or-put-jobs-to-wait">Using tasks to re-queue, retry or put jobs to wait</h2>
 
 <p>There are some <strong>special errors</strong> which can be used in task bodies to modify
 a job's execution status without making it fail. These are <code>queue</code>, <code>wait</code>
@@ -525,7 +533,7 @@ relevant sections included:</p>
 }
 </code></pre>
 
-<h2 id="Backend"><span class="method name"><span class="name">Backend</span></span></h2>
+<h2 id="backend">Backend</h2>
 
 <p>The backend configuration has two main sections: <code>module</code> and <code>opts</code>. The
 <code>module</code> value must be something we can use to load the backend module of
@@ -543,7 +551,7 @@ var backend = new BackendModule(config.backend.opts);
 <p>Both, API and Runner will communicate with the backend using the configuration
 provided on this section.</p>
 
-<h2 id="API"><span class="method name"><span class="name">API</span></span></h2>
+<h2 id="api">API</h2>
 
 <p>Anything you want to pass to <a href="http://mcavage.github.com/node-restify/#Creating-a-Server">restify.createServer</a>.
 restify's server logger configuration will be the same as you provide for the
@@ -551,7 +559,7 @@ logger section.</p>
 
 <p>Note you can pass either a <code>port</code> number or a socket <code>path</code> here too.</p>
 
-<h2 id="Runner"><span class="method name"><span class="name">Runner</span></span></h2>
+<h2 id="runner">Runner</h2>
 
 <p>The configuration for workflow runners. None of the options in this section is
 required.</p>
@@ -579,7 +587,7 @@ For example: <code>{uuid: 'node-uuid'}</code>.</p>
 will be available for tasks if nothing is given.</p></li>
 </ul>
 
-<h2 id="Logger"><span class="method name"><span class="name">Logger</span></span></h2>
+<h2 id="logger">Logger</h2>
 
 <p>Any streams you want to pass to <a href="https://github.com/trentm/node-bunyan#readme">node-bunyan</a>,
 used by both <code>Runners</code> and <code>REST API</code>.</p>
