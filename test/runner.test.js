@@ -225,27 +225,24 @@ test('runner next run', function (t) {
 
 
 test('idle runner', function (t) {
-    factory.job({
-        workflow: okWf.uuid,
-        exec_after: '2012-01-03T12:54:05.788Z'
-    }, function (err, job) {
-        t.ifError(err, 'job error');
-        t.ok(job, 'run job ok');
-        theJob = job;
-        // The job is queued. Now we'll idle the runner and verify it will not
-        // touch the job
-        backend.idleRunner(runner.identifier, function (err) {
-            t.ifError(err, 'idle runner error');
-            runner.run();
-            setTimeout(function () {
+    runner.run();
+    backend.idleRunner(runner.identifier, function (err) {
+        t.ifError(err, 'idle runner error');
+        factory.job({
+            workflow: okWf.uuid,
+            exec_after: '2012-01-03T12:54:05.788Z'
+        }, function (err, job) {
+            t.ifError(err, 'job error');
+            t.ok(job, 'run job ok');
+            theJob = job;
+            // The job is queued. The runner is idle. Job should remain queued:
+            backend.getJob(theJob.uuid, function (err, j) {
+                t.ifError(err, 'run job get job error');
+                t.equal(j.execution, 'queued', 'job execution');
                 runner.quit(function () {
-                    backend.getJob(theJob.uuid, function (err, job) {
-                        t.ifError(err, 'run job get job error');
-                        t.equal(job.execution, 'queued', 'job execution');
-                        t.end();
-                    });
+                    t.end();
                 });
-            }, 1000);
+            });
         });
     });
 });
@@ -262,13 +259,12 @@ test('run job', function (t) {
                     t.ifError(err, 'run job get job error');
                     t.equal(job.execution, 'waiting', 'job execution');
                     t.equal(job.chain_results[0].result, 'OK');
-                    console.log(util.inspect(job.chain_results, false, 8));
                     t.equal(job.chain_results[1].result, 'OK');
                     theJob = job;
                     t.end();
                 });
             });
-        }, 10000);
+        }, 1000);
     });
 });
 
@@ -284,12 +280,11 @@ test('re-run waiting job', function (t) {
                     t.ifError(err, 'run job get job error');
                     t.equal(job.execution, 'succeeded', 'job execution');
                     t.equal(job.chain_results[0].result, 'OK');
-                    console.log(util.inspect(job.chain_results, false, 8));
                     t.equal(job.chain_results[1].result, 'OK');
                     t.end();
                 });
             });
-        }, 10000);
+        }, 1000);
     });
 });
 
@@ -313,7 +308,7 @@ test('run job which fails', function (t) {
                     t.end();
                 });
             });
-        }, 9000);
+        }, 300);
     });
 });
 
@@ -340,7 +335,7 @@ test('run job which fails with error instance', function (t) {
                     t.end();
                 });
             });
-        }, 9000);
+        }, 300);
     });
 });
 
@@ -379,7 +374,7 @@ test('a job that is retried', function (t) {
                     });
                 });
             });
-        }, 20000);
+        }, 2000);
     });
 });
 
@@ -392,7 +387,7 @@ test('inactive runners', function (t) {
         runner: {
             identifier: theUUID,
             forks: 2,
-            run_interval: 6
+            run_interval: 250
         },
         dtrace: DTRACE
     },
@@ -436,7 +431,7 @@ test('stale jobs', function (t) {
         runner: {
             identifier: theUUID,
             forks: 2,
-            run_interval: 6
+            run_interval: 250
         },
         dtrace: DTRACE
     },

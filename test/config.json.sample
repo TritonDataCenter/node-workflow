@@ -12,7 +12,7 @@
     "runner": {
         "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
         "forks": 2,
-        "run_interval": 6,
+        "run_interval": 250,
         "sandbox": {
             "modules": {
                 "http": "http",
