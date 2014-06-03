@@ -510,7 +510,7 @@ relevant sections included:</p>
   "runner": {
     "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
     "forks": 2,
-    "run_interval": 6,
+    "run_interval": 250,
     "sandbox": {
         "modules": {
             "http": "http",
@@ -571,12 +571,13 @@ time a runner is started it will generate an UUID and store it in a file --
 <li><code>forks</code>: the number of child processes to be forked by the runner, which will
 also match the maximum number of jobs to run in parallel by this runner. The
 default is ten forks.</li>
-<li><code>run_interval</code>: Integer. Time <strong>in seconds</strong> for the runner to: report it is
-active to the backend, search for new queued jobs to process, and search for
-<em>stale</em> jobs from other runners. Three times this value is what's used to
+<li><code>run_interval</code>: Integer. Time <strong>in milliseconds</strong> for the runner to: report it
+is active to the backend, search for new queued jobs to process, and search for
+<em>stale</em> jobs from other runners. Ten times this value is what's used to
 decide if a runner is inactive; if a runner hasn't reported it's healthy since
-<code>3 * run_interval</code>, it'll be considered inactive by other runners, and all 
-associated jobs will be canceled. The default <code>run_interval</code> is 120 seconds.</li>
+<code>10 * run_interval</code>, it'll be considered inactive by other runners, and all
+associated jobs will be canceled. The default <code>run_interval</code> is 250 milliseconds
+after the previous execution.</li>
 <li><p><code>sandbox</code>: any variables and node.js modules we want to make available for the
 VM where we run our tasks. The key for each member will be the identifier for 
 referring to each object inside a task's <code>body</code> and <code>fallback</code> functions,
