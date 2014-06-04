@@ -41,7 +41,7 @@ test('unkown message', function (t) {
     });
 
     child.on('exit', function (code, signal) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -65,7 +65,7 @@ test('message without job', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -87,7 +87,7 @@ test('message without task', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -109,7 +109,7 @@ test('message with invalid task', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -139,7 +139,7 @@ test('message with successful task', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -169,7 +169,7 @@ test('message with failed task', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
@@ -207,7 +207,7 @@ test('cancel message', function (t) {
     });
 
     child.on('exit', function (code) {
-        t.equal(code, 1);
+        t.ok(code);
         t.end();
     });
 
