@@ -557,11 +557,12 @@ test('a job cannot access undefined sandbox modules', function (t) {
                 wf_job_runner.run(function (err) {
                     t.ifError(err, 'wf_job_runner run error');
                     backend.getJob(job.uuid, function (err, job) {
-                        t.ifError(err);
-                        t.ok(job);
-                        t.equal(job.execution, 'failed');
-                        t.ok(job.chain_results[0].error);
-                        t.ok(job.chain_results[0].error.match(/uuid/gi));
+                        t.ifError(err, 'getJob error');
+                        t.ok(job, 'job OK');
+                        t.equal(job.execution, 'failed', 'job execution');
+                        t.ok(job.chain_results[0].error, 'chain results err');
+                        t.ok(job.chain_results[0].error.match(/uuid/gi),
+                            'uuid');
                         t.end();
                     });
               });
@@ -606,11 +607,11 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 t.ifError(err, 'backend.runJob error');
                 wf_job_runner.run(function (err) {
                     t.ifError(err, 'wf_job_runner run error');
-                    backend.getJob(job.uuid, function (err, job) {
-                        t.ifError(err);
-                        t.ok(job);
-                        t.equal(job.execution, 'succeeded');
-                        t.ifError(job.chain_results[0].error);
+                    backend.getJob(job.uuid, function (err, aJob) {
+                        t.ifError(err, 'job err');
+                        t.ok(aJob, 'job ok');
+                        t.equal(aJob.execution, 'succeeded');
+                        t.ifError(aJob.chain_results[0].error);
                         t.end();
                     });
                 });

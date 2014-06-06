@@ -444,6 +444,7 @@ relevant sections included:
       "runner": {
         "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
         "forks": 2,
+        "do_fork": false,
         "run_interval": 250,
         "sandbox": {
             "modules": {
@@ -502,9 +503,11 @@ required.
 - `identifier`: the unique identifier for a runner. If none is given, the first
   time a runner is started it will generate an UUID and store it in a file --
   `workflow-runner` -- which will be reused on the subsequent boots.
-- `forks`: the number of child processes to be forked by the runner, which will
-  also match the maximum number of jobs to run in parallel by this runner. The
-  default is ten forks.
+- `do_fork`: whether or not to fork child processes to run jobs tasks. (`true`
+  by default).
+- `forks`: the maximum number of jobs to run in parallel by this runner. (The
+  default is ten). Will also match the number of child processes to be forked
+  by the runner when the option `do_fork` is either not set or `true`.
 - `run_interval`: Integer. Time __in milliseconds__ for the runner to: report it
   is active to the backend, search for new queued jobs to process, and search for
   _stale_ jobs from other runners. Ten times this value is what's used to

@@ -1,0 +1,28 @@
+{
+    "backend": {
+        "module": "../lib/workflow-in-memory-backend",
+        "opts": {
+        }
+    },
+    "api": {
+        "port": 8080,
+        "wf_extra_params": ["bar"],
+        "job_extra_params": ["foo"]
+    },
+    "runner": {
+        "identifier": "cd925eef-93fb-4bfe-a820-2aaedf9fc006",
+        "do_fork": false,
+        "forks": 2,
+        "run_interval": 250,
+        "sandbox": {
+            "modules": {
+                "http": "http",
+                "uuid": "node-uuid"
+            },
+            "foo": "bar",
+            "bool": true,
+            "aNumber": 5
+        }
+    }
+}
+

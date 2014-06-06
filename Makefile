@@ -31,8 +31,12 @@ setup: $(NPM)
 	$(NPM) install
 
 .PHONY: test
-test: setup $(TAP)
+test: setup nofork $(TAP)
 	TAP_TIMEOUT=80 $(TAP) test/*.test.js
+
+.PHONY: nofork
+nofork: setup $(TAP)
+	TAP_TIMEOUT=80 TEST_CONFIG_FILE=config.nofork.sample $(TAP) test/runner.test.js
 
 .PHONY: coverage
 coverage: $(TAP)
