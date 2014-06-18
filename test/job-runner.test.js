@@ -452,8 +452,8 @@ test('a failed workflow with successful "onerror"', function (t) {
                         t.equal(job.chain_results[0].error, 'This will fail');
                         t.ifError(job.onerror_results[0].error,
                           'onerror_results error');
-                        t.ok(job.foo, 'job task added property ok');
-                        t.equal(job.foo, 'OK!, expected failure. Fixed.',
+                        t.ok(job.params.foo, 'job task added property ok');
+                        t.equal(job.params.foo, 'OK!, expected failure. Fixed.',
                           'job prop ok');
                         t.ok(job.chain_results[0].started_at);
                         t.ok(job.chain_results[0].finished_at);
@@ -511,7 +511,8 @@ test('a failed workflow with a non successful "onerror"', function (t) {
                     t.ifError(err, 'wf_job_runner run error');
                     backend.getJob(job.uuid, function (err, job) {
                         t.ifError(err, 'get job error');
-                        t.equal(job.foo, 'Something else', 'job prop ok');
+                        t.equal(job.params.foo, 'Something else',
+                            'job prop ok');
                         t.equal(job.chain_results[0].error, 'This will fail');
                         t.equal(
                           job.onerror_results[0].error,
@@ -682,7 +683,7 @@ test('a canceled job', function (t) {
                         t.equal(job.onerror_results.length, 0,
                           'should not call onerror');
                         // onCancel must run:
-                        t.ok(job.cancelChainRun);
+                        t.ok(job.params.cancelChainRun);
                         t.ok(job.oncancel_results.length);
                         t.end();
                     });
