@@ -437,6 +437,18 @@ test('get workflows', function (t) {
 });
 
 
+test('count jobs', function (t) {
+    backend.countJobs(function (err, results) {
+        t.ifError(err, 'count jobs');
+        t.ok(results, 'results ok');
+        t.ok(results.current);
+        t.ok(results.current.queued);
+        t.ok(results.current.succeeded);
+        t.end();
+    });
+});
+
+
 test('get all jobs', function (t) {
     backend.getJobs(function (err, jobs) {
         t.ifError(err, 'get all jobs error');

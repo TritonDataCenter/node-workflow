@@ -21,6 +21,7 @@ The API is composed by the following end-points:
 - `/workflows`
 - `/jobs`
 - `/jobs/:uuid/info`
+- `/stats` (since version `0.10.0`)
 
 `/workflows` accept any of the HTTP verbs for the usual CRUD, but `/jobs` will
 not accept `PUT` since the only way to modify a Job once it has been created is
@@ -354,5 +355,56 @@ Response with status code `405 Method Not Allowed`.
 ## DELETE /jobs/:job_uuid/info
 
 Response with status code `405 Method Not Allowed`.
+
+## GET /stats
+
+Returns a list of statistics for the current, past hour, past day and all time
+system status, in terms of number of jobs on each one of the execution satatus
+
+### HTTP Parameters.
+
+- none
+
+### Status Codes
+
+- `200 OK`: A list of stats is returned, even when it's all zero counters.
+
+### Response Body
+
+Something with the following members but, most likely, with different numbers:
+
+        { all_time:
+           { queued: 0,
+             failed: 0,
+             succeeded: 0,
+             canceled: 0,
+             running: 0,
+             retried: 0,
+             waiting: 0 },
+          past_24h:
+           { queued: 0,
+             failed: 0,
+             succeeded: 0,
+             canceled: 0,
+             running: 0,
+             retried: 0,
+             waiting: 0 },
+          past_hour:
+           { queued: 0,
+             failed: 0,
+             succeeded: 0,
+             canceled: 0,
+             running: 0,
+             retried: 0,
+             waiting: 0 },
+          current:
+           { queued: 2,
+             failed: 0,
+             succeeded: 0,
+             canceled: 0,
+             running: 0,
+             retried: 0,
+             waiting: 0 } }
+
 
 <style>#forkongithub a{background:#600;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#000;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/kusor/node-workflow">Fork me on GitHub</a></span>

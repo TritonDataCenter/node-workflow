@@ -512,6 +512,19 @@ test('GET /jobs not empty', function (t) {
 });
 
 
+test('GET /stats', function (t) {
+    client.get('/stats', function (err, req, res, obj) {
+        t.ifError(err);
+        t.ok(obj.current);
+        t.ok(obj.current.queued);
+        t.ok(obj.all_time);
+        t.ok(obj.past_24h);
+        t.ok(obj.past_hour);
+        t.end();
+    });
+});
+
+
 test('GET /jobs/:uuid', function (t) {
 
     t.test('job ok', function (t) {
