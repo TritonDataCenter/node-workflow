@@ -24,36 +24,12 @@
   <span id="tocbox">
     <span id="tocbutton" class="navbutton">Table of Contents</span>
     <div id="toc" style="display: none">
-      <ul>
-  <li><div><a href="#end-points"> End-Points</a></div>
-  <ul>
-    <li><div><a href="#GET-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows</span></span></a></div></li>
-    <li><div><a href="#POST-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/workflows</span></span></a></div></li>
-    <li><div><a href="#GET-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
-    <li><div><a href="#PUT-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
-    <li><div><a href="#DELETE-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/workflows/:wf_uuid</span></span></a></div></li>
-    <li><div><a href="#GET-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs</span></span></a></div></li>
-    <li><div><a href="#POST-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs</span></span></a></div></li>
-    <li><div><a href="#GET-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
-    <li><div><a href="#PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
-    <li><div><a href="#DELETE-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid</span></span></a></div></li>
-    <li><div><a href="#POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></a></div></li>
-    <li><div><a href="#POST-/jobs/:job_uuid/resume"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/resume</span></span></a></div></li>
-    <li><div><a href="#GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
-    <li><div><a href="#POST-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
-    <li><div><a href="#PUT-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
-    <li><div><a href="#DELETE-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid/info</span></span></a></div></li>
-  </ul></li>
-</ul>
-
+      
     </div>
   </span>
 </header>
     <div id="content">
-
 <h1>Workflow REST API</h1>
-<div class="intro">
-
 
 <p>This document describes the HTTP REST API for workflows and tasks, and for the
 creation of Jobs and tracking their execution progress.</p>
@@ -65,9 +41,7 @@ JSON</strong>.</p>
 <p>(See <a href="index.html">node-workflow</a> docs for information on the whole module,
 not just the REST API).</p>
 
-
-</div>
-<h1 id="end-points"> End-Points</h1>
+<p># End-Points</p>
 
 <p>The API is composed by the following end-points:</p>
 
@@ -75,6 +49,7 @@ not just the REST API).</p>
 <li><code>/workflows</code></li>
 <li><code>/jobs</code></li>
 <li><code>/jobs/:uuid/info</code></li>
+<li><code>/stats</code> (since version <code>0.10.0</code>)</li>
 </ul>
 
 <p><code>/workflows</code> accept any of the HTTP verbs for the usual CRUD, but <code>/jobs</code> will
@@ -86,7 +61,7 @@ staus information for a Job is created when the Job itself is created), nor
 <code>DELETE</code> (given the status information for a job will be removed only if the job
 is removed).</p>
 
-<h2 id="GET-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows</span></span></h2>
+<h2>GET /workflows</h2>
 
 <p>Retrieve a list of all the existing workflows.</p>
 
@@ -101,11 +76,11 @@ is removed).</p>
         an empty array is returned.</li>
 </ul>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <p>An array of workflow objects (see <code>POST /workflows</code>).</p>
 
-<h2 id="POST-/workflows"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/workflows</span></span></h2>
+<h2>POST /workflows</h2>
 
 <p>Create a new workflow.</p>
 
@@ -150,7 +125,7 @@ representation will be included in the response body, together with a
 part of this <code>Location</code>, and a member of the returned workflow JSON object.</li>
 </ul>
 
-<h4> Response Body:</h4>
+<p>#### Response Body:</p>
 
 <pre><code>{
   uuid: UUID,
@@ -185,9 +160,9 @@ part of this <code>Location</code>, and a member of the returned workflow JSON o
 }
 </code></pre>
 
-<h2 id="GET-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+<h2>GET /workflows/:wf_uuid</h2>
 
-<h3> HTTP Parameters:</h3>
+<p>### HTTP Parameters:</p>
 
 <ul>
 <li><code>wf_uuid</code>: The workflow UUID.</li>
@@ -209,13 +184,13 @@ instead of <code>410 Gone</code>.</p>
 
 <p>Same as for <code>POST /workflows</code> + <code>wf_uuid</code>.</p>
 
-<h2 id="PUT-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+<h2>PUT /workflows/:wf_uuid</h2>
 
 <h3>HTTP Parameters</h3>
 
 <p>Same as for <code>POST /workflows</code>.</p>
 
-<h3> Status Codes</h3>
+<p>### Status Codes</p>
 
 <p>Same as for <code>POST /workflows</code> with the addition of:</p>
 
@@ -223,13 +198,13 @@ instead of <code>410 Gone</code>.</p>
 <li><code>404 Not Found</code>, when the provided <code>wf_uuid</code> cannot be found on the backend.</li>
 </ul>
 
-<h3> Response body</h3>
+<p>### Response body</p>
 
 <p>Same as for <code>POST /workflows</code>.</p>
 
-<h2 id="DELETE-/workflows/:wf_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/workflows/:wf_uuid</span></span></h2>
+<h2>DELETE /workflows/:wf_uuid</h2>
 
-<h3> HTTP Parameters:</h3>
+<p>### HTTP Parameters:</p>
 
 <ul>
 <li><code>wf_uuid</code>: The workflow UUID.</li>
@@ -241,7 +216,7 @@ instead of <code>410 Gone</code>.</p>
 <li><code>204 OK</code>: Workflow successfully destroyed.</li>
 </ul>
 
-<h2 id="GET-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs</span></span></h2>
+<h2>GET /jobs</h2>
 
 <p>Retrieve a list of jobs. Without an <code>execution</code> HTTP parameter, all the existing
 jobs will be retrieved. If <code>execution</code> is given, only the jobs with the given
@@ -260,7 +235,7 @@ or <code>queued</code>.</li>
 <li><code>200 OK</code>: A list of existing jobs is returned, even when it's empty.</li>
 </ul>
 
-<h2 id="POST-/jobs"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs</span></span></h2>
+<h2>POST /jobs</h2>
 
 <h3>HTTP Parameters.</h3>
 
@@ -287,7 +262,7 @@ for the new resource. The job's generated <code>uuid</code> will be part of this
 <code>Location</code>, and a member of the returned job JSON object.</li>
 </ul>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <pre><code>{
   uuid: UUID,
@@ -308,7 +283,7 @@ for the new resource. The job's generated <code>uuid</code> will be part of this
 }
 </code></pre>
 
-<h2 id="GET-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+<h2>GET /jobs/:job_uuid</h2>
 
 <h3>HTTP Parameters.</h3>
 
@@ -328,19 +303,19 @@ returned as response body.</li>
 destroyed workflows is made, the HTTP Status code will be <code>404 Not Found</code>
 instead of <code>410 Gone</code>.</p>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <p>Same as for <code>POST /jobs</code>.</p>
 
-<h2 id="PUT-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+<h2>PUT /jobs/:job_uuid</h2>
 
 <p><strong>TBD</strong>. Response with status code <code>405 Method Not Allowed</code>.</p>
 
-<h2 id="DELETE-/jobs/:job_uuid"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid</span></span></h2>
+<h2>DELETE /jobs/:job_uuid</h2>
 
 <p><strong>TBD</strong>. Response with status code <code>405 Method Not Allowed</code>.</p>
 
-<h2 id="POST-/jobs/:job_uuid/cancel"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/cancel</span></span></h2>
+<h2>POST /jobs/:job_uuid/cancel</h2>
 
 <p>Cancel a job's execution. Only unfinished jobs can be canceled.</p>
 
@@ -358,11 +333,11 @@ instead of <code>410 Gone</code>.</p>
 <li><code>200 OK</code>: Successfully canceled job.</li>
 </ul>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <p>Same than for <code>POST /jobs</code>.</p>
 
-<h2 id="POST-/jobs/:job_uuid/resume"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/resume</span></span></h2>
+<h2>POST /jobs/:job_uuid/resume</h2>
 
 <p>Resumes a job's execution which was previously set to waiting by any of the Job
 tasks. The job should have a <em>waiting</em> status in order to resume it.</p>
@@ -392,11 +367,11 @@ value for this parameter means you want to fail the job.</li>
 <li><code>200 OK</code>: Successfully resumed job.</li>
 </ul>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <p>Same than for <code>POST /jobs</code>.</p>
 
-<h2 id="GET-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">GET</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+<h2>GET /jobs/:job_uuid/info</h2>
 
 <p>Detailed information about the given job. A task may cause a 3rd-party
 application to execute a process which may require some time to finish. While
@@ -418,7 +393,7 @@ request will result in a new member being appended.</p>
 
 <p>Same as for <code>GET /jobs/:job_uuid</code>.</p>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <pre><code>[
   { '10%': 'Task completed step one' },
@@ -426,7 +401,7 @@ request will result in a new member being appended.</p>
 ]
 </code></pre>
 
-<h2 id="POST-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">POST</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+<h2>POST /jobs/:job_uuid/info</h2>
 
 <h3>HTTP Parameters.</h3>
 
@@ -443,17 +418,72 @@ operations.</p>
 
 <p>Same as for <code>GET /jobs/:job_uuid</code>.</p>
 
-<h3> Response Body</h3>
+<p>### Response Body</p>
 
 <p>None.</p>
 
-<h2 id="PUT-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">PUT</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+<h2>PUT /jobs/:job_uuid/info</h2>
 
 <p>Response with status code <code>405 Method Not Allowed</code>.</p>
 
-<h2 id="DELETE-/jobs/:job_uuid/info"><span class="method justendpoint"><span class="endpoint"><span class="verb">DELETE</span> <span class="path">/jobs/:job_uuid/info</span></span></h2>
+<h2>DELETE /jobs/:job_uuid/info</h2>
 
 <p>Response with status code <code>405 Method Not Allowed</code>.</p>
+
+<h2>GET /stats</h2>
+
+<p>Returns a list of statistics for the current, past hour, past day and all time
+system status, in terms of number of jobs on each one of the execution satatus</p>
+
+<h3>HTTP Parameters.</h3>
+
+<ul>
+<li>none</li>
+</ul>
+
+<h3>Status Codes</h3>
+
+<ul>
+<li><code>200 OK</code>: A list of stats is returned, even when it's all zero counters.</li>
+</ul>
+
+<p>### Response Body</p>
+
+<p>Something with the following members but, most likely, with different numbers:</p>
+
+<pre><code>    { all_time:
+       { queued: 0,
+         failed: 0,
+         succeeded: 0,
+         canceled: 0,
+         running: 0,
+         retried: 0,
+         waiting: 0 },
+      past_24h:
+       { queued: 0,
+         failed: 0,
+         succeeded: 0,
+         canceled: 0,
+         running: 0,
+         retried: 0,
+         waiting: 0 },
+      past_hour:
+       { queued: 0,
+         failed: 0,
+         succeeded: 0,
+         canceled: 0,
+         running: 0,
+         retried: 0,
+         waiting: 0 },
+      current:
+       { queued: 2,
+         failed: 0,
+         succeeded: 0,
+         canceled: 0,
+         running: 0,
+         retried: 0,
+         waiting: 0 } }
+</code></pre>
 
 <p><style>#forkongithub a{background:#600;color:#fff;text-decoration:none;font-family:arial, sans-serif;text-align:center;font-weight:bold;padding:5px 40px;font-size:1rem;line-height:2rem;position:relative;transition:0.5s;}#forkongithub a:hover{background:#000;color:#fff;}#forkongithub a::before,#forkongithub a::after{content:"";width:100%;display:block;position:absolute;top:1px;left:0;height:1px;background:#fff;}#forkongithub a::after{bottom:1px;top:auto;}@media screen and (min-width:800px){#forkongithub{position:absolute;display:block;top:0;right:0;width:200px;overflow:hidden;height:200px;}#forkongithub a{width:200px;position:absolute;top:60px;right:-60px;transform:rotate(45deg);-webkit-transform:rotate(45deg);box-shadow:4px 4px 10px rgba(0,0,0,0.8);}}</style><span id="forkongithub"><a href="https://github.com/kusor/node-workflow">Fork me on GitHub</a></span></p>
 
