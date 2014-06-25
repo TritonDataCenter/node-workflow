@@ -14,7 +14,7 @@ JSON__.
 (See [node-workflow](index.html) docs for information on the whole module,
 not just the REST API).
 
-# End-Points
+# End-Points
 
 The API is composed by the following end-points:
 
@@ -45,7 +45,7 @@ None.
 - `200 OK`: A list of existing workflows is returned. If there are no workflows,
             an empty array is returned.
 
-### Response Body
+### Response Body
 
 An array of workflow objects (see `POST /workflows`).
 
@@ -88,7 +88,7 @@ Create a new workflow.
   `Location` header for the new resource. A workflow's generated `uuid` will be
   part of this `Location`, and a member of the returned workflow JSON object.
 
-#### Response Body:
+### Response Body:
 
     {
       uuid: UUID,
@@ -123,7 +123,7 @@ Create a new workflow.
 
 ## GET /workflows/:wf_uuid
 
-### HTTP Parameters:
+### HTTP Parameters:
 
 - `wf_uuid`: The workflow UUID.
 
@@ -137,7 +137,7 @@ Note this API will not keep track of _destroyed_ workflows. When a request for
 destroyed workflows is made, the HTTP Status code will be `404 Not Found`
 instead of `410 Gone`.
 
-### Response body
+### Response Body
 
 Same as for `POST /workflows` + `wf_uuid`.
 
@@ -147,19 +147,19 @@ Same as for `POST /workflows` + `wf_uuid`.
 
 Same as for `POST /workflows`.
 
-### Status Codes
+### Status Codes
 
 Same as for `POST /workflows` with the addition of:
 
 - `404 Not Found`, when the provided `wf_uuid` cannot be found on the backend.
 
-### Response body
+### Response Body
 
 Same as for `POST /workflows`.
 
 ## DELETE /workflows/:wf_uuid
 
-### HTTP Parameters:
+### HTTP Parameters:
 
 - `wf_uuid`: The workflow UUID.
 
@@ -205,7 +205,7 @@ execution status are retrieved.
   for the new resource. The job's generated `uuid` will be part of this
   `Location`, and a member of the returned job JSON object.
 
-### Response Body
+### Response Body
 
     {
       uuid: UUID,
@@ -242,7 +242,7 @@ Note this API will not keep track of _destroyed_ workflows. When a request for
 destroyed workflows is made, the HTTP Status code will be `404 Not Found`
 instead of `410 Gone`.
 
-### Response Body
+### Response Body
 
 Same as for `POST /jobs`.
 
@@ -268,7 +268,7 @@ Cancel a job's execution. Only unfinished jobs can be canceled.
 - `409 Conflict`: The job is already finalized and cannot be canceled.
 - `200 OK`: Successfully canceled job.
 
-### Response Body
+### Response Body
 
 Same than for `POST /jobs`.
 
@@ -298,7 +298,7 @@ again. The job will run once one of the runners has a free slot to run it.
 - `409 Conflict`: The job is not waiting and cannot be resumed.
 - `200 OK`: Successfully resumed job.
 
-### Response Body
+### Response Body
 
 Same than for `POST /jobs`.
 
@@ -322,7 +322,7 @@ request will result in a new member being appended.
 
 Same as for `GET /jobs/:job_uuid`.
 
-### Response Body
+### Response Body
 
     [
       { '10%': 'Task completed step one' },
@@ -344,7 +344,7 @@ Note you can provide any key/value pair here.
 
 Same as for `GET /jobs/:job_uuid`.
 
-### Response Body
+### Response Body
 
 None.
 
@@ -363,48 +363,54 @@ system status, in terms of number of jobs on each one of the execution satatus
 
 ### HTTP Parameters.
 
-- none
+None.
 
 ### Status Codes
 
 - `200 OK`: A list of stats is returned, even when it's all zero counters.
 
-### Response Body
+### Response Body
 
 Something with the following members but, most likely, with different numbers:
 
-        { all_time:
-           { queued: 0,
-             failed: 0,
-             succeeded: 0,
-             canceled: 0,
-             running: 0,
-             retried: 0,
-             waiting: 0 },
-          past_24h:
-           { queued: 0,
-             failed: 0,
-             succeeded: 0,
-             canceled: 0,
-             running: 0,
-             retried: 0,
-             waiting: 0 },
-          past_hour:
-           { queued: 0,
-             failed: 0,
-             succeeded: 0,
-             canceled: 0,
-             running: 0,
-             retried: 0,
-             waiting: 0 },
-          current:
-           { queued: 2,
-             failed: 0,
-             succeeded: 0,
-             canceled: 0,
-             running: 0,
-             retried: 0,
-             waiting: 0 } }
+    {
+      all_time: {
+        queued: 0,
+        failed: 0,
+        succeeded: 0,
+        canceled: 0,
+        running: 0,
+        retried: 0,
+        waiting: 0 
+      },
+      past_24h: {
+        queued: 0,
+        failed: 0,
+        succeeded: 0,
+        canceled: 0,
+        running: 0,
+        retried: 0,
+        waiting: 0 
+      },
+      past_hour: {
+        queued: 0,
+        failed: 3,
+        succeeded: 15,
+        canceled: 3,
+        running: 0,
+        retried: 0,
+        waiting: 0 
+      },
+      current: {
+        queued: 2,
+        failed: 0,
+        succeeded: 0,
+        canceled: 0,
+        running: 1,
+        retried: 1,
+        waiting: 1 
+      },
+    }
 
 Please, note that `all_time` member does not contains results contained into
 `past_24h`, neither this one contains results already contained into
