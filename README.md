@@ -6,6 +6,11 @@
 - Docs: <http://kusor.github.com/node-workflow/>
 - Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
 
+
+# Installation
+
+    npm install wf
+
 # Overview
 
 If you are building a completely new system composed of many discrete API
@@ -37,7 +42,7 @@ This package provides a way to define re-usable `workflows` using JSON and run
 concrete `jobs` with specific `targets` and `parameters` based on such
 `workflows`.
 
-### Workflow Runners
+### Workflow Runners
 
 In order to execute `jobs`, at least one `WorkflowRunner` must be up and ready
 to take jobs. An arbitrary number of `runners` can be used on any set of hosts;
