@@ -8,7 +8,7 @@ var util = require('util');
 var wf = require('./lib/index');
 // With modules, it would be require('workflow');
 var Factory = wf.Factory;
-var Backend = wf.Backend;
+var Backend = wf.MemoryBackend;
 
 var backend, factory;
 
