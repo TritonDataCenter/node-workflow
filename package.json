@@ -1,45 +1,46 @@
 {
-    "name": "wf",
-    "description": "Tasks Workflows orchestration API and runners",
-    "version": "0.10.0",
-    "repository": {
-        "type": "git",
-        "url": "git://github.com/kusor/node-workflow.git"
-    },
-    "author": "Pedro Palazón Candel <kusorbox@gmail.com> (http://www.joyent.com)",
-    "contributors": [
-        "Mark Cavage",
-        "Trent Mick",
-        "Josh Wilsdon",
-        "Bryan Cantrill",
-        "Andrés Rodríquez",
-        "Rob Gulewich",
-        "Fred Kuo"
-    ],
-    "bin": {
-        "workflow-api": "./bin/workflow-api",
-        "workflow-runner": "./bin/workflow-runner"
-    },
-    "main": "lib/index.js",
-    "dependencies": {
-        "node-uuid": "1.4.0",
-        "bunyan": "0.23.1",
-        "vasync": "1.6.1",
-        "backoff": "1.2.0",
-        "clone": "0.1.6",
-        "restify": "2.6.1",
-        "sigyan": "0.2.0"
-    },
-    "scripts": {
-        "test": "./node_modules/.bin/tap ./test/*.test.js"
-    },
-    "devDependencies": {
-        "tap": "~0.3"
-    },
-    "optionalDependencies": {
-        "dtrace-provider": "0.2.8"
-    },
-    "engines": {
-        "node": ">=0.8"
-    }
+  "name": "wf",
+  "description": "Tasks Workflows orchestration API and runners",
+  "version": "0.10.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/kusor/node-workflow.git"
+  },
+  "author": "Pedro Palazón Candel <kusorbox@gmail.com> (http://www.joyent.com)",
+  "contributors": [
+    "Mark Cavage",
+    "Trent Mick",
+    "Josh Wilsdon",
+    "Bryan Cantrill",
+    "Andrés Rodríquez",
+    "Rob Gulewich",
+    "Fred Kuo"
+  ],
+  "bin": {
+    "workflow-api": "./bin/workflow-api",
+    "workflow-runner": "./bin/workflow-runner"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "backoff": "1.2.0",
+    "bunyan": "0.23.1",
+    "clone": "0.1.6",
+    "lodash": "^3.5.0",
+    "node-uuid": "1.4.0",
+    "restify": "2.6.1",
+    "sigyan": "0.2.0",
+    "vasync": "1.6.1"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/tap ./test/*.test.js"
+  },
+  "devDependencies": {
+    "tap": "~0.3"
+  },
+  "optionalDependencies": {
+    "dtrace-provider": "0.2.8"
+  },
+  "engines": {
+    "node": ">=0.8"
+  }
 }
