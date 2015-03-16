@@ -3,22 +3,22 @@ var util = require('util'),
     test = require('tap').test,
     uuid = require('node-uuid'),
     WorkflowJobRunner = require('../lib/job-runner'),
-    Logger = require('bunyan'),
+    bunyan = require('bunyan'),
     Factory = require('../lib/index').Factory,
     createDTrace = require('../lib/index').CreateDTrace;
 
 var helper = require('./helper');
 
-var logger = {
-    name: 'workflow-runner',
+var log = bunyan.createLogger({
+    name: 'job-runner-test',
     serializers: {
-        err: Logger.stdSerializers.err
+        err: bunyan.stdSerializers.err
     },
     streams: [ {
         level: 'trace',
         stream: process.stdout
     }]
-};
+});
 
 var DTRACE = createDTrace('workflow');
 
@@ -32,7 +32,7 @@ var FakeRunner = function () {
     this.child_processes = {};
     this.uuid = uuid();
     this.run_interval = 1000;
-    this.log = new Logger(logger);
+    this.log = log;
     this.slots = this.forks = 10;
 };
 
@@ -251,7 +251,8 @@ test('run job ok', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            dtrace: DTRACE
+            dtrace: DTRACE,
+            log: log
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -283,7 +284,8 @@ test('run a job which fails without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            dtrace: DTRACE
+            dtrace: DTRACE,
+            log: log
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -314,7 +316,8 @@ test('run a job which re-queues itself', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            dtrace: DTRACE
+            dtrace: DTRACE,
+            log: log
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -344,7 +347,8 @@ test('run a previously re-queued job', function (t) {
         runner: runner,
         backend: backend,
         job: reQueuedJob,
-        dtrace: DTRACE
+        dtrace: DTRACE,
+        log: log
     });
     t.ok(wf_job_runner, 'wf_job_runner ok');
     backend.runJob(reQueuedJob.uuid, runner.uuid, function (err, job) {
@@ -379,7 +383,8 @@ test('run a job which time out without "onerror"', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            dtrace: DTRACE
+            dtrace: DTRACE,
+            log: log
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -433,7 +438,8 @@ test('a failed workflow with successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                dtrace: DTRACE
+                dtrace: DTRACE,
+                log: log
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             t.equal(wf_job_runner.timeout, null, 'no runner timeout');
@@ -502,7 +508,8 @@ test('a failed workflow with a non successful "onerror"', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                dtrace: DTRACE
+                dtrace: DTRACE,
+                log: log
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -549,7 +556,8 @@ test('a job cannot access undefined sandbox modules', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                dtrace: DTRACE
+                dtrace: DTRACE,
+                log: log
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -600,7 +608,8 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                         uuid: 'node-uuid'
                     }
                 },
-                dtrace: DTRACE
+                dtrace: DTRACE,
+                log: log
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -662,7 +671,8 @@ test('a canceled job', function (t) {
                 runner: runner,
                 backend: backend,
                 job: job,
-                dtrace: DTRACE
+                dtrace: DTRACE,
+                log: log
             });
             t.ok(wf_job_runner, 'wf_job_runner ok');
             backend.runJob(job.uuid, runner.uuid, function (err, job) {
@@ -705,7 +715,8 @@ test('a job can call job.info()', function (t) {
             runner: runner,
             backend: backend,
             job: job,
-            dtrace: DTRACE
+            dtrace: DTRACE,
+            log: log
         });
         t.ok(wf_job_runner, 'wf_job_runner ok');
         backend.runJob(job.uuid, runner.uuid, function (err, job) {
