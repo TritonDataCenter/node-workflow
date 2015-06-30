@@ -1,7 +1,7 @@
 {
     "name": "wf",
     "description": "Tasks Workflows orchestration API and runners",
-    "version": "0.11.0",
+    "version": "0.11.1",
     "repository": {
         "type": "git",
         "url": "git://github.com/kusor/node-workflow.git"
