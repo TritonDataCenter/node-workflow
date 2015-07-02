@@ -450,7 +450,7 @@ test('a failed workflow with successful "onerror"', function (t) {
                     t.ifError(err, 'wf_job_runner run error');
                     backend.getJob(job.uuid, function (err, job) {
                         t.ifError(err, 'get job error');
-                        t.equal(job.execution, 'succeeded', 'job execution');
+                        t.equal(job.execution, 'failed', 'job execution');
                         t.ok(util.isArray(job.chain_results),
                           'chain results array');
                         t.ok(util.isArray(job.onerror_results),

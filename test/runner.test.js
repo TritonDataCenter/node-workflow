@@ -477,7 +477,8 @@ test('stale jobs', function (t) {
                                   function (err) {
                                     t.ifError(err, 'update job prop err');
                                     aJob.execution = 'canceled';
-                                    backend.finishJob(job, function (err, job) {
+                                    backend.finishJob(aJob,
+                                      function (err, job) {
                                         t.ifError(err, 'finish job err');
                                         t.ok(job, 'finish job ok');
                                         runner.staleJobs(function (err, jobs) {
