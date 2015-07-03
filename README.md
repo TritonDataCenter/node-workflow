@@ -1,10 +1,10 @@
 # Tasks Workflows Orchestration API and Runners.
 
-- Repository: <git://github.com/kusor/node-workflow.git>
-- Browsing: <https://github.com/kusor/node-workflow>
+- Repository: <git://github.com/joyent/node-workflow.git>
+- Browsing: <https://github.com/joyent/node-workflow>
 - Who: [Pedro Palazón Candel](https://github.com/kusor), [Trent Mick](https://github.com/trentm), [Mark Cavage](https://github.com/mcavage), [Josh Wilsdon](https://github.com/joshwilsdon), [Rob Gulewich](https://github.com/rgulewich), [Andrés Rodríguez](https://github.com/cachafla), [Fred Kuo](https://github.com/fkuo).
-- Docs: <http://kusor.github.com/node-workflow/>
-- Tickets/bugs: <https://github.com/kusor/node-workflow/issues>
+- Docs: <http://joyent.github.io/node-workflow/>
+- Tickets/bugs: <https://github.com/joyent/node-workflow/issues>
 
 
 # Installation
@@ -61,7 +61,7 @@ or by embedding this module's API into your own system(s). The former will be
 easier to get up and running, but you should use the latter when:
 
 - You want to use the Worflow API in a (node.js) application that is not the
-  bundled [REST API](http://kusor.github.com/node-workflow/workflowapi.html).
+  bundled [REST API](http://joyent.github.io/node-workflow/workflowapi.html).
 - You want to use a different backend storage system, or otherwise change the
   assumptions of the bundled REST API.
 
@@ -76,7 +76,7 @@ See demo section below for more details about both approaches.
 
 ## Clone the repo and build the deps:
 
-    git clone git://github.com/kusor/node-workflow.git
+    git clone git://github.com/joyent/node-workflow.git
     cd node-workflow
     make all
 
@@ -174,11 +174,11 @@ possibilities for task fallbacks, retries, timeouts, ...
 
 # TODO
 
-See https://github.com/kusor/node-workflow/issues.
+See https://github.com/joyent/node-workflow/issues.
 
 # LICENSE
 
-The MIT License (MIT) Copyright (c) 2014 Pedro Palazón Candel
+The MIT License (MIT) Copyright (c) 2015 Pedro Palazón Candel
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
