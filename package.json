@@ -1,5 +1,5 @@
 {
-    "name": "@mgc/wf",
+    "name": "wf",
     "description": "Tasks Workflows orchestration API and runners",
     "version": "1.0.0",
     "repository": {
