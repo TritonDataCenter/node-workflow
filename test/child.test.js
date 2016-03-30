@@ -28,12 +28,12 @@ var task = {
 };
 
 
-test('unkown message', function (t) {
+test('unknown message', function (t) {
     var child = fork(__dirname + '/../lib/child.js');
 
     child.on('message', function (msg) {
         t.ifError(msg.job);
-        t.ok(msg.error);
+        t.ok(msg.error, 'should have error');
         t.equal(msg.error, 'unknown message');
         if (child.exitCode === null) {
             child.kill();
@@ -41,7 +41,11 @@ test('unkown message', function (t) {
     });
 
     child.on('exit', function (code, signal) {
-        t.ok(code);
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -64,8 +68,12 @@ test('message without job', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -86,8 +94,12 @@ test('message without task', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -108,8 +120,12 @@ test('message with invalid task', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -138,8 +154,12 @@ test('message with successful task', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -168,8 +188,12 @@ test('message with failed task', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
@@ -206,8 +230,12 @@ test('cancel message', function (t) {
         }
     });
 
-    child.on('exit', function (code) {
-        t.ok(code);
+    child.on('exit', function (code, signal) {
+        if (signal == "SIGTERM") {
+            t.notOk(code, "child.on('exit'): should not have code, if killed by parent");
+        } else {
+            t.ok(code, "child.on('exit'): should have code, if exited normally");
+        }
         t.end();
     });
 
