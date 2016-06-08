@@ -1,12 +1,13 @@
 {
     "name": "wf",
     "description": "Tasks Workflows orchestration API and runners",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "repository": {
         "type": "git",
         "url": "git://github.com/kusor/node-workflow.git"
     },
     "author": "Pedro Palazón Candel <kusorbox@gmail.com> (http://www.joyent.com)",
+    "license": "MIT",
     "contributors": [
         "Mark Cavage",
         "Trent Mick",
@@ -22,13 +23,13 @@
     },
     "main": "lib/index.js",
     "dependencies": {
-        "assert-plus": "0.1.x",
-        "node-uuid": "1.4.0",
-        "bunyan": "1.3.4",
-        "vasync": "1.6.1",
+        "assert-plus": "1.0.0",
+        "node-uuid": "1.4.7",
+        "bunyan": "1.8.1",
+        "vasync": "1.6.4",
         "backoff": "1.2.0",
         "clone": "0.1.6",
-        "restify": "3.0.2",
+        "restify": "4.0.3",
         "sigyan": "0.2.0",
         "trace-event": "1.3.0"
     },
@@ -39,9 +40,9 @@
         "tap": "~0.3"
     },
     "optionalDependencies": {
-        "dtrace-provider": "0.2.8"
+        "dtrace-provider": "0.6.0"
     },
     "engines": {
-        "node": ">=0.8"
+        "node": ">=0.10.0"
     }
 }

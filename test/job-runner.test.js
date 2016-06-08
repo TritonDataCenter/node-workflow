@@ -267,7 +267,6 @@ test('run job ok', function (t) {
                     t.end();
                 });
             });
-
         });
     });
 });
