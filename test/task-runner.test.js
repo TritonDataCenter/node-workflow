@@ -36,7 +36,8 @@ var sandbox = {
     },
     'foo': 'bar',
     'bool': true,
-    'aNumber': 5
+    'aNumber': 5,
+    'someError': new Error('some error')
 };
 
 test('throws on missing opts', function (t) {
@@ -122,7 +123,7 @@ test('a task which succeeds on 1st retry', function (t) {
 
 test('sandbox modules and variables', function (t) {
     // Or javascriptlint will complain regarding undefined variables:
-    var foo, bool, aNumber, restify, info;
+    var foo, bool, aNumber, restify, info, someError;
     var task_body = function (job, cb) {
         if (typeof (uuid) !== 'function') {
             return cb('node-uuid module is not defined');
@@ -147,6 +148,10 @@ test('sandbox modules and variables', function (t) {
         });
         if (typeof (client.url) !== 'object') {
             return cb('restify is defined but cannot create a client');
+        }
+        if (!(someError instanceof Error)) {
+            return cb('"Error" JavaScript builtin object is not shared with ' +
+                'sandbox');
         }
         return cb(null);
     };
