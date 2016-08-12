@@ -1,5 +1,11 @@
 # Tasks Workflows Orchestration API and Runners.
 
+This repository is part of the Joyent Triton project. See the [contribution
+guidelines](https://github.com/joyent/triton/blob/master/CONTRIBUTING.md) --
+*Triton does not use GitHub PRs* -- and general documentation at the main
+[Triton project](https://github.com/joyent/triton) page.
+
+
 - Repository: <git://github.com/joyent/node-workflow.git>
 - Browsing: <https://github.com/joyent/node-workflow>
 - Who: [Pedro Palazón Candel](https://github.com/kusor), [Trent Mick](https://github.com/trentm), [Mark Cavage](https://github.com/mcavage), [Josh Wilsdon](https://github.com/joshwilsdon), [Rob Gulewich](https://github.com/rgulewich), [Andrés Rodríguez](https://github.com/cachafla), [Fred Kuo](https://github.com/fkuo).
