@@ -40,7 +40,7 @@ if (process.argv.length < 3) {
         process.exit(1);
       }
 
-      config.log = new Logger({
+      config.log = new bunyan({
         name: 'workflow-api',
         serializers: restify.bunyan.serializers,
         streams: [{
