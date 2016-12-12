@@ -3,13 +3,23 @@
 
 // vim: set filetype=javascript :
 
-var path = require('path'),
-    fs = require('fs'),
-    util = require('util'),
-    Logger = require('bunyan'),
-    API = require('../lib/').API,
-    levels = [Logger.TRACE, Logger.DEBUG, Logger.INFO,
-              Logger.WARN, Logger.ERROR, Logger.FATAL];
+var bunyan = require('bunyan');
+var fs = require('fs');
+var path = require('path');
+var restify = require('restify');
+var tritonTracer = require('triton-tracer');
+var util = require('util');
+
+var API = require('../lib/').API;
+
+var levels = [
+  bunyan.TRACE,
+  bunyan.DEBUG,
+  bunyan.INFO,
+  bunyan.WARN,
+  bunyan.ERROR,
+  bunyan.FATAL
+];
 
 if (process.argv.length < 3) {
   console.error('Usage: [node] ' + process.argv[1] + ' path/to/config.json');
@@ -29,6 +39,19 @@ if (process.argv.length < 3) {
         console.dir(e);
         process.exit(1);
       }
+
+      config.log = new Logger({
+        name: 'workflow-api',
+        serializers: restify.bunyan.serializers,
+        streams: [{
+          level: 'info',
+          stream: process.stdout
+        }]
+      });
+
+      tritonTracer.init({
+        log: config.log
+      });
 
       var api = new API(config);
       api.init(function () {
