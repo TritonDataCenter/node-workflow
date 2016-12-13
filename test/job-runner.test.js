@@ -1,4 +1,6 @@
 // Copyright 2014 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright (c) 2016, Joyent, Inc.
+
 var util = require('util'),
     test = require('tap').test,
     uuid = require('uuid'),

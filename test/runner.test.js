@@ -1,4 +1,6 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright (c) 2016, Joyent, Inc.
+
 var util = require('util');
 var path = require('path');
 var fs = require('fs');
