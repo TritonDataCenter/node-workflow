@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2012, Joyent, Inc. All rights reserved.
-# Copyright (c) 2016, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
