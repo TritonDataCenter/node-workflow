@@ -1,3 +1,5 @@
+// Copyright (c) 2017, Joyent, Inc.
+
 var test = require('tap').test,
     util = require('util'),
     restify = require('restify'),

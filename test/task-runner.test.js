@@ -1,7 +1,9 @@
 // Copyright 2014 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright (c) 2017, Joyent, Inc.
+
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     WorkflowTaskRunner = require('../lib/task-runner');
 
 var job = {
@@ -31,7 +33,7 @@ var task = {
 var sandbox = {
     'modules': {
         'http': 'http',
-        'uuid': 'node-uuid',
+        'uuid': 'uuid',
         'restify': 'restify'
     },
     'foo': 'bar',
@@ -126,7 +128,7 @@ test('sandbox modules and variables', function (t) {
     var foo, bool, aNumber, restify, info, someError;
     var task_body = function (job, cb) {
         if (typeof (uuid) !== 'function') {
-            return cb('node-uuid module is not defined');
+            return cb('uuid module is not defined');
         }
         if (typeof (foo) !== 'string') {
             return cb('sandbox value is not defined');
@@ -669,7 +671,7 @@ test('a task which defines its own modules', function (t) {
     var foo, bool, aNumber, restify, http;
     var task_body = function (job, cb) {
         if (typeof (uuid) !== 'function') {
-            return cb('node-uuid module is not defined');
+            return cb('uuid module is not defined');
         }
         if (typeof (foo) !== 'string') {
             return cb('sandbox value is not defined');
@@ -691,7 +693,7 @@ test('a task which defines its own modules', function (t) {
 
     task.body = task_body.toString();
     task.modules = {
-        'uuid': 'node-uuid'
+        'uuid': 'uuid'
     };
 
     job.chain.push(task);

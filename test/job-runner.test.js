@@ -1,7 +1,9 @@
 // Copyright 2014 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright (c) 2017, Joyent, Inc.
+
 var util = require('util'),
     test = require('tap').test,
-    uuid = require('node-uuid'),
+    uuid = require('uuid'),
     WorkflowJobRunner = require('../lib/job-runner'),
     bunyan = require('bunyan'),
     Factory = require('../lib/index').Factory,
@@ -604,7 +606,7 @@ test('a job can access explicitly defined sandbox modules', function (t) {
                 job: job,
                 sandbox: {
                     modules: {
-                        uuid: 'node-uuid'
+                        uuid: 'uuid'
                     }
                 },
                 dtrace: DTRACE,

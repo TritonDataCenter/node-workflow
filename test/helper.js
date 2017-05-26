@@ -1,4 +1,5 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
+// Copyright (c) 2017, Joyent, Inc.
 
 var path = require('path'),
     fs = require('fs'),

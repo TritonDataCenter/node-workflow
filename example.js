@@ -1,5 +1,5 @@
 // Copyright 2013 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
-
+// Copyright (c) 2017, Joyent, Inc.
 // First part of the example: You create workflows, add tasks, queue jobs
 // anywhere in your code using NodeJS.
 
