@@ -23,6 +23,7 @@
     },
     "main": "lib/index.js",
     "dependencies": {
+        "artedi": "1.2.0",
         "assert-plus": "1.0.0",
         "uuid": "3.0.1",
         "bunyan": "1.8.1",
