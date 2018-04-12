@@ -1,5 +1,5 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
-// Copyright (c) 2017, Joyent, Inc.
+// Copyright (c) 2018, Joyent, Inc.
 
 var test = require('tap').test,
     uuid = require('uuid'),
@@ -35,7 +35,7 @@ var REQ_ID = uuid();
 test('throws on missing opts', function (t) {
     t.throws(function () {
         return API();
-    }, new TypeError('opts (Object) required'));
+    }, 'The "options" argument must be of type object');
     t.end();
 });
 
@@ -43,7 +43,7 @@ test('throws on missing opts', function (t) {
 test('throws on missing backend', function (t) {
     t.throws(function () {
         return API(config);
-    }, new TypeError('opts.backend (Object) required'));
+    }, 'The "options.backend" argument must be of type object');
     t.end();
 });
 
@@ -53,7 +53,7 @@ test('throws on missing opts.api', function (t) {
 
     t.throws(function () {
         return API(config);
-    }, new TypeError('opts.api (Object) required'));
+    }, 'The "options.api" argument must be of type object');
     t.end();
 });
 

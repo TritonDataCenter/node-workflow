@@ -1,5 +1,5 @@
 // Copyright 2012 Pedro P. Candel <kusorbox@gmail.com>. All rights reserved.
-// Copyright (c) 2017, Joyent, Inc.
+// Copyright (c) 2018, Joyent, Inc.
 
 var util = require('util');
 var path = require('path');
@@ -75,7 +75,7 @@ var DTRACE = createDTrace('workflow');
 test('throws on missing opts', function (t) {
     t.throws(function () {
         return WorkflowRunner();
-    }, new TypeError('opts (Object) required'));
+    }, 'The "opts" argument must be of type object');
     t.end();
 });
 
@@ -83,7 +83,7 @@ test('throws on missing opts', function (t) {
 test('throws on missing backend', function (t) {
     t.throws(function () {
         return WorkflowRunner(config);
-    }, new TypeError('opts.backend (Object) required'));
+    }, 'The "opts.backend" argument must be of type object');
     t.end();
 });
 
@@ -92,7 +92,7 @@ test('throws on missing dtrace', function (t) {
     config = helper.config();
     t.throws(function () {
         return WorkflowRunner(config);
-    }, new TypeError('opts.dtrace (Object) required'));
+    }, 'The "opts.dtrace" argument must be of type object');
     t.end();
 });
 
