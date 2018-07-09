@@ -4,7 +4,7 @@
     "version": "1.2.0",
     "repository": {
         "type": "git",
-        "url": "git://github.com/kusor/node-workflow.git"
+        "url": "git://github.com/joyent/node-workflow.git"
     },
     "author": "Pedro Palazón Candel <kusorbox@gmail.com> (http://www.joyent.com)",
     "license": "MIT",
