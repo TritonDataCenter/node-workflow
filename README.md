@@ -99,7 +99,7 @@ To run a Job Runner:
     ./bin/workflow-runner path/to/config.json
 
 Note that it's fine to run more than one Runner, either on the same or different
-machines, so long as they have access to the Redis Server.
+machines, so long as they have access to the same storage backend.
 
 # Testing
 
@@ -184,7 +184,7 @@ See https://github.com/joyent/node-workflow/issues.
 
 # LICENSE
 
-The MIT License (MIT) Copyright (c) 2017 Joyent, Inc.
+The MIT License (MIT) Copyright (c) 2018 Joyent, Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
