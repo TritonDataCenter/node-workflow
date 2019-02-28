@@ -1,7 +1,7 @@
 {
     "name": "wf",
     "description": "Tasks Workflows orchestration API and runners",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "repository": {
         "type": "git",
         "url": "git://github.com/joyent/node-workflow.git"
