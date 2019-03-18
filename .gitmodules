@@ -6,4 +6,4 @@
 	url = git://github.com/davepacheco/javascriptlint.git
 [submodule "deps/jsstyle"]
 	path = deps/jsstyle
-	url = git://github.com/davepacheco/jsstyle.git
+	url = https://github.com/joyent/jsstyle.git
