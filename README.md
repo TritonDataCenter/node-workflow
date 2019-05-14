@@ -66,7 +66,7 @@ You can create `workflows` and `jobs` either by using the provided REST API(s),
 or by embedding this module's API into your own system(s). The former will be
 easier to get up and running, but you should use the latter when:
 
-- You want to use the Worflow API in a (node.js) application that is not the
+- You want to use the Workflow API in a (node.js) application that is not the
   bundled [REST API](http://joyent.github.io/node-workflow/workflowapi.html).
 - You want to use a different backend storage system, or otherwise change the
   assumptions of the bundled REST API.
