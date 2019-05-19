@@ -232,7 +232,8 @@ result in the error:
 
     'Job target is currently locked by another job'
 
-## Adding extra properties to workflows and jobs through API methods
+
+## Adding extra properties to workflows and jobs through API methods
 
 While it's possible to add any arbitrary property to a workflow or a job
 (as far as the backend supports it), API methods filter out unknown attributes.
@@ -255,7 +256,7 @@ Array of attribute names added to the `api` config section, as follows:
     }
 
 
-# Workflow API and REST API.
+# Workflow API and REST API
 
 You can create `workflows` and `jobs` either by using the provided REST API(s),
 or by embedding this module's API into your own system(s). The former will be
