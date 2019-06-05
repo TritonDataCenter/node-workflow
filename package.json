@@ -30,7 +30,7 @@
         "restify": "4.1.1",
         "sigyan": "0.2.0",
         "triton-metrics": "0.1.1",
-        "triton-tracer": "git+https://github.com/joshwilsdon/triton-tracer.git#rfd-35-cls",
+        "triton-tracer": "git+https://github.com/joyent/triton-tracer.git#rfd-35-cls",
         "uuid": "3.0.1",
         "vasync": "1.6.4"
     },
