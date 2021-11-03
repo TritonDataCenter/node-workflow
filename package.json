@@ -1,10 +1,10 @@
 {
     "name": "wf",
     "description": "Tasks Workflows orchestration API and runners",
-    "version": "1.2.2",
+    "version": "1.2.3",
     "repository": {
         "type": "git",
-        "url": "git://github.com/joyent/node-workflow.git"
+        "url": "https://github.com/joyent/node-workflow.git"
     },
     "author": "Pedro Palazón Candel <kusorbox@gmail.com> (http://www.joyent.com)",
     "license": "MIT",
