@@ -31,7 +31,7 @@
         "sigyan": "0.2.0",
         "trace-event": "1.3.0",
         "triton-metrics": "0.1.1",
-        "uuid": "3.0.1",
+        "uuid": "14.0.0",
         "vasync": "1.6.4"
     },
     "scripts": {
